@@ -66,14 +66,17 @@ void ChangeToScreen(Screen::GameScreen screen)
   switch(screen)
   {
    case Screen::GameScreen::LOGO:
-     currentScreen = std::make_unique<LogoScreen>();
-     break;
+    currentScreen = std::make_unique<LogoScreen>();
+    break;
    case Screen::GameScreen::MAINMENU:
-     currentScreen = std::make_unique<MainMenuScreen>();
-     break;
+    currentScreen = std::make_unique<MainMenuScreen>();
+    break;
    case Screen::GameScreen::ASTEROIDS:
-     currentScreen = std::make_unique<AsteroidsScreen>();
-     break;
+    currentScreen = std::make_unique<AsteroidsScreen>();
+    break;
+   case Screen::GameScreen::OPTIONS:
+    currentScreen = std::make_unique<OptionsScreen>();
+    break;
    case Screen::GameScreen::NOSCREEN:
     currentScreen = nullptr;
     break;
