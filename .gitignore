@@ -1,0 +1,8 @@
+**~
+**#
+*GPATH
+*GRTAGS
+*GTAGS
+**emacs*
+build*
+*.el
