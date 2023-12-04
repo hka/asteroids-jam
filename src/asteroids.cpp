@@ -31,7 +31,7 @@ int main(void)
 
   InitWindow(options.screenWidth, options.screenHeight, PROGRAM_NAME);
 
-  currentScreen = std::make_unique<LogoScreen>();
+  currentScreen = std::make_unique<AsteroidsScreen>();
   if(options.skipLogo)
   {
     currentScreen = std::make_unique<MainMenuScreen>();

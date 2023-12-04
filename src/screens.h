@@ -11,6 +11,7 @@
 #include <random>
 
 #include "gui_helper.h"
+#include "Entities.hpp"
 
 struct GameOptions
 {
@@ -94,6 +95,8 @@ class AsteroidsScreen : public Screen
 
  private:
   GameScreen m_finishScreen;
+  PlayerSteer m_player;
+
 };
 
 #endif
