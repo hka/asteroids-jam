@@ -8,11 +8,6 @@
 #include <emscripten/emscripten.h>
 #endif
 
-void success()
-{
-  printf("synced file!\n");
-}
-
 OptionsScreen::OptionsScreen()
 {
   m_finishScreen = Screen::GameScreen::OPTIONS;
@@ -27,7 +22,6 @@ OptionsScreen::OptionsScreen()
       FS.syncfs(function (err) {
           // Error
           assert(!err);
-          //ccall('success', 'v');
         });
       );
 #endif

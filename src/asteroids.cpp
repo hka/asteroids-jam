@@ -18,6 +18,7 @@ void UpdatePaintFrame();
 void ChangeToScreen(Screen::GameScreen screen);
 
 #if defined(PLATFORM_WEB)
+extern "C" {
 void success()
 {
   printf("synced file!\n");
@@ -25,6 +26,18 @@ void success()
   {
     deserialize(options, options_path.c_str());
   }
+  else
+  {
+    serialize(options, options_path.c_str());
+    EM_ASM(
+      FS.syncfs(function (err) {
+          // Error
+          assert(!err);
+          //ccall('success', 'v');
+        });
+      );
+  }
+}
 }
 #endif
 }
@@ -32,6 +45,7 @@ void success()
 int main(void)
 {
 #if defined(PLATFORM_WEB)
+  options_path = "/offline/options.json";
   EM_ASM(
     // Make a directory other than '/'
     FS.mkdir('/offline');
@@ -42,13 +56,11 @@ int main(void)
     FS.syncfs(true, function (err) {
         // Error
         assert(!err);
-        //ccall('success', 'v');
+        ccall('success', 'v');
       });
     );
-  options_path = "/offline/options.json";
 #else
   options_path = "options.json";
-#endif
   if(FileExists(options_path.c_str()))
   {
     deserialize(options, options_path.c_str());
@@ -56,16 +68,8 @@ int main(void)
   else
   {
     serialize(options, options_path.c_str());
-#if defined(PLATFORM_WEB)
-    EM_ASM(
-      FS.syncfs(function (err) {
-          // Error
-          assert(!err);
-          //ccall('success', 'v');
-        });
-      );
-#endif
   }
+#endif
 
   InitWindow(options.screenWidth, options.screenHeight, PROGRAM_NAME);
 
