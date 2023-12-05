@@ -16,17 +16,55 @@ namespace
 {
 void UpdatePaintFrame();
 void ChangeToScreen(Screen::GameScreen screen);
+
+#if defined(PLATFORM_WEB)
+void success()
+{
+  printf("synced file!\n");
+  if(FileExists(options_path.c_str()))
+  {
+    deserialize(options, options_path.c_str());
+  }
+}
+#endif
 }
 
 int main(void)
 {
-  if(FileExists("options.json"))
+#if defined(PLATFORM_WEB)
+  EM_ASM(
+    // Make a directory other than '/'
+    FS.mkdir('/offline');
+    // Then mount with IDBFS type
+    FS.mount(IDBFS, {}, '/offline');
+
+    // Then sync
+    FS.syncfs(true, function (err) {
+        // Error
+        assert(!err);
+        //ccall('success', 'v');
+      });
+    );
+  options_path = "/offline/options.json";
+#else
+  options_path = "options.json";
+#endif
+  if(FileExists(options_path.c_str()))
   {
-    deserialize(options, "options.json");
+    deserialize(options, options_path.c_str());
   }
   else
   {
-    serialize(options, "options.json");
+    serialize(options, options_path.c_str());
+#if defined(PLATFORM_WEB)
+    EM_ASM(
+      FS.syncfs(function (err) {
+          // Error
+          assert(!err);
+          //ccall('success', 'v');
+        });
+      );
+#endif
   }
 
   InitWindow(options.screenWidth, options.screenHeight, PROGRAM_NAME);
