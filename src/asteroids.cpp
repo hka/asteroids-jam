@@ -10,6 +10,8 @@
 
 #if defined(PLATFORM_WEB)
 #include <emscripten/emscripten.h>
+#include <atomic>
+std::atomic_bool isLoading = true;
 #endif
 
 namespace
@@ -21,13 +23,14 @@ void ChangeToScreen(Screen::GameScreen screen);
 extern "C" {
 void success()
 {
-  printf("synced file!\n");
   if(FileExists(options_path.c_str()))
   {
+    printf("Load options!\n");
     deserialize(options, options_path.c_str());
   }
   else
   {
+    printf("synced file!\n");
     serialize(options, options_path.c_str());
     EM_ASM(
       FS.syncfs(function (err) {
@@ -37,6 +40,7 @@ void success()
         });
       );
   }
+  isLoading = false;
 }
 }
 #endif
@@ -59,6 +63,11 @@ int main(void)
         ccall('success', 'v');
       });
     );
+
+  while(isLoading)
+  {
+    emscripten_sleep(100);
+  }
 #else
   options_path = "options.json";
   if(FileExists(options_path.c_str()))

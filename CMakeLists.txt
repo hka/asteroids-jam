@@ -69,7 +69,7 @@ add_custom_command(TARGET ${PROJECT_NAME} PRE_LINK
 if (EMSCRIPTEN)
   set_target_properties(${PROJECT_NAME}
           PROPERTIES SUFFIX ".html"
-          LINK_FLAGS " --bind -s WASM=1 -s MIN_WEBGL_VERSION=1 -s ABORT_ON_WASM_EXCEPTIONS=1 -g2 -s USE_GLFW=3 --shell-file ${CMAKE_SOURCE_DIR}/src/minshell.html --preload-file data -s ALLOW_MEMORY_GROWTH=1 --no-heap-copy -lidbfs.js -s FORCE_FILESYSTEM=1 -sEXPORTED_RUNTIME_METHODS=ccall -sEXPORTED_FUNCTIONS=_success")
+          LINK_FLAGS " --bind -s WASM=1 -s MIN_WEBGL_VERSION=1 -s ABORT_ON_WASM_EXCEPTIONS=1 -g2 -s USE_GLFW=3 --shell-file ${CMAKE_SOURCE_DIR}/src/minshell.html --preload-file data -s ALLOW_MEMORY_GROWTH=1 --no-heap-copy -lidbfs.js -s FORCE_FILESYSTEM=1 -sEXPORTED_RUNTIME_METHODS=ccall -sEXPORTED_FUNCTIONS=_success -sASYNCIFY")
 endif()
 
 if(MSVC)
