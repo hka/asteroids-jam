@@ -20,7 +20,6 @@ OptionsScreen::OptionsScreen()
 #if defined(PLATFORM_WEB)
     EM_ASM(
       FS.syncfs(function (err) {
-          // Error
           assert(!err);
         });
       );
@@ -30,7 +29,7 @@ OptionsScreen::OptionsScreen()
   m_buttons.push_back(b_back);
 
 
-  Button b_toggleIntro("Toggle intro", options.screenWidth/2, options.screenHeight/2- 65, 100, 20, AnchorPoint::TOP_LEFT);
+  Button b_toggleIntro("Toggle intro", options.screenWidth-10, 10, 100, 20, AnchorPoint::TOP_RIGHT);
   b_toggleIntro.toggle = options.skipLogo;
   b_toggleIntro.type = Button::Type::CHECKBOX;
   auto toggleIntroAction = [](void* ptr){
@@ -63,6 +62,14 @@ void OptionsScreen::Update()
 void OptionsScreen::Paint()
 {
   DrawRectangle(0, 0, options.screenWidth, options.screenHeight, GREEN);
+
+  Vector2 v1 = { options.screenWidth/4.f, 2.f*options.screenHeight/6.f };
+  Vector2 v2 = { options.screenWidth/4.f - options.screenWidth/10.f, 4.f*options.screenHeight/6.f };
+  Vector2 v3 = { options.screenWidth/4.f + options.screenWidth/10.f, 4.f*options.screenHeight/6.f };
+  DrawTriangle(v1, v2, v3, GRAY);
+
+  DrawCircle(3.f*options.screenWidth/4.f, options.screenHeight/2.f, options.screenWidth/20.f, DARKGRAY);
+  DrawLineEx({3.f*options.screenWidth/4.f, options.screenHeight/2.f},{3.f*options.screenWidth/4.f,options.screenHeight/2.f-options.screenWidth/10.f},options.screenWidth/70.f, BLACK);
 
   for(const auto& b : m_buttons)
   {
