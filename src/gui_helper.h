@@ -43,6 +43,14 @@ struct Button
   Type type = Type::REGULAR;
 };
 
+struct KeySelector
+{
+  Rectangle   pos;
+  std::string text;
+  MouseState  state;
+  int key;
+};
+
 struct Droplist
 {
   Droplist(){}
@@ -129,6 +137,9 @@ struct ButtonColors
 };
 void PaintButtonWithText(const Button& button, const ButtonColors& c = {LIME, GOLD, GRAY}, int fontSize = 10);
 bool CheckButton(const Vector2& p, Button& button);
+
+void PaintKeySelector(const KeySelector& ks);
+void UpdateKeySelector(KeySelector& ks);
 
 void PaintDroplist(const Droplist& dl);
 void SetDroplistIx(Droplist& dl, const std::string& key);

@@ -99,4 +99,24 @@ class AsteroidsScreen : public Screen
 
 };
 
+class OptionsScreen : public Screen
+{
+public:
+  OptionsScreen();
+  ~OptionsScreen();
+  void Update();
+  void Paint();
+  GameScreen Finish();
+  GameScreen GetEnum(){return Screen::GameScreen::OPTIONS;}
+
+  void SetFinish(GameScreen gs){ m_finishScreen = gs; }
+
+private:
+  GameScreen m_finishScreen;
+  std::vector<Button> m_buttons;
+  size_t m_toggleIntroIx;
+  std::vector<KeySelector> m_keySelector;
+};
+
+
 #endif

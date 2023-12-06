@@ -9,6 +9,7 @@
 
 // Globals
 extern GameOptions options;
+extern std::string options_path;
 extern std::unique_ptr<Screen> currentScreen;
 
 constexpr const char* PROGRAM_NAME = "Asteroids";
