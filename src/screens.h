@@ -112,6 +112,7 @@ private:
   GameScreen m_finishScreen;
   std::vector<Button> m_buttons;
   size_t m_toggleIntroIx;
+  std::vector<KeySelector> m_keySelector;
 };
 
 

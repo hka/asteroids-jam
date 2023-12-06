@@ -40,6 +40,26 @@ OptionsScreen::OptionsScreen()
   b_toggleIntro.action = toggleIntroAction;
   m_toggleIntroIx = m_buttons.size();
   m_buttons.push_back(b_toggleIntro);
+
+  KeySelector increase_thrust;
+  increase_thrust.pos = {options.screenWidth/4.f-25, 2.f*options.screenHeight/6.f-60, 50.f, 50.f};
+  increase_thrust.text = "Increase thrust:";
+  m_keySelector.push_back(increase_thrust);
+
+  KeySelector decrease_thrust;
+  decrease_thrust.pos = {options.screenWidth/4.f-25, 4.f*options.screenHeight/5.f+40, 50.f, 50.f};
+  decrease_thrust.text = "Decrease thrust:";
+  m_keySelector.push_back(decrease_thrust);
+
+  KeySelector turn_cw;
+  turn_cw.pos = {options.screenWidth/4.f + options.screenWidth/14.f, options.screenHeight/2.f, 50.f, 50.f};
+  turn_cw.text = "Turn clockwise:";
+  m_keySelector.push_back(turn_cw);
+
+  KeySelector turn_ccw;
+  turn_ccw.pos = {options.screenWidth/4.f - options.screenWidth/14.f - 50, options.screenHeight/2.f, 50.f, 50.f};
+  turn_ccw.text = "Turn counter-clockwise:";
+  m_keySelector.push_back(turn_ccw);
 }
 
 OptionsScreen::~OptionsScreen()
@@ -64,16 +84,20 @@ void OptionsScreen::Paint()
   DrawRectangle(0, 0, options.screenWidth, options.screenHeight, GREEN);
 
   Vector2 v1 = { options.screenWidth/4.f, 2.f*options.screenHeight/6.f };
-  Vector2 v2 = { options.screenWidth/4.f - options.screenWidth/10.f, 4.f*options.screenHeight/6.f };
-  Vector2 v3 = { options.screenWidth/4.f + options.screenWidth/10.f, 4.f*options.screenHeight/6.f };
+  Vector2 v2 = { options.screenWidth/4.f - options.screenWidth/14.f, 4.f*options.screenHeight/5.f };
+  Vector2 v3 = { options.screenWidth/4.f + options.screenWidth/14.f, 4.f*options.screenHeight/5.f };
   DrawTriangle(v1, v2, v3, GRAY);
 
-  DrawCircle(3.f*options.screenWidth/4.f, options.screenHeight/2.f, options.screenWidth/20.f, DARKGRAY);
+  DrawCircle(3.f*options.screenWidth/4.f, options.screenHeight/2.f, options.screenWidth/25.f, DARKGRAY);
   DrawLineEx({3.f*options.screenWidth/4.f, options.screenHeight/2.f},{3.f*options.screenWidth/4.f,options.screenHeight/2.f-options.screenWidth/10.f},options.screenWidth/70.f, BLACK);
 
   for(const auto& b : m_buttons)
   {
     PaintButtonWithText(b);
+  }
+  for(const auto& ks : m_keySelector)
+  {
+    PaintKeySelector(ks);
   }
 }
 

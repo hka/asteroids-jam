@@ -43,8 +43,6 @@ void success()
   isLoading = false;
 }
 }
-#endif
-
   EM_JS(int, get_browser_width, (), {
       return document.documentElement.clientWidth;
     });
@@ -52,6 +50,7 @@ void success()
   EM_JS(int, get_browser_height, (), {
       return document.documentElement.clientHeight;
     });
+#endif
 }
 
 int main(void)
@@ -91,6 +90,10 @@ int main(void)
     serialize(options, options_path.c_str());
   }
 #endif
+
+  //enforce 16:9 aspect
+  options.screenWidth = std::min(options.screenWidth,(int)std::round(options.screenHeight*(16./9.)));
+  options.screenHeight = std::min(options.screenHeight,(int)std::round(options.screenWidth/(16./9.)));
 
   InitWindow(options.screenWidth, options.screenHeight, PROGRAM_NAME);
 

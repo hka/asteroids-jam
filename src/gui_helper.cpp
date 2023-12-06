@@ -197,6 +197,24 @@ bool CheckButton(const Vector2& p, Button& button)
   return false;
 }
 
+void PaintKeySelector(const KeySelector& ks)
+{
+  DrawRectangleRec(ks.pos, LIGHTGRAY);
+  DrawRectangleLinesEx(ks.pos, 2, DARKGRAY);
+
+  int letterCount = (int)ks.text.length();
+  float bh = ks.pos.height;
+  int fontSize = (int)bh/4;
+  float tw = (float)MeasureText(ks.text.c_str(), fontSize);
+  float offw = (ks.pos.width - tw)/2.f+0.5f;
+  float offh = - fontSize - 1.f;
+  DrawText(ks.text.c_str(), (int)(ks.pos.x + offw), (int)(ks.pos.y + offh), fontSize, BLACK);
+}
+void UpdateKeySelector(KeySelector& ks)
+{
+
+}
+
 void UpdateInputBox(const Vector2& mousePoint, InputBox& ib, void* data)
 {
   if (CheckCollisionPointRec(mousePoint, ib.position) && (!ib.useDroplist || ib.list.state == Droplist::State::CLOSED))
