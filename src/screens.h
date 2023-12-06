@@ -11,7 +11,7 @@
 #include <random>
 
 #include "gui_helper.h"
-#include "Entities.hpp"
+#include "Player.hpp"
 
 struct GameOptions
 {
