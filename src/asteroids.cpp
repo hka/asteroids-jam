@@ -78,6 +78,8 @@ int main(void)
   }
   options.screenWidth = get_browser_width();
   options.screenHeight = get_browser_height();
+  options.screenWidth = std::min(options.screenWidth,(int)std::round(options.screenHeight*(16./9.)));
+  options.screenHeight = std::min(options.screenHeight,(int)std::round(options.screenWidth/(16./9.)));
 #else
   options_path = "options.json";
   if(FileExists(options_path.c_str()))
@@ -91,6 +93,11 @@ int main(void)
 #endif
 
   InitWindow(options.screenWidth, options.screenHeight, PROGRAM_NAME);
+
+  //Maybe can window size stuff just with raylib functions...TODO
+  //SetWindowState(FLAG_WINDOW_RESIZABLE|FLAG_WINDOW_HIGHDPI);
+  //printf("size: %d x %d\n",GetScreenWidth(), GetScreenHeight());
+  //printf("size: %d x %d\n",GetRenderWidth(), GetRenderHeight());
 
   currentScreen = std::make_unique<LogoScreen>();
   if(options.skipLogo)
