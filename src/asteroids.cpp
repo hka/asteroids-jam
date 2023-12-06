@@ -44,6 +44,14 @@ void success()
 }
 }
 #endif
+
+  EM_JS(int, get_browser_width, (), {
+      return document.documentElement.clientWidth;
+    });
+
+  EM_JS(int, get_browser_height, (), {
+      return document.documentElement.clientHeight;
+    });
 }
 
 int main(void)
@@ -68,6 +76,8 @@ int main(void)
   {
     emscripten_sleep(100);
   }
+  options.screenWidth = get_browser_width();
+  options.screenHeight = get_browser_height();
 #else
   options_path = "options.json";
   if(FileExists(options_path.c_str()))
