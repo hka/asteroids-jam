@@ -3,8 +3,6 @@
 #include "gui_helper.h"
 #include "globals.h"
 
-#include <iostream>
-
 AsteroidsScreen::AsteroidsScreen():
   m_player(createPlayer({options.screenWidth / 2.f, options.screenHeight / 2.f}))
 {
@@ -33,6 +31,13 @@ void AsteroidsScreen::Paint()
     m_player.vertices[2],
     GREEN
   );
+
+  if(m_player.suckAttack.isOngoing){
+    SuckAttack suckAttack = m_player.suckAttack;
+    for(std::size_t i = 0; i < suckAttack.balls.size(); ++i){
+      DrawCircle(suckAttack.balls[i].position.x, suckAttack.balls[i].position.y, suckAttack.balls[i].radius, RAYWHITE);
+    }
+  }
 }
 
 Screen::GameScreen AsteroidsScreen::Finish()

@@ -1,8 +1,26 @@
 #ifndef _Player
 #define _Player
 
+#include <vector>
+
 #include "raylib.h"
 #include "raymath.h"
+#include "Timer.hpp"
+
+struct Ball{
+  Vector2 position;
+  float radius;
+  float speed;
+}typedef Ball;
+
+struct SuckAttack{
+  bool isOngoing;
+  float lineLength;
+  Vector2 linesEnd[2];
+  std::vector<Ball> balls;
+  Timer addBallTimer;
+
+}typedef SuckAttack;
 
 struct PlayerSteer
 {
@@ -15,6 +33,8 @@ struct PlayerSteer
     float currentAcceleration;
     float maxAcceleration;
     float accelerationDecrease;
+
+    SuckAttack suckAttack;
 }typedef PlayerSteer;
 
 inline void rotateShip(PlayerSteer& player);
@@ -22,6 +42,9 @@ inline void accelerate(PlayerSteer& player);
 inline void rotateTriangle(Vector2 (&v)[3], const float angle);
 inline void updateVelocity(const float rotation, Vector2& velocity, const float acceleration);
 inline void updatePosition(Vector2 (&v)[3], Vector2& velocity, const float dt);
+inline void suckAttack(Vector2& position, const float rotation, SuckAttack& suckAttack);
+inline Vector2 RandomPositionBetweenPoints(Vector2 point1, Vector2 point2);
+inline void moveBallTowardsPoint(Ball &ball, Vector2 targetPoint);
 
 inline PlayerSteer createPlayer(Vector2 startPos){
     PlayerSteer player;
@@ -38,6 +61,8 @@ inline PlayerSteer createPlayer(Vector2 startPos){
     player.rotation = 0.f;
     player.rotationSpeed = 5.f;
 
+    player.suckAttack.isOngoing = false;
+    player.suckAttack.lineLength = 50.f;
     return player;
 }
 
@@ -46,6 +71,7 @@ inline void update(PlayerSteer& player){
   accelerate(player);
   updateVelocity(player.rotation, player.velocity, player.currentAcceleration);
   updatePosition(player.vertices, player.velocity, GetFrameTime());
+  suckAttack(player.vertices[0], player.rotation, player.suckAttack);
 }
 
 inline void rotateShip(PlayerSteer& player){
@@ -92,6 +118,65 @@ inline void updatePosition(Vector2 (&v)[3], Vector2& velocity, const float dt){
     v[i].x = newPos.x;
     v[i].y = newPos.y;
   }
+}
+
+// Function to find a random position between two points
+inline Vector2 RandomPositionBetweenPoints(Vector2 point1, Vector2 point2) {
+    float randomFactor = GetRandomValue(0, 100) / 100.f; // Generate a random factor between 0 and 1
+
+    Vector2 randomPosition;
+    randomPosition.x = point1.x + (point2.x - point1.x) * randomFactor;
+    randomPosition.y = point1.y + (point2.y - point1.y) * randomFactor;
+
+    return randomPosition;
+}
+
+inline void moveBallTowardsPoint(Ball &ball, Vector2 targetPoint) {
+    Vector2 direction = Vector2Normalize({targetPoint.x - ball.position.x, targetPoint.y - ball.position.y});
+
+    ball.position.x += direction.x * ball.speed * GetFrameTime();
+    ball.position.y += direction.y * ball.speed * GetFrameTime();
+}
+
+inline void suckAttack(Vector2& startPoint, const float rotation, SuckAttack& suckAttack){
+  if(!IsKeyDown(KEY_SPACE)){
+    suckAttack.isOngoing = false;
+    suckAttack.balls.clear();
+    return;
+  }
+  
+  if(!suckAttack.isOngoing){
+    suckAttack.addBallTimer.start();
+  }
+  
+  suckAttack.isOngoing = true;
+  float angle = PI / 4.f;
+  Vector2 dir1 = Vector2Normalize({cosf(rotation - angle), sinf(rotation - angle)});
+  Vector2 dir2 = Vector2Normalize({cosf(rotation + angle), sinf(rotation + angle)});
+  float lineLength = suckAttack.lineLength;
+  suckAttack.linesEnd[0] = {startPoint.x + (dir1.x * lineLength), startPoint.y + (dir1.y * lineLength)};
+  suckAttack.linesEnd[1] = {startPoint.x + (dir2.x * lineLength), startPoint.y + (dir2.y * lineLength)};
+
+
+  if(suckAttack.addBallTimer.getElapsed() >= 0.05f){
+    Vector2 startPos = RandomPositionBetweenPoints(suckAttack.linesEnd[0], suckAttack.linesEnd[1]);
+    float initRadius = 1.f;
+    float initSpeed = 250.f;
+    Ball ball = {startPos, initRadius, initSpeed};
+    suckAttack.balls.emplace_back(ball);
+
+    suckAttack.addBallTimer.start();
+  }
+
+  for(std::size_t i = 0; i < suckAttack.balls.size(); ++i){
+     moveBallTowardsPoint(suckAttack.balls[i], startPoint);
+     float dist = Vector2Distance(suckAttack.balls[i].position, startPoint);
+     if(dist <= 2.f || dist > lineLength){
+      suckAttack.balls[i] = suckAttack.balls[suckAttack.balls.size() - 1];
+      suckAttack.balls.pop_back();
+     }
+  }
+
 }
 
 #endif
