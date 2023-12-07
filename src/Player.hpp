@@ -41,7 +41,7 @@ void accelerate(PlayerSteer& player);
 void rotateTriangle(Vector2 (&v)[3], const float angle);
 void updateVelocity(const float rotation, Vector2& velocity, const float acceleration);
 void updatePosition(Vector2& v, Vector2& velocity, const float dt);
-void suckAttack(Vector2& position, const float rotation, SuckAttack& suckAttack);
+void suckAttack(const Vector2& position, const float rotation, SuckAttack& suckAttack);
 Vector2 RandomPositionBetweenPoints(Vector2 point1, Vector2 point2);
 void moveBallTowardsPoint(Ball &ball, Vector2 targetPoint);
 
@@ -64,7 +64,5 @@ void DrawShip(const PlayerSteer& player);
 Vector2 RandomPositionBetweenPoints(Vector2 point1, Vector2 point2);
 
 inline void moveBallTowardsPoint(Ball &ball, Vector2 targetPoint);
-
-void suckAttack(Vector2& startPoint, const float rotation, SuckAttack& suckAttack);
 
 #endif

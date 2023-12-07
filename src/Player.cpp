@@ -75,9 +75,9 @@ void DrawShip(const PlayerSteer& player)
   Vector2 bound = {(float)options.screenWidth, (float)options.screenWidth};
 
   Vector2 vertices[3];
-  vertices[0] = player.position;
-  vertices[1] = {player.position.x - 30.f, player.position.y - 10.f};
-  vertices[2] = {player.position.x - 30.f, player.position.y + 10.f};
+  vertices[0] = player.position + Vector2{15.f, 0.f};
+  vertices[1] = {player.position.x - 15.f, player.position.y - 10.f};
+  vertices[2] = {player.position.x - 15.f, player.position.y + 10.f};
   rotateTriangle(vertices, player.rotation);
 
   // draw 4 times as a hack to handle wrapping
@@ -124,7 +124,7 @@ void moveBallTowardsPoint(Ball &ball, Vector2 targetPoint) {
   ball.position.y += direction.y * ball.speed * GetFrameTime();
 }
 
-void suckAttack(Vector2& startPoint, const float rotation, SuckAttack& suckAttack){
+void suckAttack(const Vector2& position, const float rotation, SuckAttack& suckAttack){
   if(!IsKeyDown(KEY_SPACE)){
     suckAttack.isOngoing = false;
     suckAttack.balls.clear();
@@ -134,6 +134,8 @@ void suckAttack(Vector2& startPoint, const float rotation, SuckAttack& suckAttac
   if(!suckAttack.isOngoing){
     suckAttack.addBallTimer.start();
   }
+
+  Vector2 startPoint = position + 18*Vector2Normalize({cosf(rotation), sinf(rotation)});
 
   suckAttack.isOngoing = true;
   float angle = PI / 4.f;
