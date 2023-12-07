@@ -26,6 +26,7 @@ void AsteroidsScreen::Paint()
   DrawRectangle(0, 0, options.screenWidth, options.screenHeight, BLACK);
 
   DrawShip(m_player);
+  DrawGun(m_player);
 
   if(m_player.suckAttack.isOngoing){
     SuckAttack suckAttack = m_player.suckAttack;

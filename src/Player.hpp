@@ -24,16 +24,18 @@ struct SuckAttack{
 
 struct PlayerSteer
 {
-    Vector2 position;
-    float rotation;
-    float rotationSpeed;
+  Vector2 position;
+  float rotation;
+  float rotationSpeed;
 
-    Vector2 velocity;
-    float currentAcceleration;
-    float maxAcceleration;
-    float accelerationDecrease;
+  Vector2 gunDirection;
 
-    SuckAttack suckAttack;
+  Vector2 velocity;
+  float currentAcceleration;
+  float maxAcceleration;
+  float accelerationDecrease;
+
+  SuckAttack suckAttack;
 };
 
 void rotateShip(PlayerSteer& player);
@@ -53,12 +55,14 @@ void rotateShip(PlayerSteer& player);
 void accelerate(PlayerSteer& player);
 
 void rotateTriangle(Vector2 (&v)[3], const float angle);
+void rotateTriangle(Vector2 (&v)[3], const float angle, const Vector2& center);
 
 void updateVelocity(const float rotation, Vector2& velocity, const float acceleration);
 
 void updatePosition(Vector2 (&v)[3], Vector2& velocity, const float dt);
 
 void DrawShip(const PlayerSteer& player);
+void DrawGun(const PlayerSteer& player);
 
 // Function to find a random position between two points
 Vector2 RandomPositionBetweenPoints(Vector2 point1, Vector2 point2);

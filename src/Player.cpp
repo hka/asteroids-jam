@@ -25,23 +25,26 @@ void update(PlayerSteer& player){
   updateVelocity(player.rotation, player.velocity, player.currentAcceleration);
   updatePosition(player.position, player.velocity, GetFrameTime());
   suckAttack(player.position, player.rotation, player.suckAttack);
+
+  Vector2 mousePointer = GetMousePosition();
+  player.gunDirection = Vector2Normalize(mousePointer-player.position);
 }
 
 void rotateShip(PlayerSteer& player){
-  if(IsKeyDown(KEY_LEFT)){
+  if(IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)){
     float angle = player.rotationSpeed * GetFrameTime();
     player.rotation -= angle;
-  }else if(IsKeyDown(KEY_RIGHT)){
+  }else if(IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)){
     float angle = player.rotationSpeed * GetFrameTime();
     player.rotation += angle;
   }
 }
 
 void accelerate(PlayerSteer& player){
-  if(IsKeyDown(KEY_DOWN)){
+  if(IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)){
     float newAccleration = player.currentAcceleration - (player.accelerationDecrease * 2.f);
     player.currentAcceleration = newAccleration > 0.f ? newAccleration : 0.f;
-  }else if(IsKeyDown(KEY_UP)){
+  }else if(IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)){
     player.currentAcceleration = player.maxAcceleration;
   }else{
     float newAccleration = player.currentAcceleration - player.accelerationDecrease;
@@ -51,6 +54,12 @@ void accelerate(PlayerSteer& player){
 
 void rotateTriangle(Vector2 (&v)[3], const float angle){
   Vector2 center = {(v[0].x + v[1].x + v[2].x) / 3.f, (v[0].y + v[1].y + v[2].y) / 3};
+  v[0] = Vector2Add(Vector2Rotate(Vector2Subtract(v[0], center), angle), center);
+  v[1] = Vector2Add(Vector2Rotate(Vector2Subtract(v[1], center), angle), center);
+  v[2] = Vector2Add(Vector2Rotate(Vector2Subtract(v[2], center), angle), center);
+}
+
+void rotateTriangle(Vector2 (&v)[3], const float angle, const Vector2& center){
   v[0] = Vector2Add(Vector2Rotate(Vector2Subtract(v[0], center), angle), center);
   v[1] = Vector2Add(Vector2Rotate(Vector2Subtract(v[1], center), angle), center);
   v[2] = Vector2Add(Vector2Rotate(Vector2Subtract(v[2], center), angle), center);
@@ -78,7 +87,7 @@ void DrawShip(const PlayerSteer& player)
   vertices[0] = player.position + Vector2{15.f, 0.f};
   vertices[1] = {player.position.x - 15.f, player.position.y - 10.f};
   vertices[2] = {player.position.x - 15.f, player.position.y + 10.f};
-  rotateTriangle(vertices, player.rotation);
+  rotateTriangle(vertices, player.rotation,player.position);
 
   // draw 4 times as a hack to handle wrapping
   DrawTriangle(
@@ -87,24 +96,41 @@ void DrawShip(const PlayerSteer& player)
     vertices[2],
     GREEN
     );
-  Vector2 v[3];
+  Vector2 p;
   Vector2 off = bound;
   off.x = 0;
-  v[0] = vertices[0] + off;
-  v[1] = vertices[1] + off;
-  v[2] = vertices[2] + off;
-  DrawTriangle(v[0], v[1], v[2], GREEN);
+  p = mod(player.position + off,bound);
+  vertices[0] = p + Vector2{15.f, 0.f};
+  vertices[1] = {p.x - 15.f, p.y - 10.f};
+  vertices[2] = {p.x - 15.f, p.y + 10.f};
+  rotateTriangle(vertices, player.rotation,p);
+  DrawTriangle(vertices[0], vertices[1], vertices[2], GREEN);
+
   off = bound;
   off.y = 0;
-  v[0] = vertices[0] + off;
-  v[1] = vertices[1] + off;
-  v[2] = vertices[2] + off;
-  DrawTriangle(v[0], v[1], v[2], GREEN);
+  p = mod(player.position + off,bound);
+  vertices[0] = p + Vector2{15.f, 0.f};
+  vertices[1] = {p.x - 15.f, p.y - 10.f};
+  vertices[2] = {p.x - 15.f, p.y + 10.f};
+  rotateTriangle(vertices, player.rotation,p);
+  DrawTriangle(vertices[0], vertices[1], vertices[2], GREEN);
+
   off = bound;
-  v[0] = vertices[0] + off;
-  v[1] = vertices[1] + off;
-  v[2] = vertices[2] + off;
-  DrawTriangle(v[0], v[1], v[2], GREEN);
+  p = mod(player.position + off,bound);
+  vertices[0] = p + Vector2{15.f, 0.f};
+  vertices[1] = {p.x - 15.f, p.y - 10.f};
+  vertices[2] = {p.x - 15.f, p.y + 10.f};
+  rotateTriangle(vertices, player.rotation,p);
+  DrawTriangle(vertices[0], vertices[1], vertices[2], GREEN);
+}
+
+void DrawGun(const PlayerSteer& player)
+{
+  Vector2 bound = {(float)options.screenWidth, (float)options.screenWidth};
+
+  DrawCircleV(player.position, 5,RED);
+
+  DrawLineEx(player.position, player.position + 10*player.gunDirection ,3, GRAY);
 }
 
 Vector2 RandomPositionBetweenPoints(Vector2 point1, Vector2 point2) {
