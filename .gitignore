@@ -7,3 +7,4 @@
 build*
 *.el
 .vscode
+*.json
