@@ -96,7 +96,6 @@ class AsteroidsScreen : public Screen
  private:
   GameScreen m_finishScreen;
   PlayerSteer m_player;
-
 };
 
 class OptionsScreen : public Screen

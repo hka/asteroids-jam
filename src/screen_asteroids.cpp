@@ -18,7 +18,7 @@ void AsteroidsScreen::Update()
   
   //update player
   update(m_player);
-
+  UpdateShoots(SHOOTS);
 }
 
 void AsteroidsScreen::Paint()
@@ -27,6 +27,7 @@ void AsteroidsScreen::Paint()
 
   DrawShip(m_player);
   DrawGun(m_player);
+  DrawShoots(SHOOTS);
 
   if(m_player.suckAttack.isOngoing){
     SuckAttack suckAttack = m_player.suckAttack;

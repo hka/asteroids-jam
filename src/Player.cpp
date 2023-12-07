@@ -28,6 +28,10 @@ void update(PlayerSteer& player){
 
   Vector2 mousePointer = GetMousePosition();
   player.gunDirection = Vector2Normalize(mousePointer-player.position);
+  if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+  {
+    FireShoot(player);
+  }
 }
 
 void rotateShip(PlayerSteer& player){

@@ -150,4 +150,14 @@ inline Vector3 &operator/=(Vector3 &a, const float b) {
   return a;
 }
 
+// more math
+inline float dot(const Vector2& a, const Vector2& b)
+{
+  return a.x*b.x + a.y+b.y;
+}
+inline Vector2 proj(const Vector2& a, const Vector2& b)
+{
+  return dot(a,b)/dot(b,b) * b;
+}
+
 #endif
