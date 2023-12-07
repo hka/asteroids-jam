@@ -224,4 +224,16 @@ bool struct_eq(const T & t1, const T & t2) {
   return vis.result;
 }
 
+inline double mod(float a, float b)
+{
+  return (a >= 0 ? a - int(a/b)*b : b + a - int(a/b)*b);
+}
+
+inline Vector2 mod(Vector2 a, Vector2 b)
+{
+  Vector2 m;
+  m.x = mod(a.x,b.x);
+  m.y = mod(a.y,b.y);
+  return m;
+}
 #endif

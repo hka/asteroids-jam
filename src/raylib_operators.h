@@ -15,7 +15,7 @@ inline Vector3 operator+(const Vector3 &a, const Vector3 &b) {
 }
 
 inline Vector4 operator+(const Vector4 &a, const Vector4 &b) {
-  return (Vector4){a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};
+  return {a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};
 }
 
 inline Vector2 &operator+=(Vector2 &a, const Vector2 &b) {
@@ -52,7 +52,7 @@ inline Vector3 operator-(const Vector3 &a, const Vector3 &b) {
 }
 
 inline Vector4 operator-(const Vector4 &a, const Vector4 &b) {
-  return (Vector4){a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w};
+  return {a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w};
 }
 
 inline Vector2 &operator-=(Vector2 &a, const Vector2 &b) {
@@ -150,4 +150,4 @@ inline Vector3 &operator/=(Vector3 &a, const float b) {
   return a;
 }
 
-#endif RAYLIB_OPERATORS_HPP
+#endif

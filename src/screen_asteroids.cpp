@@ -24,13 +24,8 @@ void AsteroidsScreen::Update()
 void AsteroidsScreen::Paint()
 {
   DrawRectangle(0, 0, options.screenWidth, options.screenHeight, BLACK);
-  
-  DrawTriangle(
-    m_player.vertices[0],
-    m_player.vertices[1],
-    m_player.vertices[2],
-    GREEN
-  );
+
+  DrawShip(m_player);
 
   if(m_player.suckAttack.isOngoing){
     SuckAttack suckAttack = m_player.suckAttack;
