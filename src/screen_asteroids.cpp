@@ -19,10 +19,7 @@ void AsteroidsScreen::Update()
 {
   
   //update player
-  rotateShip(m_player);
-  accelerate(m_player);
-  updateVelocity(m_player.rotation, m_player.velocity, m_player.currentAcceleration);
-  updatePosition(m_player.vertices, m_player.velocity, GetFrameTime());
+  update(m_player);
 
 }
 

@@ -4,10 +4,6 @@
 #include "raylib.h"
 #include "raymath.h"
 
-inline void rotateTriangle(Vector2 (&v)[3], const float angle);
-inline void updateVelocity(const float rotation, Vector2& velocity, const float acceleration);
-inline void updatePosition(Vector2 (&v)[3], Vector2& velocity, const float dt);
-
 struct PlayerSteer
 {
     Vector2 position;
@@ -21,6 +17,11 @@ struct PlayerSteer
     float accelerationDecrease;
 }typedef PlayerSteer;
 
+inline void rotateShip(PlayerSteer& player);
+inline void accelerate(PlayerSteer& player);
+inline void rotateTriangle(Vector2 (&v)[3], const float angle);
+inline void updateVelocity(const float rotation, Vector2& velocity, const float acceleration);
+inline void updatePosition(Vector2 (&v)[3], Vector2& velocity, const float dt);
 
 inline PlayerSteer createPlayer(Vector2 startPos){
     PlayerSteer player;
@@ -40,6 +41,13 @@ inline PlayerSteer createPlayer(Vector2 startPos){
     return player;
 }
 
+inline void update(PlayerSteer& player){
+  rotateShip(player);
+  accelerate(player);
+  updateVelocity(player.rotation, player.velocity, player.currentAcceleration);
+  updatePosition(player.vertices, player.velocity, GetFrameTime());
+}
+
 inline void rotateShip(PlayerSteer& player){
   if(IsKeyDown(KEY_LEFT)){
     float angle = player.rotationSpeed * GetFrameTime();
@@ -53,7 +61,10 @@ inline void rotateShip(PlayerSteer& player){
 }
 
 inline void accelerate(PlayerSteer& player){
-  if(IsKeyDown(KEY_UP)){
+  if(IsKeyDown(KEY_DOWN)){
+    float newAccleration = player.currentAcceleration - (player.accelerationDecrease * 2.f);
+    player.currentAcceleration = newAccleration > 0.f ? newAccleration : 0.f;
+  }else if(IsKeyDown(KEY_UP)){
     player.currentAcceleration = player.maxAcceleration;
   }else{
     float newAccleration = player.currentAcceleration - player.accelerationDecrease;
