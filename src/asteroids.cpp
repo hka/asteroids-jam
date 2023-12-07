@@ -97,12 +97,13 @@ int main(void)
 
   InitWindow(options.screenWidth, options.screenHeight, PROGRAM_NAME);
 
+
   //Maybe can window size stuff just with raylib functions...TODO
   //SetWindowState(FLAG_WINDOW_RESIZABLE|FLAG_WINDOW_HIGHDPI);
   //printf("size: %d x %d\n",GetScreenWidth(), GetScreenHeight());
   //printf("size: %d x %d\n",GetRenderWidth(), GetRenderHeight());
-
   currentScreen = std::make_unique<LogoScreen>();
+  
   if(options.skipLogo)
   {
     currentScreen = std::make_unique<MainMenuScreen>();
