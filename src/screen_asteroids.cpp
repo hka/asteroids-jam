@@ -15,10 +15,11 @@ AsteroidsScreen::~AsteroidsScreen()
 
 void AsteroidsScreen::Update()
 {
-  
   //update player
-  update(m_player);
+  Vector2 worldBound =  {(float)options.screenWidth, (float)options.screenHeight};
+  update(m_player, worldBound);
   UpdateShoots(SHOOTS);
+  
 }
 
 void AsteroidsScreen::Paint()

@@ -39,8 +39,8 @@ void FireShoot(PlayerSteer& player)
   bullet.position = player.position + 30*player.gunDirection;
   bullet.direction = player.gunDirection;
   bullet.radius = 4;
-  float vel_component = Vector2Length(proj(player.velocity,player.gunDirection));
-  float sign = dot(player.gunDirection, player.velocity) < 0 ? -1 : 1;
-  bullet.speed = vel_component*sign + 2*player.maxAcceleration;
+  float vel_component = Vector2Length(proj(player.movement.velocity,player.gunDirection));
+  float sign = dot(player.gunDirection, player.movement.velocity) < 0 ? -1 : 1;
+  bullet.speed = vel_component*sign + 2*player.movement.maxAcceleration;
   SHOOTS.push_back(bullet);
 }
