@@ -12,6 +12,8 @@
 
 #include "gui_helper.h"
 #include "Player.hpp"
+#include "Asteroid.h"
+#include "Timer.hpp"
 
 struct GameOptions
 {
@@ -96,6 +98,9 @@ class AsteroidsScreen : public Screen
  private:
   GameScreen m_finishScreen;
   PlayerSteer m_player;
+
+  Timer m_spawnAsteroidTimer;
+  std::vector<Asteroid> m_asteroids;
 };
 
 class OptionsScreen : public Screen
