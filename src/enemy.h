@@ -3,6 +3,10 @@
 
 #include "EntityComponents.h"
 
+#include "Asteroid.h"
+
+#include <vector>
+
 struct Enemy{
   Vector2 position;
   float radius;
@@ -10,7 +14,8 @@ struct Enemy{
 };
 
 //update
-void UpdateEnemy(Enemy &enemy, const Vector2 &worldBound);
+void UpdateEnemy(Enemy &enemy, const Vector2 &worldBound,
+                 const std::vector<Asteroid>& asteroids);
 
 //paint
 void PaintEnemy(Enemy& Enemy);

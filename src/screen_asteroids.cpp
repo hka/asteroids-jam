@@ -28,7 +28,7 @@ void AsteroidsScreen::Update()
     m_spawnAsteroidTimer.start();
   }
 
-  if(m_spawnEnemyTimer.getElapsed() >= 60.f){
+  if(m_spawnEnemyTimer.getElapsed() >= 10.f){
     m_enemies.push_back(CreateEnemy(worldBound));
     m_spawnEnemyTimer.start();
   }
@@ -42,7 +42,7 @@ void AsteroidsScreen::Update()
   for(std::size_t i = 0; i < m_enemies.size(); ++i){
     float enemyRadius = m_enemies[i].radius * 2.f;
     Vector2 enemyBound = {worldBound.x + enemyRadius, worldBound.y + enemyRadius};
-    UpdateEnemy(m_enemies[i], enemyBound);
+    UpdateEnemy(m_enemies[i], enemyBound, m_asteroids);
   }
 
 }

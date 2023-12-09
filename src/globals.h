@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <random>
 
 #include "screens.h"
 #include "Munition.h"
@@ -17,4 +18,6 @@ constexpr const char* PROGRAM_NAME = "Asteroids";
 
 extern std::vector<Texture2D> TEXTURES;
 extern std::vector<Shoot> SHOOTS;
+
+extern std::mt19937 RNG;
 #endif
