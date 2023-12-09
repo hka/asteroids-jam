@@ -1,7 +1,7 @@
 #ifndef ASTEROID_COLLISION_H_
 #define ASTEROID_COLLISION_H_
 
-#include <Vector>
+#include <vector>
 
 #include "enemy.h"
 #include "Munition.h"
