@@ -20,17 +20,31 @@ void PaintAsteroid(Asteroid& asteroid){
 Asteroid CreateAsteroid(const Vector2& worldBound){
   Asteroid asteroid;
 
-  const int minRadius = 8.f;
-  const int maxRadius = 25.f; 
-  asteroid.radius = GetRandomValue(minRadius, maxRadius);
+  asteroid.radius = GetRandomValue(ASTEROID_MIN_RADIUS, ASTEROID_MAX_RADIUS);
 
   asteroid.position = getRandomPosOutsideBounds({0.f,0.f, worldBound.x, worldBound.y}, asteroid.radius);
 
   const float maxAcceleration = 50.f;
   const float minAcceleration = 15.f;
-  const float radiusPercentage = 1.f - ((asteroid.radius / maxRadius));
+  const float radiusPercentage = 1.f - ((asteroid.radius / ASTEROID_MAX_RADIUS));
 
-  asteroid.movement.currentAcceleration = (maxAcceleration * radiusPercentage) + minAcceleration; //todo calculate init value
+  asteroid.movement.currentAcceleration = (maxAcceleration * radiusPercentage) + minAcceleration;
+
+  asteroid.movement.rotation = (float)GetRandomValue(0, 7);
+  return asteroid;
+}
+
+Asteroid CreateAsteroid(const Vector2 &pos, float radius){
+  Asteroid asteroid;
+
+  asteroid.radius = radius;
+  asteroid.position = pos;
+
+  const float maxAcceleration = 50.f;
+  const float minAcceleration = 15.f;
+  const float radiusPercentage = 1.f - ((asteroid.radius / ASTEROID_MAX_RADIUS));
+
+  asteroid.movement.currentAcceleration = (maxAcceleration * radiusPercentage) + minAcceleration;
 
   asteroid.movement.rotation = (float)GetRandomValue(0, 7);
   return asteroid;

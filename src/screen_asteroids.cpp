@@ -3,6 +3,8 @@
 #include "gui_helper.h"
 #include "globals.h"
 
+#include "Collision.h"
+
 AsteroidsScreen::AsteroidsScreen():
   m_player(createPlayer({options.screenWidth / 2.f, options.screenHeight / 2.f}))
 {
@@ -28,7 +30,7 @@ void AsteroidsScreen::Update()
     m_spawnAsteroidTimer.start();
   }
 
-  if(m_spawnEnemyTimer.getElapsed() >= 10.f){
+  if(m_spawnEnemyTimer.getElapsed() >= 5.f){
     m_enemies.push_back(CreateEnemy(worldBound));
     m_spawnEnemyTimer.start();
   }
@@ -44,6 +46,10 @@ void AsteroidsScreen::Update()
     Vector2 enemyBound = {worldBound.x + enemyRadius, worldBound.y + enemyRadius};
     UpdateEnemy(m_enemies[i], enemyBound, m_asteroids);
   }
+
+  //collision
+  handleCollision(m_enemies, SHOOTS);
+  handleCollision(m_asteroids, SHOOTS);
 
 }
 

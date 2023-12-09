@@ -9,6 +9,9 @@ struct Asteroid{
   MovementComponent movement;
 };
 
+inline constexpr const float ASTEROID_MIN_RADIUS = 8.f;
+inline constexpr const float ASTEROID_MAX_RADIUS = 25.f;
+
 //update
 void UpdateAsteroid(Asteroid &asteroid, const Vector2 &worldBound);
 
@@ -17,5 +20,6 @@ void PaintAsteroid(Asteroid& asteroid);
 
 //factory
 Asteroid CreateAsteroid(const Vector2 &worldBound);
+Asteroid CreateAsteroid(const Vector2& pos, float radius);
 
 #endif
