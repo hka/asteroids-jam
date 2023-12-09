@@ -18,4 +18,7 @@ void UpdateMovement(Vector2 &position, MovementComponent &movement, const Vector
 void UpdateVelocity(const float rotation, Vector2& velocity, const float currentAcceleration);
 void UpdatePosition(Vector2 &position, Vector2 &velocity, const Vector2 &bound);
 
+//helper
+Vector2 getRandomPosOutsideBounds(Rectangle rec, float radius);
+
 #endif

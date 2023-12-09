@@ -1,5 +1,5 @@
 #ifndef ASTEROID_ASTEROID_H
-#define ASTEROID_ASTEROID_h
+#define ASTEROID_ASTEROID_H
 
 #include "EntityComponents.h"
 
@@ -14,9 +14,6 @@ void UpdateAsteroid(Asteroid &asteroid, const Vector2 &worldBound);
 
 //paint
 void PaintAsteroid(Asteroid& asteroid);
-
-//helper
-Vector2 getRandomPosOutsideBounds(Rectangle rec);
 
 //factory
 Asteroid CreateAsteroid(const Vector2 &worldBound);

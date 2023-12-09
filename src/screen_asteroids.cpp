@@ -8,6 +8,8 @@ AsteroidsScreen::AsteroidsScreen():
 {
   m_finishScreen = Screen::GameScreen::ASTEROIDS; 
   m_spawnAsteroidTimer.start();
+
+  m_spawnEnemyTimer.start();
 }
 
 AsteroidsScreen::~AsteroidsScreen()
@@ -22,14 +24,25 @@ void AsteroidsScreen::Update()
   UpdateShoots(SHOOTS);
 
   if(m_spawnAsteroidTimer.getElapsed() >= 1.f){
-    m_asteroids.emplace_back(CreateAsteroid(worldBound));
+    m_asteroids.push_back(CreateAsteroid(worldBound));
     m_spawnAsteroidTimer.start();
+  }
+
+  if(m_spawnEnemyTimer.getElapsed() >= 60.f){
+    m_enemies.push_back(CreateEnemy(worldBound));
+    m_spawnEnemyTimer.start();
   }
 
   for(std::size_t i = 0; i < m_asteroids.size(); ++i){
     float asteroidRadius = m_asteroids[i].radius * 2.f;
     Vector2 asteroidBound = {worldBound.x + asteroidRadius, worldBound.y + asteroidRadius};
     UpdateAsteroid(m_asteroids[i], asteroidBound);
+  }
+
+  for(std::size_t i = 0; i < m_enemies.size(); ++i){
+    float enemyRadius = m_enemies[i].radius * 2.f;
+    Vector2 enemyBound = {worldBound.x + enemyRadius, worldBound.y + enemyRadius};
+    UpdateEnemy(m_enemies[i], enemyBound);
   }
 
 }
@@ -52,6 +65,11 @@ void AsteroidsScreen::Paint()
   for (std::size_t i = 0; i < m_asteroids.size(); ++i)
   {
     PaintAsteroid(m_asteroids[i]);
+  }
+
+  for (size_t i = 0; i < m_enemies.size(); ++i)
+  {
+    PaintEnemy(m_enemies[i]);
   }
 }
 

@@ -14,6 +14,7 @@
 #include "Player.hpp"
 #include "Asteroid.h"
 #include "Timer.hpp"
+#include "enemy.h"
 
 struct GameOptions
 {
@@ -101,6 +102,9 @@ class AsteroidsScreen : public Screen
 
   Timer m_spawnAsteroidTimer;
   std::vector<Asteroid> m_asteroids;
+
+  Timer m_spawnEnemyTimer;
+  std::vector<Enemy> m_enemies;
 };
 
 class OptionsScreen : public Screen
