@@ -7,7 +7,8 @@
 
 void UpdateMovement(Vector2 &position, MovementComponent &movement, const Vector2 &bound)
 {
-  UpdateVelocity(movement.rotation, movement.velocity, movement.currentAcceleration);
+  //UpdateVelocity(movement.rotation, movement.velocity, movement.currentAcceleration);
+  UpdateVelocity(movement.force, movement.velocity);
   UpdatePosition(position, movement.velocity, bound);
 }
 
@@ -17,6 +18,11 @@ void UpdateVelocity(const float rotation, Vector2 &velocity, const float acceler
   newVelocity.x *= acceleration;
   newVelocity.y *= acceleration;
   velocity = newVelocity;
+}
+
+void UpdateVelocity(Vector2 &force, Vector2 &velocity){
+  velocity += force;
+  force = {0.f, 0.f};
 }
 
 void UpdatePosition(Vector2 &position, Vector2& velocity, const Vector2& bound)

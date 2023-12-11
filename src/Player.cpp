@@ -8,10 +8,12 @@ PlayerSteer createPlayer(Vector2 startPos){
   player.position = startPos;
 
   player.movement.maxAcceleration = 250.f;
+  player.movement.direction = {0.f, -1.f};
+  player.movement.force = {0.f, 0.f};
   player.movement.velocity = {0.f, 0.f};
   player.movement.currentAcceleration = 0.f;
   player.movement.accelerationDecrease = 10.f;
-  player.movement.rotation = 0.f;
+  player.movement.rotation = PI / 2.f;
   player.movement.rotationSpeed = 5.f;
 
   player.suckAttack.isOngoing = false;
@@ -23,7 +25,7 @@ PlayerSteer createPlayer(Vector2 startPos){
 ///         Update                          ///
 ///////////////////////////////////////////////
 void update(PlayerSteer& player, const Vector2& worldBound){
-  rotateShip(player.movement);
+  RotateShip(player.movement.direction, player.movement.rotationSpeed);
   accelerate(player.movement);
   UpdateMovement(player.position, player.movement, worldBound);
 
@@ -40,26 +42,46 @@ void update(PlayerSteer& player, const Vector2& worldBound){
 ////////////////////////////////////////////////
 ///         Input                           ///
 ///////////////////////////////////////////////
-void rotateShip(MovementComponent& movement){
-  if(IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)){
-    float angle = movement.rotationSpeed * GetFrameTime();
-    movement.rotation -= angle;
-  }else if(IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)){
-    float angle = movement.rotationSpeed * GetFrameTime();
-    movement.rotation += angle;
+
+void RotateShip(Vector2 &direction, float rotationSpeed){
+  float angle = 0.f;
+
+  if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)){
+    angle = -rotationSpeed * GetFrameTime();
+  }else if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)){
+    angle = rotationSpeed * GetFrameTime();
   }
+
+  if(angle == 0.f){
+    return;
+  }
+
+  float cosAngle = cos(angle);
+  float sinAngle = sin(angle);
+  float newX = direction.x * cosAngle - direction.y * sinAngle;
+  float newY = direction.x * sinAngle + direction.y * cosAngle;
+
+  direction = Vector2Normalize({newX, newY});
 }
 
 void accelerate(MovementComponent &movement)
 {
+
+  float dampingFactor = 0.01f;
   if(IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)){
-    float newAccleration = movement.currentAcceleration - (movement.accelerationDecrease * 2.f);
-    movement.currentAcceleration = newAccleration > 0.f ? newAccleration : 0.f;
+    if (Vector2LengthSqr(movement.velocity) > 0.001f){
+      movement.force = Vector2Scale(Vector2Normalize(movement.velocity), -(dampingFactor*2.f) * Vector2Length(movement.velocity));
+    }else{
+      movement.force = Vector2Zero();
+    }
   }else if(IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)){
-    movement.currentAcceleration = movement.maxAcceleration;
+    movement.force = Vector2Scale(movement.direction, 2.f);
   }else{
-    float newAccleration = movement.currentAcceleration - movement.accelerationDecrease;
-    movement.currentAcceleration = newAccleration > 0.f ? newAccleration : 0.f;
+    if(Vector2LengthSqr(movement.velocity) > 0.001f){
+      movement.force = Vector2Scale(Vector2Normalize(movement.velocity), -dampingFactor * Vector2Length(movement.velocity));
+    }else{
+      movement.force = Vector2Zero();
+    }
   }
 }
 
@@ -126,6 +148,23 @@ void rotateTriangle(Vector2 (&v)[3], const float angle, const Vector2& center){
   v[2] = Vector2Add(Vector2Rotate(Vector2Subtract(v[2], center), angle), center);
 }
 
+void rotateTriangle(Vector2 (&v)[3], const Vector2 &direction, const Vector2 &center)
+{
+  Vector2 forward = {0.f, 0.f};
+  float angle = atan2(direction.y, direction.x) - atan2(forward.y, forward.x);
+
+  // Rotate each vertex
+  for (int i = 0; i < 3; ++i)
+  {
+    Vector2 relativePos = Vector2Subtract(v[i], center);
+    float cosAngle = cos(angle);
+    float sinAngle = sin(angle);
+    float newX = relativePos.x * cosAngle - relativePos.y * sinAngle;
+    float newY = relativePos.x * sinAngle + relativePos.y * cosAngle;
+    v[i] = Vector2Add({newX, newY}, center);
+  }
+}
+
 Vector2 RandomPositionBetweenPoints(Vector2 point1, Vector2 point2)
 {
   float randomFactor = GetRandomValue(0, 100) / 100.f; // Generate a random factor between 0 and 1
@@ -156,7 +195,7 @@ void DrawShip(const PlayerSteer& player)
   vertices[0] = player.position + Vector2{15.f, 0.f};
   vertices[1] = {player.position.x - 15.f, player.position.y - 10.f};
   vertices[2] = {player.position.x - 15.f, player.position.y + 10.f};
-  rotateTriangle(vertices, player.movement.rotation, player.position);
+  rotateTriangle(vertices, player.movement.direction, player.position);
 
   // draw 4 times as a hack to handle wrapping
   DrawTriangle(
@@ -172,7 +211,7 @@ void DrawShip(const PlayerSteer& player)
   vertices[0] = p + Vector2{15.f, 0.f};
   vertices[1] = {p.x - 15.f, p.y - 10.f};
   vertices[2] = {p.x - 15.f, p.y + 10.f};
-  rotateTriangle(vertices, player.movement.rotation,p);
+  rotateTriangle(vertices, player.movement.direction, player.position);
   DrawTriangle(vertices[0], vertices[1], vertices[2], GREEN);
 
   off = bound;
@@ -181,7 +220,7 @@ void DrawShip(const PlayerSteer& player)
   vertices[0] = p + Vector2{15.f, 0.f};
   vertices[1] = {p.x - 15.f, p.y - 10.f};
   vertices[2] = {p.x - 15.f, p.y + 10.f};
-  rotateTriangle(vertices, player.movement.rotation, p);
+  rotateTriangle(vertices, player.movement.direction, player.position);
   DrawTriangle(vertices[0], vertices[1], vertices[2], GREEN);
 
   off = bound;
@@ -189,7 +228,7 @@ void DrawShip(const PlayerSteer& player)
   vertices[0] = p + Vector2{15.f, 0.f};
   vertices[1] = {p.x - 15.f, p.y - 10.f};
   vertices[2] = {p.x - 15.f, p.y + 10.f};
-  rotateTriangle(vertices, player.movement.rotation, p);
+  rotateTriangle(vertices, player.movement.direction, player.position);
   DrawTriangle(vertices[0], vertices[1], vertices[2], GREEN);
 }
 

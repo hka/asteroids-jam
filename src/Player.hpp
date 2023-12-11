@@ -37,13 +37,14 @@ struct PlayerSteer
 void update(PlayerSteer &player, const Vector2 &worldBound);
 
 //input
-void rotateShip(MovementComponent& movement);
+void RotateShip(Vector2& direction, float rotationSpeed);
 void accelerate(MovementComponent &movement);
 void suckAttack(const Vector2 &position, const float rotation, SuckAttack &suckAttack);
 
 //helper
 void rotateTriangle(Vector2 (&v)[3], const float angle);
 void rotateTriangle(Vector2 (&v)[3], const float angle, const Vector2 &center);
+void rotateTriangle(Vector2 (&v)[3], const Vector2 &direction, const Vector2 &center);
 Vector2 RandomPositionBetweenPoints(Vector2 point1, Vector2 point2);
 void moveBallTowardsPoint(Ball &ball, Vector2 targetPoint);
 
