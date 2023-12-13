@@ -6,6 +6,7 @@
 PlayerSteer createPlayer(Vector2 startPos){
   PlayerSteer player;
   player.position = startPos;
+  player.data.position = startPos;
 
   player.movement.maxAcceleration = 250.f;
   player.movement.direction = {0.f, -1.f};

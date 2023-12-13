@@ -11,6 +11,8 @@ struct Enemy{
   Vector2 position;
   float radius;
   MovementComponent movement;
+
+  PhysicsComponent data;
 };
 
 //update

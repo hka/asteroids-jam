@@ -105,6 +105,8 @@ Enemy CreateEnemy(const Vector2& worldBound){
 
   enemy.position = getRandomPosOutsideBounds({0.f,0.f, worldBound.x, worldBound.y}, enemy.radius);
 
+  enemy.data.position = enemy.position;
+
   const float maxAcceleration = 50.f;
   const float minAcceleration = 15.f;
   const float radiusPercentage = 1.f;

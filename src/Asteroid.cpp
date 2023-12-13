@@ -3,8 +3,9 @@
 ////////////////////////////////////////////////
 ///         Update                          ///
 ///////////////////////////////////////////////
-void UpdateAsteroid(Asteroid& asteroid, const Vector2& worldBound){
-  UpdateMovement(asteroid.position, asteroid.movement, worldBound);
+void UpdateAsteroid(Asteroid& asteroid, const Vector2& worldBound)
+{
+  UpdatePosition(asteroid.data, worldBound);
 }
 
 ////////////////////////////////////////////////

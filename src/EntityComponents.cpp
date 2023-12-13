@@ -5,6 +5,12 @@
 #include "raylib_operators.h"
 #include "helpers.h"
 
+void UpdatePosition(PhysicsComponent& data, const Vector2& bound)
+{
+
+}
+
+
 void UpdateMovement(Vector2 &position, MovementComponent &movement, const Vector2 &bound)
 {
   //UpdateVelocity(movement.rotation, movement.velocity, movement.currentAcceleration);

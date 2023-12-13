@@ -31,6 +31,8 @@ struct PlayerSteer
 
   MovementComponent movement;
   SuckAttack suckAttack;
+
+  PhysicsComponent data;
 };
 
 // update

@@ -21,15 +21,14 @@ AsteroidsScreen::~AsteroidsScreen()
 
 void AsteroidsScreen::CalculateDistances(const Vector2& bound)
 {
-  //std::vector<float> m_player_asteroid_distance;
-  //std::vector<std::vector<float>> m_asteroid_asteroid_distance;
-  //std::vector<std::vector<float>> m_enemy_asteroid_distance;
-
-  //PlayerSteer m_player;
-  //std::vector<Asteroid> m_asteroids;
-  //std::vector<Enemy> m_enemies;
   const size_t asteroid_count = m_asteroids.size();
-  m_asteroid_asteroid_distance.resize(asteroid_count, std::vector<float>(asteroid_count));
+  printf("calc asteroids %u\n",asteroid_count);
+  m_asteroid_asteroid_distance.resize(asteroid_count);
+  for(size_t ii = 0; ii < asteroid_count; ++ii)
+  {
+    //must setup first as I access out of order
+    m_asteroid_asteroid_distance[ii].resize(asteroid_count);
+  }
   for(size_t ii = 0; ii < asteroid_count; ++ii)
   {
     for(size_t jj = ii; jj < asteroid_count; ++jj)
@@ -42,17 +41,58 @@ void AsteroidsScreen::CalculateDistances(const Vector2& bound)
     }
   }
 
+  printf("dist player\n");
+  m_player_asteroid_distance.resize(asteroid_count);
+  const Vector2& p0 = m_player.data.position;
+  for(size_t ii = 0; ii < asteroid_count; ++ii)
+  {
+    const Vector2& a0 = m_asteroids[ii].data.position;
+    float dist = CyclicDist(p0,a0,bound);
+    m_player_asteroid_distance[ii] = dist;
+  }
+
+  printf("dist enemy\n");
+  m_enemy_asteroid_distance.resize(m_enemies.size(), std::vector<float>(asteroid_count));
+  for(size_t ii = 0; ii < m_enemies.size(); ++ii)
+  {
+    for(size_t jj = ii; jj < asteroid_count; ++jj)
+    {
+      const Vector2& e0 = m_enemies[ii].data.position;
+      const Vector2& a0 = m_asteroids[jj].data.position;
+      float dist = CyclicDist(e0,a0,bound);
+      m_enemy_asteroid_distance[ii][jj] = dist;
+    }
+  }
 }
 
 void AsteroidsScreen::Update()
 {
   Vector2 worldBound =  {(float)options.screenWidth, (float)options.screenHeight};
+  float dt = 1.f/GetFPS(); // more stable than GetFrameTime()?
   //skipping bullets for now, they will ignore the physics stuff
   //anyways
   // =================================================================
   // Calculate distance lookup
   // =================================================================
   CalculateDistances(worldBound);
+
+  // =================================================================
+  // Update forces
+  // =================================================================
+
+  // =================================================================
+  // Handle collision
+  // =================================================================
+
+  // =================================================================
+  // Update positions (apply forces)
+  // =================================================================
+  for(std::size_t i = 0; i < m_asteroids.size(); ++i){
+    UpdateAsteroid(m_asteroids[i], worldBound);
+  }
+
+  // =================================================================
+
 
   //update player
   update(m_player, worldBound);
@@ -68,11 +108,7 @@ void AsteroidsScreen::Update()
     m_spawnEnemyTimer.start();
   }
 
-  for(std::size_t i = 0; i < m_asteroids.size(); ++i){
-    float asteroidRadius = m_asteroids[i].radius * 2.f;
-    Vector2 asteroidBound = {worldBound.x + asteroidRadius, worldBound.y + asteroidRadius};
-    UpdateAsteroid(m_asteroids[i], asteroidBound);
-  }
+
 
   for(std::size_t i = 0; i < m_enemies.size(); ++i){
     float enemyRadius = m_enemies[i].radius * 2.f;

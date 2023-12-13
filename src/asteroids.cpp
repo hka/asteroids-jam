@@ -171,6 +171,5 @@ void UpdatePaintFrame(void)
   currentScreen->Paint();
 
   EndDrawing();
-
 }
 } //anonymous namespace
