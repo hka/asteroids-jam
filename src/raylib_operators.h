@@ -4,7 +4,7 @@
 #include "assert.h"
 #include "raylib.h"
 #include "raymath.h"
-#include <cmath>
+#include <algorithm>
 
 // addition
 inline Vector2 operator+(const Vector2 &a, const Vector2 &b) {
