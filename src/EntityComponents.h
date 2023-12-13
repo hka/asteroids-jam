@@ -17,6 +17,26 @@ struct MovementComponent
   float rotationSpeed;
 };
 
+struct PhysicsComponent
+{
+  Vector2 position = {0,0};
+
+  float drag = 0; //constant for balancing acceleration
+  float mass = 0;
+  float thrust = 0;
+  float radius = 0;
+
+  Vector2 orientation = {0,0};
+  Vector2 force = {0,0};
+  Vector2 acceleration = {0,0};
+  Vector2 velocity = {0,0};
+};
+
+void UpdatePosition(PhysicsComponent& data, const Vector2& bound, float dt);
+void ApplyThrustDrag(PhysicsComponent& data);
+
+
+
 void UpdateMovement(Vector2 &position, MovementComponent &movement, const Vector2 &bound);
 void UpdateVelocity(const float rotation, Vector2& velocity, const float currentAcceleration);
 void UpdateVelocity(Vector2& force, Vector2& velocity);
