@@ -19,11 +19,10 @@ AsteroidsScreen::~AsteroidsScreen()
 {
 }
 
-//some memory issue.... todo
 void AsteroidsScreen::CalculateDistances(const Vector2& bound)
 {
   const size_t asteroid_count = m_asteroids.size();
-  printf("calc asteroids %u\n",asteroid_count);
+  //printf("calc asteroids %u\n",asteroid_count);
   m_asteroid_asteroid_distance.resize(asteroid_count);
   for(size_t ii = 0; ii < asteroid_count; ++ii)
   {
@@ -42,7 +41,7 @@ void AsteroidsScreen::CalculateDistances(const Vector2& bound)
     }
   }
 
-  printf("dist player\n");
+  //printf("dist player\n");
   m_player_asteroid_distance.resize(asteroid_count);
   const Vector2& p0 = m_player.data.position;
   for(size_t ii = 0; ii < asteroid_count; ++ii)
@@ -52,10 +51,13 @@ void AsteroidsScreen::CalculateDistances(const Vector2& bound)
     m_player_asteroid_distance[ii] = dist;
   }
 
-  printf("dist enemy\n");
-  m_enemy_asteroid_distance.resize(m_enemies.size(), std::vector<float>(asteroid_count));
+/*
+  //some memory issue.... todo
+  //printf("dist enemy\n");
+  m_enemy_asteroid_distance.resize(m_enemies.size());
   for(size_t ii = 0; ii < m_enemies.size(); ++ii)
   {
+    m_enemy_asteroid_distance.resize(asteroid_count);
     for(size_t jj = ii; jj < asteroid_count; ++jj)
     {
       const Vector2& e0 = m_enemies[ii].data.position;
@@ -64,6 +66,7 @@ void AsteroidsScreen::CalculateDistances(const Vector2& bound)
       m_enemy_asteroid_distance[ii][jj] = dist;
     }
   }
+  */
 }
 
 void AsteroidsScreen::Update()
@@ -75,7 +78,7 @@ void AsteroidsScreen::Update()
   // =================================================================
   // Calculate distance lookup
   // =================================================================
-  //CalculateDistances(worldBound);
+  CalculateDistances(worldBound);
 
   // =================================================================
   // Update forces
