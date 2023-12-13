@@ -5,9 +5,30 @@
 #include "raylib_operators.h"
 #include "helpers.h"
 
-void UpdatePosition(PhysicsComponent& data, const Vector2& bound)
+void ApplyThrustDrag(PhysicsComponent& data)
 {
+  //when ft and fd balance, we get steady state
+  float speed_squared = Vector2LengthSqr(data.velocity);
+  //printf("orientation: %f, %f\n", data.orientation.x, data.orientation.y);
+  Vector2 ft = data.orientation*data.thrust;
+  Vector2 fd = data.orientation*data.drag*speed_squared;
+  data.force += ft - fd;
+}
 
+void UpdatePosition(PhysicsComponent& data, const Vector2& bound, float dt)
+{
+  //set acceleration
+  data.acceleration = data.force/data.mass;
+  //update velocity
+  data.velocity += data.acceleration*dt;
+  //printf("lenght step: %f\n", Vector2Length(data.velocity)*dt);
+  if(Vector2Length(data.velocity)*dt > 5)
+  {
+    data.velocity = data.velocity/Vector2Length(data.velocity) * 5.f/dt;
+  }
+  //and position
+  data.position += data.velocity*dt;
+  data.position = mod(data.position + bound, bound);
 }
 
 

@@ -1,18 +1,23 @@
 #include "Asteroid.h"
 
+#include "globals.h"
+
+#include <raymath.h>
+
 ////////////////////////////////////////////////
 ///         Update                          ///
 ///////////////////////////////////////////////
-void UpdateAsteroid(Asteroid& asteroid, const Vector2& worldBound)
+void UpdateAsteroid(Asteroid& asteroid, const Vector2& worldBound, float dt)
 {
-  UpdatePosition(asteroid.data, worldBound);
+  ApplyThrustDrag(asteroid.data);
+  UpdatePosition(asteroid.data, worldBound, dt);
 }
 
 ////////////////////////////////////////////////
 ///         Paint                           ///
 ///////////////////////////////////////////////
 void PaintAsteroid(Asteroid& asteroid){
-  DrawCircle(asteroid.position.x, asteroid.position.y, asteroid.radius, BROWN);
+  DrawCircle(asteroid.data.position.x, asteroid.data.position.y, asteroid.data.radius, BROWN);
 }
 
 ////////////////////////////////////////////////
@@ -20,11 +25,18 @@ void PaintAsteroid(Asteroid& asteroid){
 ///////////////////////////////////////////////
 Asteroid CreateAsteroid(const Vector2& worldBound){
   Asteroid asteroid;
+  float radius = GetRandomValue(ASTEROID_MIN_RADIUS, ASTEROID_MAX_RADIUS);
+  asteroid.data.radius = radius;
+  asteroid.data.position = getRandomPosOutsideBounds({0.f,0.f, worldBound.x, worldBound.y}, radius);
 
-  asteroid.radius = GetRandomValue(ASTEROID_MIN_RADIUS, ASTEROID_MAX_RADIUS);
+  asteroid.data.mass = M_PI*radius*radius;
+  asteroid.data.drag = 0.7; //controlls terminal velocity
+  asteroid.data.thrust = 50000; //todo calculate reasonable values
+  std::uniform_real_distribution<> distrib(-1.f, 1.f);
+  asteroid.data.orientation = {(float)distrib(RNG),(float)distrib(RNG)};
+  asteroid.data.orientation = Vector2Normalize(asteroid.data.orientation);
 
-  asteroid.position = getRandomPosOutsideBounds({0.f,0.f, worldBound.x, worldBound.y}, asteroid.radius);
-  asteroid.data.position = asteroid.position;
+  // -----------------------------------------------------------------
 
   const float maxAcceleration = 50.f;
   const float minAcceleration = 15.f;

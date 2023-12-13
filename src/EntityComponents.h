@@ -19,20 +19,21 @@ struct MovementComponent
 
 struct PhysicsComponent
 {
-  Vector2 position;
+  Vector2 position = {0,0};
 
-  float drag; //constant for balancing acceleration
-  float mass;
-  float thrust;
-  float radius;
+  float drag = 0; //constant for balancing acceleration
+  float mass = 0;
+  float thrust = 0;
+  float radius = 0;
 
-  Vector2 force;
-  Vector2 acceleration;
-  Vector2 velocity;
+  Vector2 orientation = {0,0};
+  Vector2 force = {0,0};
+  Vector2 acceleration = {0,0};
+  Vector2 velocity = {0,0};
 };
 
-void UpdatePosition(PhysicsComponent& data, const Vector2& bound);
-
+void UpdatePosition(PhysicsComponent& data, const Vector2& bound, float dt);
+void ApplyThrustDrag(PhysicsComponent& data);
 
 
 

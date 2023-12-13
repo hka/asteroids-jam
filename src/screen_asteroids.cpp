@@ -19,6 +19,7 @@ AsteroidsScreen::~AsteroidsScreen()
 {
 }
 
+//some memory issue.... todo
 void AsteroidsScreen::CalculateDistances(const Vector2& bound)
 {
   const size_t asteroid_count = m_asteroids.size();
@@ -74,12 +75,15 @@ void AsteroidsScreen::Update()
   // =================================================================
   // Calculate distance lookup
   // =================================================================
-  CalculateDistances(worldBound);
+  //CalculateDistances(worldBound);
 
   // =================================================================
   // Update forces
   // =================================================================
-
+  for(std::size_t i = 0; i < m_asteroids.size(); ++i){
+    //todo, currently just set to zero
+    m_asteroids[i].data.force = {0, 0};
+  }
   // =================================================================
   // Handle collision
   // =================================================================
@@ -88,20 +92,31 @@ void AsteroidsScreen::Update()
   // Update positions (apply forces)
   // =================================================================
   for(std::size_t i = 0; i < m_asteroids.size(); ++i){
-    UpdateAsteroid(m_asteroids[i], worldBound);
+    UpdateAsteroid(m_asteroids[i], worldBound, dt);
+#if 0
+    printf("pos: %f, %f\n",m_asteroids[i].data.position.x,m_asteroids[i].data.position.y);
+    printf("force: %f, %f\n",m_asteroids[i].data.force.x,m_asteroids[i].data.force.y);
+    printf("acceleration: %f, %f\n",m_asteroids[i].data.acceleration.x,m_asteroids[i].data.acceleration.y);
+    printf("velocity: %f, %f\n",m_asteroids[i].data.velocity.x,m_asteroids[i].data.velocity.y);
+#endif
   }
 
   // =================================================================
+  // Spawn enteties
+  // =================================================================
+  if(m_spawnAsteroidTimer.getElapsed() >= 1.f )
+  {
+    m_asteroids.push_back(CreateAsteroid(worldBound));
+    m_spawnAsteroidTimer.start();
+  }
 
+  // =================================================================
 
   //update player
   update(m_player, worldBound);
   UpdateShoots(SHOOTS);
 
-  if(m_spawnAsteroidTimer.getElapsed() >= 1.f){
-    m_asteroids.push_back(CreateAsteroid(worldBound));
-    m_spawnAsteroidTimer.start();
-  }
+
 
   if(m_spawnEnemyTimer.getElapsed() >= 5.f){
     m_enemies.push_back(CreateEnemy(worldBound));
