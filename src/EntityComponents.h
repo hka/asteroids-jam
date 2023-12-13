@@ -17,6 +17,11 @@ struct MovementComponent
   float rotationSpeed;
 };
 
+struct PhysicsComponent
+{
+  Vector2 position;
+};
+
 void UpdateMovement(Vector2 &position, MovementComponent &movement, const Vector2 &bound);
 void UpdateVelocity(const float rotation, Vector2& velocity, const float currentAcceleration);
 void UpdateVelocity(Vector2& force, Vector2& velocity);

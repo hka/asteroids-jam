@@ -23,6 +23,7 @@ Asteroid CreateAsteroid(const Vector2& worldBound){
   asteroid.radius = GetRandomValue(ASTEROID_MIN_RADIUS, ASTEROID_MAX_RADIUS);
 
   asteroid.position = getRandomPosOutsideBounds({0.f,0.f, worldBound.x, worldBound.y}, asteroid.radius);
+  asteroid.data.position = asteroid.position;
 
   const float maxAcceleration = 50.f;
   const float minAcceleration = 15.f;
@@ -39,6 +40,7 @@ Asteroid CreateAsteroid(const Vector2 &pos, float radius){
 
   asteroid.radius = radius;
   asteroid.position = pos;
+  asteroid.data.position = asteroid.position;
 
   const float maxAcceleration = 50.f;
   const float minAcceleration = 15.f;

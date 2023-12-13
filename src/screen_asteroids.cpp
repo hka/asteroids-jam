@@ -2,6 +2,7 @@
 
 #include "gui_helper.h"
 #include "globals.h"
+#include "raylib_operators.h"
 
 #include "Collision.h"
 
@@ -18,10 +19,42 @@ AsteroidsScreen::~AsteroidsScreen()
 {
 }
 
+void AsteroidsScreen::CalculateDistances(const Vector2& bound)
+{
+  //std::vector<float> m_player_asteroid_distance;
+  //std::vector<std::vector<float>> m_asteroid_asteroid_distance;
+  //std::vector<std::vector<float>> m_enemy_asteroid_distance;
+
+  //PlayerSteer m_player;
+  //std::vector<Asteroid> m_asteroids;
+  //std::vector<Enemy> m_enemies;
+  const size_t asteroid_count = m_asteroids.size();
+  m_asteroid_asteroid_distance.resize(asteroid_count, std::vector<float>(asteroid_count));
+  for(size_t ii = 0; ii < asteroid_count; ++ii)
+  {
+    for(size_t jj = ii; jj < asteroid_count; ++jj)
+    {
+      const Vector2& a0 = m_asteroids[ii].data.position;
+      const Vector2& a1 = m_asteroids[jj].data.position;
+      float dist = CyclicDist(a0,a1,bound);
+      m_asteroid_asteroid_distance[ii][jj] = dist;
+      m_asteroid_asteroid_distance[jj][ii] = dist;
+    }
+  }
+
+}
+
 void AsteroidsScreen::Update()
 {
-  //update player
   Vector2 worldBound =  {(float)options.screenWidth, (float)options.screenHeight};
+  //skipping bullets for now, they will ignore the physics stuff
+  //anyways
+  // =================================================================
+  // Calculate distance lookup
+  // =================================================================
+  CalculateDistances(worldBound);
+
+  //update player
   update(m_player, worldBound);
   UpdateShoots(SHOOTS);
 

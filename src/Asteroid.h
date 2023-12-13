@@ -7,6 +7,8 @@ struct Asteroid{
   Vector2 position;
   float radius;
   MovementComponent movement;
+
+  PhysicsComponent data;
 };
 
 constexpr const float ASTEROID_MIN_RADIUS = 8.f;
