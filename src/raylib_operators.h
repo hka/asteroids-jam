@@ -160,6 +160,13 @@ inline Vector2 proj(const Vector2& a, const Vector2& b)
   return dot(a,b)/dot(b,b) * b;
 }
 
+inline double CyclicDistSquared(const Vector2& p0, const Vector2& p1,
+                         const Vector2& bounds)
+{
+  float dx = std::min(std::abs(p0.x-p1.x),bounds.x-std::abs(p0.x-p1.x));
+  float dy = std::min(std::abs(p0.y-p1.y),bounds.y-std::abs(p0.y-p1.y));
+  return (dx*dx + dy*dy);
+}
 inline double CyclicDist(const Vector2& p0, const Vector2& p1,
                          const Vector2& bounds)
 {

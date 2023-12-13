@@ -23,11 +23,11 @@ void AsteroidsScreen::CalculateDistances(const Vector2& bound)
 {
   const size_t asteroid_count = m_asteroids.size();
   //printf("calc asteroids %u\n",asteroid_count);
-  m_asteroid_asteroid_distance.resize(asteroid_count);
+  m_asteroid_asteroid_distance_squared.resize(asteroid_count);
   for(size_t ii = 0; ii < asteroid_count; ++ii)
   {
     //must setup first as I access out of order
-    m_asteroid_asteroid_distance[ii].resize(asteroid_count);
+    m_asteroid_asteroid_distance_squared[ii].resize(asteroid_count);
   }
   for(size_t ii = 0; ii < asteroid_count; ++ii)
   {
@@ -35,9 +35,9 @@ void AsteroidsScreen::CalculateDistances(const Vector2& bound)
     {
       const Vector2& a0 = m_asteroids[ii].data.position;
       const Vector2& a1 = m_asteroids[jj].data.position;
-      float dist = CyclicDist(a0,a1,bound);
-      m_asteroid_asteroid_distance[ii][jj] = dist;
-      m_asteroid_asteroid_distance[jj][ii] = dist;
+      float dist = CyclicDistSquared(a0,a1,bound);
+      m_asteroid_asteroid_distance_squared[ii][jj] = dist;
+      m_asteroid_asteroid_distance_squared[jj][ii] = dist;
     }
   }
 
@@ -69,6 +69,28 @@ void AsteroidsScreen::CalculateDistances(const Vector2& bound)
   */
 }
 
+void AsteroidsScreen::AsteroidAsteroidInteraction(const Vector2& bound)
+{
+  const size_t asteroid_count = m_asteroids.size();
+  for(size_t ii = 0; ii < asteroid_count; ++ii)
+  {
+    for(size_t jj = ii+1; jj < asteroid_count; ++jj)
+    {
+      Asteroid& a0 = m_asteroids[ii];
+      Asteroid& a1 = m_asteroids[jj];
+      float dist2 = m_asteroid_asteroid_distance_squared[ii][jj];
+      if(dist2 < 1000)
+      {
+        float k = 100000000;//InteractionConstant(ASTEROID,ASTEROID);
+        //printf("%f, %f -- %f %f\n", a0.data.position.x, a0.data.position.y, a1.data.position.x, a1.data.position.y);
+        Vector2 force = k*CyclicDirTo(a0.data.position,a1.data.position,bound)/dist2;
+        m_asteroids[ii].data.force -= force;
+        m_asteroids[jj].data.force += force;
+      }
+    }
+  }
+}
+
 void AsteroidsScreen::Update()
 {
   Vector2 worldBound =  {(float)options.screenWidth, (float)options.screenHeight};
@@ -87,6 +109,8 @@ void AsteroidsScreen::Update()
     //todo, currently just set to zero
     m_asteroids[i].data.force = {0, 0};
   }
+  AsteroidAsteroidInteraction(worldBound);
+
   // =================================================================
   // Handle collision
   // =================================================================

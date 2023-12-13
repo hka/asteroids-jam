@@ -99,8 +99,10 @@ class AsteroidsScreen : public Screen
  private:
   void CalculateDistances(const Vector2& bound); //sets the values in the look up tables
   std::vector<float> m_player_asteroid_distance;
-  std::vector<std::vector<float>> m_asteroid_asteroid_distance;
+  std::vector<std::vector<float>> m_asteroid_asteroid_distance_squared;
   std::vector<std::vector<float>> m_enemy_asteroid_distance;
+
+  void AsteroidAsteroidInteraction(const Vector2& bound);
 
   GameScreen m_finishScreen;
   PlayerSteer m_player;

@@ -30,7 +30,7 @@ Asteroid CreateAsteroid(const Vector2& worldBound){
   asteroid.data.position = getRandomPosOutsideBounds({0.f,0.f, worldBound.x, worldBound.y}, radius);
 
   asteroid.data.mass = M_PI*radius*radius;
-  asteroid.data.drag = 0.7; //controlls terminal velocity should depend on radius maybe
+  asteroid.data.drag = 1.2*radius/ASTEROID_MAX_RADIUS; //controlls terminal velocity should depend on radius maybe
   asteroid.data.thrust = 50000; //todo calculate reasonable values
   std::uniform_real_distribution<> distrib(-1.f, 1.f);
   asteroid.data.orientation = {(float)distrib(RNG),(float)distrib(RNG)};
