@@ -81,6 +81,9 @@ void AsteroidsScreen::AsteroidAsteroidInteraction(const Vector2& bound)
       float dist2 = m_asteroid_asteroid_distance_squared[ii][jj];
       if(dist2 < 1000)
       {
+        float dist = std::sqrt(dist2);
+        dist = dist - (a0.data.radius + a1.data.radius);
+        dist2 = dist*dist;
         float k = 100000000;//InteractionConstant(ASTEROID,ASTEROID);
         //printf("%f, %f -- %f %f\n", a0.data.position.x, a0.data.position.y, a1.data.position.x, a1.data.position.y);
         Vector2 force = k*CyclicDirTo(a0.data.position,a1.data.position,bound)/dist2;
