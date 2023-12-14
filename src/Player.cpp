@@ -19,6 +19,11 @@ PlayerSteer createPlayer(Vector2 startPos){
 
   player.suckAttack.isOngoing = false;
   player.suckAttack.lineLength = 50.f;
+
+  player.gun.direction = {0.f,0.f};
+  player.gun.cooldownTimer.start();
+  player.gun.cooldownDuration = 0.25f;
+
   return player;
 }
 
@@ -32,13 +37,7 @@ void update(PlayerSteer &player, const Vector2 &worldBound, std::vector<Shoot> &
   UpdateMovement(player.position, player.movement, worldBound);
 
   suckAttack(player.position, player.movement.rotation, player.suckAttack);
-
-  Vector2 mousePointer = GetMousePosition();
-  player.gunDirection = Vector2Normalize(mousePointer-player.position);
-  if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-  {
-    FireShoot(player.position, player.gunDirection, player.movement.velocity, player.movement.maxAcceleration, shoots);
-  }
+  gunUpdate(player, player.gun, shoots);
 }
 
 ////////////////////////////////////////////////
@@ -132,6 +131,20 @@ void suckAttack(const Vector2 &position, const float rotation, SuckAttack &suckA
       suckAttack.balls.pop_back();
     }
   }
+}
+
+void gunUpdate(const PlayerSteer& player, GunAttack &gun, std::vector<Shoot> &shoots)
+{
+  //update rotation
+  Vector2 mousePointer = GetMousePosition();
+  gun.direction = Vector2Normalize(mousePointer - player.position);
+
+  //handle shooting
+  if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && gun.cooldownTimer.getElapsed() >= gun.cooldownDuration){
+    FireShoot(player.position, gun.direction, player.movement.velocity, player.movement.maxAcceleration, shoots);
+    gun.cooldownTimer.start();
+  }
+
 }
 
 ////////////////////////////////////////////////
@@ -240,5 +253,5 @@ void DrawGun(const PlayerSteer& player)
 
   DrawCircleV(player.position, 5,RED);
 
-  DrawLineEx(player.position, player.position + 10*player.gunDirection ,3, GRAY);
+  DrawLineEx(player.position, player.position + 10*player.gun.direction ,3, GRAY);
 }

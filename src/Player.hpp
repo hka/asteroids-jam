@@ -25,14 +25,19 @@ struct SuckAttack{
 
 };
 
+struct GunAttack{
+  Vector2 direction;
+  Timer cooldownTimer;
+  float cooldownDuration;
+};
+
 struct PlayerSteer
 {
   Vector2 position;
 
-  Vector2 gunDirection;
-
   MovementComponent movement;
   SuckAttack suckAttack;
+  GunAttack gun;
 
   PhysicsComponent data;
 };
@@ -44,6 +49,7 @@ void update(PlayerSteer &player, const Vector2 &worldBound, std::vector<Shoot>& 
 void RotateShip(Vector2& direction, float rotationSpeed);
 void accelerate(MovementComponent &movement);
 void suckAttack(const Vector2 &position, const float rotation, SuckAttack &suckAttack);
+void gunUpdate(const PlayerSteer& player, GunAttack& gun, std::vector<Shoot>& shoots);
 
 //helper
 void rotateTriangle(Vector2 (&v)[3], const float angle);
