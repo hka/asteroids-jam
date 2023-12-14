@@ -25,7 +25,8 @@ PlayerSteer createPlayer(Vector2 startPos){
 ////////////////////////////////////////////////
 ///         Update                          ///
 ///////////////////////////////////////////////
-void update(PlayerSteer& player, const Vector2& worldBound){
+void update(PlayerSteer &player, const Vector2 &worldBound, std::vector<Shoot> &shoots)
+{
   RotateShip(player.movement.direction, player.movement.rotationSpeed);
   accelerate(player.movement);
   UpdateMovement(player.position, player.movement, worldBound);
@@ -36,7 +37,7 @@ void update(PlayerSteer& player, const Vector2& worldBound){
   player.gunDirection = Vector2Normalize(mousePointer-player.position);
   if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
   {
-    FireShoot(player);
+    FireShoot(player.position, player.gunDirection, player.movement.velocity, player.movement.maxAcceleration, shoots);
   }
 }
 

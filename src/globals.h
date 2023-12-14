@@ -17,7 +17,6 @@ extern std::unique_ptr<Screen> currentScreen;
 constexpr const char* PROGRAM_NAME = "Asteroids";
 
 extern std::vector<Texture2D> TEXTURES;
-extern std::vector<Shoot> SHOOTS;
 
 extern std::mt19937 RNG;
 #endif

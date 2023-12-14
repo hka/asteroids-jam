@@ -134,7 +134,7 @@ void AsteroidsScreen::Update()
   // =================================================================
   // Spawn enteties
   // =================================================================
-  if(m_spawnAsteroidTimer.getElapsed() >= 1.f )
+  if(m_spawnAsteroidTimer.getElapsed() >= 5.f )
   {
     m_asteroids.push_back(CreateAsteroid(worldBound));
     m_spawnAsteroidTimer.start();
@@ -143,17 +143,14 @@ void AsteroidsScreen::Update()
   // =================================================================
 
   //update player
-  update(m_player, worldBound);
-  UpdateShoots(SHOOTS);
-
+  update(m_player, worldBound, m_playerBullets);
+  UpdateShoots(m_playerBullets);
 
 
   if(m_spawnEnemyTimer.getElapsed() >= 5.f){
     m_enemies.push_back(CreateEnemy(worldBound));
     m_spawnEnemyTimer.start();
   }
-
-
 
   for(std::size_t i = 0; i < m_enemies.size(); ++i){
     float enemyRadius = m_enemies[i].radius * 2.f;
@@ -162,8 +159,8 @@ void AsteroidsScreen::Update()
   }
 
   //collision
-  handleCollision(m_enemies, SHOOTS);
-  handleCollision(m_asteroids, SHOOTS);
+  handleCollision(m_enemies, m_playerBullets);
+  handleCollision(m_asteroids, m_playerBullets);
 
 }
 
@@ -173,7 +170,7 @@ void AsteroidsScreen::Paint()
 
   DrawShip(m_player);
   DrawGun(m_player);
-  DrawShoots(SHOOTS);
+  DrawShoots(m_playerBullets);
 
   if(m_player.suckAttack.isOngoing){
     SuckAttack suckAttack = m_player.suckAttack;

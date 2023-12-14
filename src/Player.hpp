@@ -1,5 +1,5 @@
-#ifndef _Player
-#define _Player
+#ifndef ASTEROID_PLAYER_H_
+#define ASTEROID_PLAYER_H_
 
 #include <vector>
 
@@ -7,6 +7,8 @@
 #include "raymath.h"
 #include "Timer.hpp"
 #include "EntityComponents.h"
+
+struct Shoot;
 
 struct Ball{
   Vector2 position;
@@ -36,7 +38,7 @@ struct PlayerSteer
 };
 
 // update
-void update(PlayerSteer &player, const Vector2 &worldBound);
+void update(PlayerSteer &player, const Vector2 &worldBound, std::vector<Shoot>& shoots);
 
 //input
 void RotateShip(Vector2& direction, float rotationSpeed);

@@ -13,6 +13,6 @@ struct Shoot
 
 void UpdateShoots(std::vector<Shoot>& shoots);
 void DrawShoots(const std::vector<Shoot>& shoots);
-void FireShoot(PlayerSteer& player);
+void FireShoot(Vector2 &position, Vector2 &direction, Vector2 &velocity, float maxAcceleration, std::vector<Shoot> &shoots);
 
 #endif
