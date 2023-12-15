@@ -50,6 +50,6 @@ void handleCollision(std::vector<Asteroid> &asteroids, std::vector<Shoot> &playe
   }
 }
 
-void handleCollision(PlayerSteer &player, std::vector<Shoot> &enemyBullets){
+void handleCollision(PlayerState &player, std::vector<Shoot> &enemyBullets){
   //todo
 }

@@ -10,6 +10,6 @@
 
 void handleCollision(std::vector<Enemy>& enemies, std::vector<Shoot>& playerBullets);
 void handleCollision(std::vector<Asteroid> &asteroids, std::vector<Shoot> &playerBullets);
-void handleCollision(PlayerSteer& player, std::vector<Shoot>& enemyBullets);
+void handleCollision(PlayerState& player, std::vector<Shoot>& enemyBullets);
 
 #endif

@@ -106,7 +106,7 @@ class AsteroidsScreen : public Screen
   void AsteroidAsteroidInteraction(const Vector2& bound);
 
   GameScreen m_finishScreen;
-  PlayerSteer m_player;
+  PlayerState m_player;
   std::vector<Shoot> m_playerBullets;
 
   Timer m_spawnAsteroidTimer;

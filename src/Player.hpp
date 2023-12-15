@@ -31,7 +31,7 @@ struct GunAttack{
   float cooldownDuration;
 };
 
-struct PlayerSteer
+struct PlayerState
 {
   Vector2 position;
 
@@ -43,13 +43,12 @@ struct PlayerSteer
 };
 
 // update
-void update(PlayerSteer &player, const Vector2 &worldBound, std::vector<Shoot>& shoots);
+void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot>& shoots, float dt);
 
 //input
-void RotateShip(Vector2& direction, float rotationSpeed);
-void accelerate(MovementComponent &movement);
+void UpdatePlayerInput(PhysicsComponent& data, float dt);
 void suckAttack(const Vector2 &position, const float rotation, SuckAttack &suckAttack);
-void gunUpdate(const PlayerSteer& player, GunAttack& gun, std::vector<Shoot>& shoots);
+void gunUpdate(const PlayerState& player, GunAttack& gun, std::vector<Shoot>& shoots);
 
 //helper
 void rotateTriangle(Vector2 (&v)[3], const float angle);
@@ -59,10 +58,10 @@ Vector2 RandomPositionBetweenPoints(Vector2 point1, Vector2 point2);
 void moveBallTowardsPoint(Ball &ball, Vector2 targetPoint);
 
 //paint
-void DrawShip(const PlayerSteer &player);
-void DrawGun(const PlayerSteer &player);
+void DrawShip(const PlayerState &player);
+void DrawGun(const PlayerState &player);
 
 //factory
-PlayerSteer createPlayer(Vector2 startPos);
+PlayerState createPlayer(Vector2 startPos);
 
 #endif

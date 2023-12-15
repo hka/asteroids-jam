@@ -3,10 +3,15 @@
 #include "helpers.h"
 #include "raylib_operators.h"
 
-PlayerSteer createPlayer(Vector2 startPos){
-  PlayerSteer player;
+PlayerState createPlayer(Vector2 startPos){
+  PlayerState player;
   player.position = startPos;
   player.data.position = startPos;
+  float radius = 15.f;
+  player.data.radius = radius;
+  player.data.mass = M_PI*radius*radius;
+  player.data.drag = 5;
+  player.data.orientation = {0.f, -1.f};
 
   player.movement.maxAcceleration = 250.f;
   player.movement.direction = {0.f, -1.f};
@@ -30,11 +35,13 @@ PlayerSteer createPlayer(Vector2 startPos){
 ////////////////////////////////////////////////
 ///         Update                          ///
 ///////////////////////////////////////////////
-void update(PlayerSteer &player, const Vector2 &worldBound, std::vector<Shoot> &shoots)
+void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &shoots, float dt)
 {
-  RotateShip(player.movement.direction, player.movement.rotationSpeed);
-  accelerate(player.movement);
-  UpdateMovement(player.position, player.movement, worldBound);
+  UpdatePlayerInput(player.data, dt);
+  player.data.force *= 0;
+  ApplyThrustDrag(player.data);
+  UpdatePosition(player.data, worldBound, dt);
+
 
   suckAttack(player.position, player.movement.rotation, player.suckAttack);
   gunUpdate(player, player.gun, shoots);
@@ -43,14 +50,47 @@ void update(PlayerSteer &player, const Vector2 &worldBound, std::vector<Shoot> &
 ////////////////////////////////////////////////
 ///         Input                           ///
 ///////////////////////////////////////////////
+void UpdatePlayerInput(PhysicsComponent& data, float dt)
+{
+  //rotate velocity vector and update orientation to match
+  if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
+  {
+    data.velocity = Vector2Rotate(data.velocity, -(M_PI/0.8f)*dt);
+    if(Vector2LengthSqr(data.velocity)>0)
+    {
+      data.orientation = Vector2Normalize(data.velocity);
+    }
+  }
+  else if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
+  {
+    data.velocity = Vector2Rotate(data.velocity, (M_PI/0.8f)*dt);
+    if(Vector2LengthSqr(data.velocity)>0)
+    {
+      data.orientation = Vector2Normalize(data.velocity);
+    }
+  }
 
-void RotateShip(Vector2 &direction, float rotationSpeed){
+  if(IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S))
+  {
+    data.thrust = -500000;
+  }
+  else if(IsKeyDown(KEY_UP) || IsKeyDown(KEY_W))
+  {
+    data.thrust = 500000;
+  }
+  else
+  {
+    data.thrust = 0;
+  }
+}
+#if 0
+void RotateShip(Vector2 &direction, float rotationSpeed, float dt){
   float angle = 0.f;
 
   if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)){
-    angle = -rotationSpeed * GetFrameTime();
+    angle = -rotationSpeed * dt;
   }else if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)){
-    angle = rotationSpeed * GetFrameTime();
+    angle = rotationSpeed * dt;
   }
 
   if(angle == 0.f){
@@ -85,6 +125,7 @@ void accelerate(MovementComponent &movement)
     }
   }
 }
+#endif
 
 void suckAttack(const Vector2 &position, const float rotation, SuckAttack &suckAttack)
 {
@@ -133,15 +174,15 @@ void suckAttack(const Vector2 &position, const float rotation, SuckAttack &suckA
   }
 }
 
-void gunUpdate(const PlayerSteer& player, GunAttack &gun, std::vector<Shoot> &shoots)
+void gunUpdate(const PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
 {
   //update rotation
   Vector2 mousePointer = GetMousePosition();
-  gun.direction = Vector2Normalize(mousePointer - player.position);
+  gun.direction = Vector2Normalize(mousePointer - player.data.position);
 
   //handle shooting
   if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && gun.cooldownTimer.getElapsed() >= gun.cooldownDuration){
-    FireShoot(player.position, gun.direction, player.movement.velocity, player.movement.maxAcceleration, shoots);
+    FireShoot(player.data.position, gun.direction, player.movement.velocity, player.movement.maxAcceleration, shoots);
     gun.cooldownTimer.start();
   }
 
@@ -202,15 +243,15 @@ void moveBallTowardsPoint(Ball &ball, Vector2 targetPoint)
 ////////////////////////////////////////////////
 ///         Paint                            ///
 ///////////////////////////////////////////////
-void DrawShip(const PlayerSteer& player)
+void DrawShip(const PlayerState& player)
 {
   Vector2 bound = {(float)options.screenWidth, (float)options.screenWidth};
-
+  Vector2 pos = player.data.position;
   Vector2 vertices[3];
-  vertices[0] = player.position + Vector2{15.f, 0.f};
-  vertices[1] = {player.position.x - 15.f, player.position.y - 10.f};
-  vertices[2] = {player.position.x - 15.f, player.position.y + 10.f};
-  rotateTriangle(vertices, player.movement.direction, player.position);
+  vertices[0] = pos + Vector2{15.f, 0.f};
+  vertices[1] = {pos.x - 15.f, pos.y - 10.f};
+  vertices[2] = {pos.x - 15.f, pos.y + 10.f};
+  rotateTriangle(vertices, player.data.orientation, pos);
 
   // draw 4 times as a hack to handle wrapping
   DrawTriangle(
@@ -222,36 +263,36 @@ void DrawShip(const PlayerSteer& player)
   Vector2 p;
   Vector2 off = bound;
   off.x = 0;
-  p = mod(player.position + off,bound);
+  p = mod(pos + off,bound);
   vertices[0] = p + Vector2{15.f, 0.f};
   vertices[1] = {p.x - 15.f, p.y - 10.f};
   vertices[2] = {p.x - 15.f, p.y + 10.f};
-  rotateTriangle(vertices, player.movement.direction, player.position);
+  rotateTriangle(vertices, player.data.orientation, pos);
   DrawTriangle(vertices[0], vertices[1], vertices[2], GREEN);
 
   off = bound;
   off.y = 0;
-  p = mod(player.position + off,bound);
+  p = mod(pos + off,bound);
   vertices[0] = p + Vector2{15.f, 0.f};
   vertices[1] = {p.x - 15.f, p.y - 10.f};
   vertices[2] = {p.x - 15.f, p.y + 10.f};
-  rotateTriangle(vertices, player.movement.direction, player.position);
+  rotateTriangle(vertices, player.data.orientation, pos);
   DrawTriangle(vertices[0], vertices[1], vertices[2], GREEN);
 
   off = bound;
-  p = mod(player.position + off,bound);
+  p = mod(pos + off,bound);
   vertices[0] = p + Vector2{15.f, 0.f};
   vertices[1] = {p.x - 15.f, p.y - 10.f};
   vertices[2] = {p.x - 15.f, p.y + 10.f};
-  rotateTriangle(vertices, player.movement.direction, player.position);
+  rotateTriangle(vertices, player.data.orientation, pos);
   DrawTriangle(vertices[0], vertices[1], vertices[2], GREEN);
 }
 
-void DrawGun(const PlayerSteer& player)
+void DrawGun(const PlayerState& player)
 {
   Vector2 bound = {(float)options.screenWidth, (float)options.screenWidth};
 
-  DrawCircleV(player.position, 5,RED);
+  DrawCircleV(player.data.position, 5,RED);
 
-  DrawLineEx(player.position, player.position + 10*player.gun.direction ,3, GRAY);
+  DrawLineEx(player.data.position, player.data.position + 10*player.gun.direction ,3, GRAY);
 }

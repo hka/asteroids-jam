@@ -9,9 +9,9 @@ void ApplyThrustDrag(PhysicsComponent& data)
 {
   //when ft and fd balance, we get steady state
   float speed_squared = Vector2LengthSqr(data.velocity);
-  //printf("orientation: %f, %f\n", data.orientation.x, data.orientation.y);
   Vector2 ft = data.orientation*data.thrust;
-  Vector2 fd = data.orientation*data.drag*speed_squared;
+  Vector2 velocity_dir = Vector2Normalize(data.velocity);
+  Vector2 fd = velocity_dir*data.drag*speed_squared;
   data.force += ft - fd;
 }
 
@@ -20,8 +20,9 @@ void UpdatePosition(PhysicsComponent& data, const Vector2& bound, float dt)
   //set acceleration
   data.acceleration = data.force/data.mass;
   //update velocity
+  Vector2 start_vel = data.velocity;
   data.velocity += data.acceleration*dt;
-  //printf("lenght step: %f\n", Vector2Length(data.velocity)*dt);
+
   if(Vector2Length(data.velocity)*dt > 5)
   {
     data.velocity = data.velocity/Vector2Length(data.velocity) * 5.f/dt;

@@ -108,8 +108,8 @@ void AsteroidsScreen::Update()
   // =================================================================
   // Update forces
   // =================================================================
+  //reset to zero
   for(std::size_t i = 0; i < m_asteroids.size(); ++i){
-    //todo, currently just set to zero
     m_asteroids[i].data.force = {0, 0};
   }
   AsteroidAsteroidInteraction(worldBound);
@@ -143,7 +143,7 @@ void AsteroidsScreen::Update()
   // =================================================================
 
   //update player
-  update(m_player, worldBound, m_playerBullets);
+  update(m_player, worldBound, m_playerBullets, dt);
   UpdateShoots(m_playerBullets);
 
 
