@@ -53,6 +53,7 @@ void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &
 void UpdatePlayerInput(PhysicsComponent& data, float dt)
 {
   //rotate velocity vector and update orientation to match
+  //TODO handle rotation when moving in reverse?
   if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
   {
     data.velocity = Vector2Rotate(data.velocity, -(M_PI/0.8f)*dt);

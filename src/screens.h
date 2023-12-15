@@ -104,6 +104,7 @@ class AsteroidsScreen : public Screen
   std::vector<std::vector<float>> m_enemy_asteroid_distance;
 
   void AsteroidAsteroidInteraction(const Vector2& bound);
+  void AsteroidEnemyInteraction(const Vector2& bound);
 
   GameScreen m_finishScreen;
   PlayerState m_player;
