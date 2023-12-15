@@ -16,8 +16,7 @@ struct Enemy{
 };
 
 //update
-void UpdateEnemy(Enemy &enemy, const Vector2 &worldBound,
-                 const std::vector<Asteroid>& asteroids);
+void UpdateEnemy(Enemy &enemy, const Vector2 &worldBound, float dt);
 
 //paint
 void PaintEnemy(Enemy& Enemy);

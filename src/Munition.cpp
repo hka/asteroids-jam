@@ -33,14 +33,13 @@ void DrawShoots(const std::vector<Shoot>& shoots)
   }
 }
 
-void FireShoot(PlayerSteer& player)
-{
+void FireShoot(const Vector2& position, const Vector2& direction, const Vector2& velocity, const float maxAcceleration, std::vector<Shoot>& shoots){
   Shoot bullet;
-  bullet.position = player.position + 30*player.gunDirection;
-  bullet.direction = player.gunDirection;
+  bullet.position = position + 30 * direction;
+  bullet.direction = direction;
   bullet.radius = 4;
-  float vel_component = Vector2Length(proj(player.movement.velocity,player.gunDirection));
-  float sign = dot(player.gunDirection, player.movement.velocity) < 0 ? -1 : 1;
-  bullet.speed = vel_component*sign + 2*player.movement.maxAcceleration;
-  SHOOTS.push_back(bullet);
+  float vel_component = Vector2Length(proj(velocity, direction));
+  float sign = dot(direction, velocity) < 0 ? -1 : 1;
+  bullet.speed = vel_component * sign + 2 * maxAcceleration;
+  shoots.push_back(bullet);
 }

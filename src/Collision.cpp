@@ -29,15 +29,15 @@ void handleCollision(std::vector<Asteroid> &asteroids, std::vector<Shoot> &playe
     {
       Shoot bullet = playerBullets[j];
 
-      if (CheckCollisionCircles(asteroid.position, asteroid.radius, bullet.position, bullet.radius))
+      if (CheckCollisionCircles(asteroid.data.position, asteroid.data.radius, bullet.position, bullet.radius))
       {
         asteroids[i] = asteroids[asteroids.size() - 1];
         asteroids.pop_back();
 
-        float splitRadius = asteroid.radius / 1.5f;
+        float splitRadius = asteroid.data.radius / 1.5f;
         if(splitRadius >= ASTEROID_MIN_RADIUS){
-          asteroids.push_back(CreateAsteroid(asteroid.position, splitRadius));
-          asteroids.push_back(CreateAsteroid(asteroid.position, splitRadius));
+          asteroids.push_back(CreateAsteroid(asteroid.data.position, splitRadius));
+          asteroids.push_back(CreateAsteroid(asteroid.data.position, splitRadius));
         }        
 
         playerBullets[j] = playerBullets[playerBullets.size() - 1];
@@ -50,6 +50,6 @@ void handleCollision(std::vector<Asteroid> &asteroids, std::vector<Shoot> &playe
   }
 }
 
-void handleCollision(PlayerSteer &player, std::vector<Shoot> &enemyBullets){
+void handleCollision(PlayerState &player, std::vector<Shoot> &enemyBullets){
   //todo
 }

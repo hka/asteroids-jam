@@ -15,6 +15,7 @@
 #include "Asteroid.h"
 #include "Timer.hpp"
 #include "enemy.h"
+#include "Munition.h"
 
 struct GameOptions
 {
@@ -103,15 +104,18 @@ class AsteroidsScreen : public Screen
   std::vector<std::vector<float>> m_enemy_asteroid_distance;
 
   void AsteroidAsteroidInteraction(const Vector2& bound);
+  void AsteroidEnemyInteraction(const Vector2& bound);
 
   GameScreen m_finishScreen;
-  PlayerSteer m_player;
+  PlayerState m_player;
+  std::vector<Shoot> m_playerBullets;
 
   Timer m_spawnAsteroidTimer;
   std::vector<Asteroid> m_asteroids;
 
   Timer m_spawnEnemyTimer;
   std::vector<Enemy> m_enemies;
+  std::vector<Shoot> m_enemyBullets;
 };
 
 class OptionsScreen : public Screen

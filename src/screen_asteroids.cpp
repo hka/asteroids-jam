@@ -51,14 +51,11 @@ void AsteroidsScreen::CalculateDistances(const Vector2& bound)
     m_player_asteroid_distance[ii] = dist;
   }
 
-/*
-  //some memory issue.... todo
-  //printf("dist enemy\n");
   m_enemy_asteroid_distance.resize(m_enemies.size());
   for(size_t ii = 0; ii < m_enemies.size(); ++ii)
   {
-    m_enemy_asteroid_distance.resize(asteroid_count);
-    for(size_t jj = ii; jj < asteroid_count; ++jj)
+    m_enemy_asteroid_distance[ii].resize(asteroid_count);
+    for(size_t jj = 0; jj < asteroid_count; ++jj)
     {
       const Vector2& e0 = m_enemies[ii].data.position;
       const Vector2& a0 = m_asteroids[jj].data.position;
@@ -66,7 +63,6 @@ void AsteroidsScreen::CalculateDistances(const Vector2& bound)
       m_enemy_asteroid_distance[ii][jj] = dist;
     }
   }
-  */
 }
 
 void AsteroidsScreen::AsteroidAsteroidInteraction(const Vector2& bound)
@@ -94,6 +90,28 @@ void AsteroidsScreen::AsteroidAsteroidInteraction(const Vector2& bound)
   }
 }
 
+void AsteroidsScreen::AsteroidEnemyInteraction(const Vector2& bound)
+{
+  const size_t asteroid_count = m_asteroids.size();
+  for(size_t ii = 0; ii < m_enemies.size(); ++ii)
+  {
+    for(size_t jj = 0; jj < asteroid_count; ++jj)
+    {
+      Enemy& e0 = m_enemies[ii];
+      Asteroid& a0 = m_asteroids[jj];
+      float dist = m_enemy_asteroid_distance[ii][jj];
+      if(dist < 100)
+      {
+        dist = dist - (e0.data.radius + a0.data.radius);
+        float dist2 = dist*dist;
+        float k = 100000000;//InteractionConstant(ASTEROID,ASTEROID);
+        Vector2 force = k*CyclicDirTo(e0.data.position,a0.data.position,bound)/dist2;
+        e0.data.force -= force;
+      }
+    }
+  }
+}
+
 void AsteroidsScreen::Update()
 {
   Vector2 worldBound =  {(float)options.screenWidth, (float)options.screenHeight};
@@ -108,11 +126,12 @@ void AsteroidsScreen::Update()
   // =================================================================
   // Update forces
   // =================================================================
+  //reset to zero
   for(std::size_t i = 0; i < m_asteroids.size(); ++i){
-    //todo, currently just set to zero
     m_asteroids[i].data.force = {0, 0};
   }
   AsteroidAsteroidInteraction(worldBound);
+  AsteroidEnemyInteraction(worldBound);
 
   // =================================================================
   // Handle collision
@@ -123,47 +142,35 @@ void AsteroidsScreen::Update()
   // =================================================================
   for(std::size_t i = 0; i < m_asteroids.size(); ++i){
     UpdateAsteroid(m_asteroids[i], worldBound, dt);
-#if 0
-    printf("pos: %f, %f\n",m_asteroids[i].data.position.x,m_asteroids[i].data.position.y);
-    printf("force: %f, %f\n",m_asteroids[i].data.force.x,m_asteroids[i].data.force.y);
-    printf("acceleration: %f, %f\n",m_asteroids[i].data.acceleration.x,m_asteroids[i].data.acceleration.y);
-    printf("velocity: %f, %f\n",m_asteroids[i].data.velocity.x,m_asteroids[i].data.velocity.y);
-#endif
+  }
+  for(std::size_t i = 0; i < m_enemies.size(); ++i){
+    UpdateEnemy(m_enemies[i], worldBound, dt);
   }
 
   // =================================================================
   // Spawn enteties
   // =================================================================
-  if(m_spawnAsteroidTimer.getElapsed() >= 1.f )
+  if(m_spawnAsteroidTimer.getElapsed() >= 5.f )
   {
     m_asteroids.push_back(CreateAsteroid(worldBound));
     m_spawnAsteroidTimer.start();
   }
 
-  // =================================================================
-
-  //update player
-  update(m_player, worldBound);
-  UpdateShoots(SHOOTS);
-
-
-
-  if(m_spawnEnemyTimer.getElapsed() >= 5.f){
+  //TODO limit number of enemies to game level or something
+  if(m_spawnEnemyTimer.getElapsed() >= 10.f && m_enemies.size() < 1){
     m_enemies.push_back(CreateEnemy(worldBound));
     m_spawnEnemyTimer.start();
   }
 
+  // =================================================================
 
-
-  for(std::size_t i = 0; i < m_enemies.size(); ++i){
-    float enemyRadius = m_enemies[i].radius * 2.f;
-    Vector2 enemyBound = {worldBound.x + enemyRadius, worldBound.y + enemyRadius};
-    UpdateEnemy(m_enemies[i], enemyBound, m_asteroids);
-  }
+  //update player
+  update(m_player, worldBound, m_playerBullets, dt);
+  UpdateShoots(m_playerBullets);
 
   //collision
-  handleCollision(m_enemies, SHOOTS);
-  handleCollision(m_asteroids, SHOOTS);
+  handleCollision(m_enemies, m_playerBullets);
+  handleCollision(m_asteroids, m_playerBullets);
 
 }
 
@@ -173,7 +180,7 @@ void AsteroidsScreen::Paint()
 
   DrawShip(m_player);
   DrawGun(m_player);
-  DrawShoots(SHOOTS);
+  DrawShoots(m_playerBullets);
 
   if(m_player.suckAttack.isOngoing){
     SuckAttack suckAttack = m_player.suckAttack;
