@@ -136,8 +136,8 @@ void AsteroidsScreen::Update()
   // =================================================================
   if(m_spawnAsteroidTimer.getElapsed() >= 5.f )
   {
-    m_asteroids.push_back(CreateAsteroid(worldBound));
-    m_spawnAsteroidTimer.start();
+    //m_asteroids.push_back(CreateAsteroid(worldBound));
+    //m_spawnAsteroidTimer.start();
   }
 
   // =================================================================
@@ -161,6 +161,7 @@ void AsteroidsScreen::Update()
   //collision
   handleCollision(m_enemies, m_playerBullets);
   handleCollision(m_asteroids, m_playerBullets);
+  CheckCollision(m_player.laser, m_asteroids);
 
 }
 
@@ -187,6 +188,10 @@ void AsteroidsScreen::Paint()
   for (size_t i = 0; i < m_enemies.size(); ++i)
   {
     PaintEnemy(m_enemies[i]);
+  }
+
+  if(m_player.laser.isOngoing){
+    DrawLaser(m_player.laser);
   }
 }
 

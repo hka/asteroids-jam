@@ -7,6 +7,7 @@
 #include "raymath.h"
 #include "Timer.hpp"
 #include "EntityComponents.h"
+#include "Laser.h"
 
 struct Shoot;
 
@@ -38,6 +39,7 @@ struct PlayerSteer
   MovementComponent movement;
   SuckAttack suckAttack;
   GunAttack gun;
+  Laser laser;
 
   PhysicsComponent data;
 };
@@ -50,6 +52,7 @@ void RotateShip(Vector2& direction, float rotationSpeed);
 void accelerate(MovementComponent &movement);
 void suckAttack(const Vector2 &position, const float rotation, SuckAttack &suckAttack);
 void gunUpdate(const PlayerSteer& player, GunAttack& gun, std::vector<Shoot>& shoots);
+void laserUpdate(PlayerSteer& player);
 
 //helper
 void rotateTriangle(Vector2 (&v)[3], const float angle);
