@@ -23,6 +23,7 @@ struct GameOptions
   int screenHeight = 480;
   int fps = 60;
   bool skipLogo = false;
+  bool godMode = true;
 };
 VISITABLE_STRUCT(GameOptions, screenWidth, screenHeight, fps, skipLogo);
 
@@ -134,6 +135,7 @@ private:
   GameScreen m_finishScreen;
   std::vector<Button> m_buttons;
   size_t m_toggleIntroIx;
+  size_t m_toggleGodModeIx;
   std::vector<KeySelector> m_keySelector;
 };
 

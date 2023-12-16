@@ -41,6 +41,18 @@ OptionsScreen::OptionsScreen()
   m_toggleIntroIx = m_buttons.size();
   m_buttons.push_back(b_toggleIntro);
 
+  Button b_toggleGodMode("Toggle god mode", options.screenWidth-10, 35, 100, 20, AnchorPoint::TOP_RIGHT);
+  b_toggleGodMode.toggle = options.godMode;
+  b_toggleGodMode.type = Button::Type::CHECKBOX;
+  auto toggleGodModeAction = [](void* ptr){
+    OptionsScreen* scr = (OptionsScreen*)ptr;
+    options.godMode = !options.godMode;
+    scr->m_buttons[scr->m_toggleGodModeIx].toggle = options.godMode;
+  };
+  b_toggleGodMode.action = toggleGodModeAction;
+  m_toggleGodModeIx = m_buttons.size();
+  m_buttons.push_back(b_toggleGodMode);
+
   KeySelector increase_thrust;
   increase_thrust.pos = {options.screenWidth/4.f-25, 2.f*options.screenHeight/6.f-60, 50.f, 50.f};
   increase_thrust.text = "Increase thrust:";
