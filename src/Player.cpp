@@ -183,7 +183,8 @@ void gunUpdate(const PlayerState& player, GunAttack &gun, std::vector<Shoot> &sh
 
   //handle shooting
   if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && gun.cooldownTimer.getElapsed() >= gun.cooldownDuration){
-    FireShoot(player.data.position, gun.direction, player.movement.velocity, player.movement.maxAcceleration, shoots);
+    //FireShoot(player.data.position, gun.direction, player.movement.velocity, player.movement.maxAcceleration, shoots);
+    FireShoot(player.data, gun.direction,500, shoots);
     gun.cooldownTimer.start();
   }
 

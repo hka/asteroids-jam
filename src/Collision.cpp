@@ -6,7 +6,7 @@ void handleCollision(std::vector<Enemy> &enemies, std::vector<Shoot> &playerBull
     for(std::size_t j = 0; j < playerBullets.size(); ++j){
       Shoot bullet = playerBullets[j];
 
-      if(CheckCollisionCircles(e.position, e.radius, bullet.position, bullet.radius)){
+      if(CheckCollisionCircles(e.data.position, e.data.radius, bullet.data.position, bullet.data.radius)){
         enemies[i] = enemies[enemies.size() - 1];
         enemies.pop_back();
 
@@ -29,7 +29,7 @@ void handleCollision(std::vector<Asteroid> &asteroids, std::vector<Shoot> &playe
     {
       Shoot bullet = playerBullets[j];
 
-      if (CheckCollisionCircles(asteroid.data.position, asteroid.data.radius, bullet.position, bullet.radius))
+      if (CheckCollisionCircles(asteroid.data.position, asteroid.data.radius, bullet.data.position, bullet.data.radius))
       {
         asteroids[i] = asteroids[asteroids.size() - 1];
         asteroids.pop_back();

@@ -15,18 +15,23 @@ void ApplyThrustDrag(PhysicsComponent& data)
   data.force += ft - fd;
 }
 
-void UpdatePosition(PhysicsComponent& data, const Vector2& bound, float dt)
+void UpdatePosition(PhysicsComponent& data, const Vector2& bound, float dt, bool no_limit)
 {
   //set acceleration
-  data.acceleration = data.force/data.mass;
+  data.acceleration = data.mass == 0 ? Vector2{0.f, 0.f} : data.force/data.mass;
   //update velocity
   Vector2 start_vel = data.velocity;
   data.velocity += data.acceleration*dt;
 
-  if(Vector2Length(data.velocity)*dt > 5)
+
+  if(!no_limit)
   {
-    data.velocity = data.velocity/Vector2Length(data.velocity) * 5.f/dt;
+    if(Vector2Length(data.velocity)*dt > 5)
+    {
+      data.velocity = data.velocity/Vector2Length(data.velocity) * 5.f/dt;
+    }
   }
+
   //and position
   data.position += data.velocity*dt;
   data.position = mod(data.position + bound, bound);

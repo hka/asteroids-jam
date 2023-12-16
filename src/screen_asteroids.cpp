@@ -166,7 +166,7 @@ void AsteroidsScreen::Update()
 
   //update player
   update(m_player, worldBound, m_playerBullets, dt);
-  UpdateShoots(m_playerBullets);
+  UpdateShoots(m_playerBullets, dt);
 
   //collision
   handleCollision(m_enemies, m_playerBullets);

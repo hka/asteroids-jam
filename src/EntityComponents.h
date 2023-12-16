@@ -32,7 +32,7 @@ struct PhysicsComponent
   Vector2 velocity = {0,0};
 };
 
-void UpdatePosition(PhysicsComponent& data, const Vector2& bound, float dt);
+void UpdatePosition(PhysicsComponent& data, const Vector2& bound, float dt, bool no_limit = false);
 void ApplyThrustDrag(PhysicsComponent& data);
 
 
