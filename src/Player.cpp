@@ -297,3 +297,11 @@ void DrawGun(const PlayerState& player)
 
   DrawLineEx(player.data.position, player.data.position + 10*player.gun.direction ,3, GRAY);
 }
+
+void PlayerState::OnHit()
+{
+  if(!options.godMode)
+  {
+    alive = false;
+  }
+}

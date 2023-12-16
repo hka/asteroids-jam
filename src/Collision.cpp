@@ -56,10 +56,37 @@ float handleCollision(std::vector<Asteroid> &asteroids, std::vector<Shoot> &play
   return value_hit;
 }
 
-void handleCollision(PlayerState &player, std::vector<Shoot> &enemyBullets){
-  //todo
+void handleCollision(PlayerState &player, std::vector<Shoot> &bullets)
+{
+  for(std::size_t j = 0; j < bullets.size(); ++j)
+  {
+    Shoot bullet = bullets[j];
+
+    if(CheckCollisionCircles(player.data.position, player.data.radius, bullet.data.position, bullet.data.radius)){
+
+      player.OnHit();
+
+      bullets[j] = bullets[bullets.size() - 1];
+      bullets.pop_back();
+      --j;
+    }
+  }
 }
 
-void handleCollision(PlayerState &player, std::vector<Asteroid> &asteroids){
+void handleCollision(PlayerState &player, std::vector<Asteroid> &asteroids)
+{
+  for(std::size_t j = 0; j < asteroids.size(); ++j)
+  {
+    Asteroid a = asteroids[j];
+
+    if(CheckCollisionCircles(player.data.position, player.data.radius, a.data.position, a.data.radius)){
+
+      player.OnHit();
+
+      asteroids[j] = asteroids[asteroids.size() - 1];
+      asteroids.pop_back();
+      --j;
+    }
+  }
   //todo
 }

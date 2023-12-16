@@ -145,9 +145,9 @@ void PaintDroplist(const Droplist& dl);
 void SetDroplistIx(Droplist& dl, const std::string& key);
 bool UpdateDroplist(const Vector2& mousePoint, Droplist& dl);
 
-void PaintInputBox(const InputBox& ib, int frame = 0);
+void PaintInputBox(const InputBox& ib, size_t frame = 0);
 void UpdateInputBox(const Vector2& mousePoint, InputBox& ib, void* data);
-void PaintTextField(const TextField& tf, int frame = 0);
+void PaintTextField(const TextField& tf, size_t frame = 0);
 void UpdateTextField(TextField& tf);
 
 void PaintLayer(Layer& layer);

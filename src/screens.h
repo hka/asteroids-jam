@@ -25,7 +25,19 @@ struct GameOptions
   bool skipLogo = false;
   bool godMode = true;
 };
-VISITABLE_STRUCT(GameOptions, screenWidth, screenHeight, fps, skipLogo);
+VISITABLE_STRUCT(GameOptions, screenWidth, screenHeight, fps, skipLogo, godMode);
+
+struct Score
+{
+  std::string name;
+  float score;
+};
+VISITABLE_STRUCT(Score, name, score);
+struct HighScore
+{
+  std::vector<Score> scores;
+};
+VISITABLE_STRUCT(HighScore, scores);
 
 class Screen
 {
@@ -117,6 +129,9 @@ class AsteroidsScreen : public Screen
   Timer m_spawnEnemyTimer;
   std::vector<Enemy> m_enemies;
   std::vector<Shoot> m_enemyBullets;
+
+  InputBox m_namebox;
+  size_t m_frame = 0;
 };
 
 class OptionsScreen : public Screen

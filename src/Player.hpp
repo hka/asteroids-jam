@@ -34,12 +34,15 @@ struct GunAttack{
 struct PlayerState
 {
   float score = 0;
+  bool alive = true;
 
   MovementComponent movement;
   SuckAttack suckAttack;
   GunAttack gun;
 
   PhysicsComponent data;
+
+  void OnHit();
 };
 
 // update

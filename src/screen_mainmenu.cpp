@@ -60,6 +60,12 @@ void MainMenuScreen::Paint()
   {
     PaintButtonWithText(b);
   }
+  DrawText("HIGH SCORE", 10, 10, 30, BLUE);
+  for(size_t ii = 0; ii < highscore.scores.size(); ++ii)
+  {
+    std::string text = highscore.scores[ii].name + " - " + std::to_string(highscore.scores[ii].score);
+    DrawText(text.c_str(), 10, 40 + ii*20, 15, DARKGRAY);
+  }
 }
 
 Screen::GameScreen MainMenuScreen::Finish()

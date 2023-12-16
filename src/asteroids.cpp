@@ -57,6 +57,7 @@ int main(void)
 {
 #if defined(PLATFORM_WEB)
   options_path = "/offline/options.json";
+  highscore_path = "/offline/highscore.json";
   EM_ASM(
     // Make a directory other than '/'
     FS.mkdir('/offline');
@@ -79,8 +80,13 @@ int main(void)
   options.screenHeight = get_browser_height();
   options.screenWidth = std::min(options.screenWidth,(int)std::round(options.screenHeight*(16./9.)));
   options.screenHeight = std::min(options.screenHeight,(int)std::round(options.screenWidth/(16./9.)));
+  if(FileExists(highscore_path.c_str()))
+  {
+    deserialize(highscore, highscore_path.c_str());
+  }
 #else
   options_path = "options.json";
+  highscore_path = "highscore.json";
   if(FileExists(options_path.c_str()))
   {
     deserialize(options, options_path.c_str());
@@ -88,6 +94,10 @@ int main(void)
   else
   {
     serialize(options, options_path.c_str());
+  }
+  if(FileExists(highscore_path.c_str()))
+  {
+    deserialize(highscore, highscore_path.c_str());
   }
 #endif
 

@@ -3,8 +3,12 @@
 #include "gui_helper.h"
 #include "globals.h"
 #include "raylib_operators.h"
-
+#include "helpers.h"
 #include "Collision.h"
+
+#if defined(PLATFORM_WEB)
+#include <emscripten/emscripten.h>
+#endif
 
 AsteroidsScreen::AsteroidsScreen():
   m_player(createPlayer({options.screenWidth / 2.f, options.screenHeight / 2.f}))
@@ -13,6 +17,34 @@ AsteroidsScreen::AsteroidsScreen():
   m_spawnAsteroidTimer.start();
 
   m_spawnEnemyTimer.start();
+
+  m_namebox = InputBox(Rectangle{options.screenWidth/2.f, 3*options.screenHeight/4.f, options.screenWidth/3.f,50},12,AnchorPoint::CENTER);
+  auto cancelAction = [](void* ptr){
+    AsteroidsScreen* scr = (AsteroidsScreen*)ptr;
+    scr->m_finishScreen = Screen::GameScreen::MAINMENU;
+  };
+  m_namebox.cancel.action = cancelAction;
+  auto confirmAction = [](void* ptr){
+    AsteroidsScreen* scr = (AsteroidsScreen*)ptr;
+    scr->m_finishScreen = Screen::GameScreen::MAINMENU;
+    Score s;
+    s.score = scr->m_player.score;
+    s.name = scr->m_namebox.input.text;
+    highscore.scores.push_back(s);
+    auto cmp = [](const Score& lh, const Score& rh){
+      return lh.score > rh.score;
+    };
+    std::sort(highscore.scores.begin(),highscore.scores.end(),cmp);
+    serialize(highscore, highscore_path.c_str());
+#if defined(PLATFORM_WEB)
+    EM_ASM(
+      FS.syncfs(function (err) {
+          assert(!err);
+        });
+      );
+#endif
+  };
+  m_namebox.confirm.action = confirmAction;
 }
 
 AsteroidsScreen::~AsteroidsScreen()
@@ -114,6 +146,17 @@ void AsteroidsScreen::AsteroidEnemyInteraction(const Vector2& bound)
 
 void AsteroidsScreen::Update()
 {
+  if(!m_player.alive)
+  {
+    UpdateInputBox(GetMousePosition(), m_namebox, this);
+  }
+  //put stuff that should happen at end of game above this line
+  //------------------------------------------------------------------
+  if(!m_player.alive)
+  {
+    return;
+  }
+
   Vector2 worldBound =  {(float)options.screenWidth, (float)options.screenHeight};
   float dt = 1.f/GetFPS(); // more stable than GetFrameTime()?
   //skipping bullets for now, they will ignore the physics stuff
@@ -172,6 +215,9 @@ void AsteroidsScreen::Update()
   m_player.score += handleCollision(m_enemies, m_playerBullets);
   m_player.score += handleCollision(m_asteroids, m_playerBullets);
 
+  handleCollision(m_player, m_playerBullets);
+  handleCollision(m_player, m_asteroids);
+
 }
 
 void AsteroidsScreen::Paint()
@@ -202,6 +248,17 @@ void AsteroidsScreen::Paint()
   //Draw score
   std::string score_text = "Score: "+std::to_string(m_player.score);
   DrawText(score_text.c_str(), 10, 10, 12, GREEN);
+
+  if(!m_player.alive)
+  {
+    std::string text = "GAME OVER";
+    float w = MeasureText(text.c_str(),40);
+    DrawText(text.c_str(), options.screenWidth/2.f - w/2.f, options.screenHeight/2.f - 20, 40, RED);
+
+    m_namebox.visible = true;
+    PaintInputBox(m_namebox, m_frame);
+    ++m_frame;
+  }
 }
 
 Screen::GameScreen AsteroidsScreen::Finish()
