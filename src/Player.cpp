@@ -5,7 +5,6 @@
 
 PlayerState createPlayer(Vector2 startPos){
   PlayerState player;
-  player.position = startPos;
   player.data.position = startPos;
   float radius = 15.f;
   player.data.radius = radius;
@@ -43,7 +42,7 @@ void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &
   UpdatePosition(player.data, worldBound, dt);
 
 
-  suckAttack(player.position, player.movement.rotation, player.suckAttack);
+  suckAttack(player.data.position, player.data.orientation, player.suckAttack);
   gunUpdate(player, player.gun, shoots);
 }
 
@@ -128,7 +127,7 @@ void accelerate(MovementComponent &movement)
 }
 #endif
 
-void suckAttack(const Vector2 &position, const float rotation, SuckAttack &suckAttack)
+void suckAttack(const Vector2 &position, const Vector2& rotation, SuckAttack &suckAttack)
 {
   if (!IsKeyDown(KEY_SPACE))
   {
@@ -142,12 +141,12 @@ void suckAttack(const Vector2 &position, const float rotation, SuckAttack &suckA
     suckAttack.addBallTimer.start();
   }
 
-  Vector2 startPoint = position + 18 * Vector2Normalize({cosf(rotation), sinf(rotation)});
+  Vector2 startPoint = position + 18 * rotation;
 
   suckAttack.isOngoing = true;
   float angle = PI / 4.f;
-  Vector2 dir1 = Vector2Normalize({cosf(rotation - angle), sinf(rotation - angle)});
-  Vector2 dir2 = Vector2Normalize({cosf(rotation + angle), sinf(rotation + angle)});
+  Vector2 dir1 = Vector2Rotate(rotation,-angle);
+  Vector2 dir2 = Vector2Rotate(rotation,angle);
   float lineLength = suckAttack.lineLength;
   suckAttack.linesEnd[0] = {startPoint.x + (dir1.x * lineLength), startPoint.y + (dir1.y * lineLength)};
   suckAttack.linesEnd[1] = {startPoint.x + (dir2.x * lineLength), startPoint.y + (dir2.y * lineLength)};

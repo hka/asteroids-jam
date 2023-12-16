@@ -12,8 +12,6 @@ void UpdateEnemy(Enemy& enemy, const Vector2& worldBound, float dt)
 {
   ApplyThrustDrag(enemy.data);
   UpdatePosition(enemy.data, worldBound, dt);
-
-  enemy.position = enemy.data.position;
 }
 
 ////////////////////////////////////////////////
@@ -42,15 +40,9 @@ Enemy CreateEnemy(const Vector2& worldBound){
   enemy.data.orientation = {(float)distrib(RNG),(float)distrib(RNG)};
   enemy.data.orientation = Vector2Normalize(enemy.data.orientation);
 
-  enemy.radius = 20;
-  enemy.position = enemy.data.position;
-
   const float maxAcceleration = 50.f;
   const float minAcceleration = 15.f;
   const float radiusPercentage = 1.f;
 
-  enemy.movement.currentAcceleration = (maxAcceleration * radiusPercentage) + minAcceleration; //todo calculate init value
-
-  enemy.movement.rotation = (float)GetRandomValue(0, 7);
   return enemy;
 }

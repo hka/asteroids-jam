@@ -4,7 +4,7 @@
 #include "EntityComponents.h"
 
 struct Asteroid{
-  Vector2 position;
+  float value = 1;
   PhysicsComponent data;
 };
 

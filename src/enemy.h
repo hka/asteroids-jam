@@ -8,10 +8,7 @@
 #include <vector>
 
 struct Enemy{
-  Vector2 position;
-  float radius;
-  MovementComponent movement;
-
+  float value = 10;
   PhysicsComponent data;
 };
 

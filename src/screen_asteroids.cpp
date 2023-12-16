@@ -169,8 +169,8 @@ void AsteroidsScreen::Update()
   UpdateShoots(m_playerBullets, dt);
 
   //collision
-  handleCollision(m_enemies, m_playerBullets);
-  handleCollision(m_asteroids, m_playerBullets);
+  m_player.score += handleCollision(m_enemies, m_playerBullets);
+  m_player.score += handleCollision(m_asteroids, m_playerBullets);
 
 }
 
@@ -198,6 +198,10 @@ void AsteroidsScreen::Paint()
   {
     PaintEnemy(m_enemies[i]);
   }
+
+  //Draw score
+  std::string score_text = "Score: "+std::to_string(m_player.score);
+  DrawText(score_text.c_str(), 10, 10, 12, GREEN);
 }
 
 Screen::GameScreen AsteroidsScreen::Finish()

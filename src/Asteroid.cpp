@@ -43,8 +43,7 @@ Asteroid CreateAsteroid(const Vector2 &pos, float radius){
   Asteroid asteroid;
 
   asteroid.data.radius = radius;
-  asteroid.position = pos;
-  asteroid.data.position = asteroid.position;
+  asteroid.data.position = pos;
 
   asteroid.data.mass = M_PI * radius * radius;
   asteroid.data.drag = 1.2f * radius / ASTEROID_MAX_RADIUS; // controlls terminal velocity should depend on radius maybe

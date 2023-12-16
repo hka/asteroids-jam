@@ -33,7 +33,7 @@ struct GunAttack{
 
 struct PlayerState
 {
-  Vector2 position;
+  float score = 0;
 
   MovementComponent movement;
   SuckAttack suckAttack;
@@ -47,7 +47,7 @@ void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot>& 
 
 //input
 void UpdatePlayerInput(PhysicsComponent& data, float dt);
-void suckAttack(const Vector2 &position, const float rotation, SuckAttack &suckAttack);
+void suckAttack(const Vector2 &position, const Vector2& rotation, SuckAttack &suckAttack);
 void gunUpdate(const PlayerState& player, GunAttack& gun, std::vector<Shoot>& shoots);
 
 //helper
