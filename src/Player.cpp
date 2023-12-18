@@ -83,49 +83,53 @@ void UpdatePlayerInput(PhysicsComponent& data, float dt)
     data.thrust = 0;
   }
 }
-#if 0
-void RotateShip(Vector2 &direction, float rotationSpeed, float dt){
-  float angle = 0.f;
 
-  if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)){
-    angle = -rotationSpeed * dt;
-  }else if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)){
-    angle = rotationSpeed * dt;
-  }
-
-  if(angle == 0.f){
-    return;
-  }
-
-  float cosAngle = cos(angle);
-  float sinAngle = sin(angle);
-  float newX = direction.x * cosAngle - direction.y * sinAngle;
-  float newY = direction.x * sinAngle + direction.y * cosAngle;
-
-  direction = Vector2Normalize({newX, newY});
-}
-
-void accelerate(MovementComponent &movement)
+void AttractAsteroids(PhysicsComponent& player, AsteroidsScreen& screen)
 {
 
-  float dampingFactor = 0.01f;
-  if(IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)){
-    if (Vector2LengthSqr(movement.velocity) > 0.001f){
-      movement.force = Vector2Scale(Vector2Normalize(movement.velocity), -(dampingFactor*2.f) * Vector2Length(movement.velocity));
-    }else{
-      movement.force = Vector2Zero();
-    }
-  }else if(IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)){
-    movement.force = Vector2Scale(movement.direction, 2.f);
-  }else{
-    if(Vector2LengthSqr(movement.velocity) > 0.001f){
-      movement.force = Vector2Scale(Vector2Normalize(movement.velocity), -dampingFactor * Vector2Length(movement.velocity));
-    }else{
-      movement.force = Vector2Zero();
+}
+void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids, std::vector<float>& player_asteroid_distance)
+{
+  Vector2 attract_point = player.data.position + player.data.orientation*player.data.radius;
+
+  //visualize cone
+  float cone_angle = 15*M_PI/180; //should be part of player state and controllable
+  float line_len = 100;
+  Vector2 p1 = attract_point + Vector2Rotate(player.data.orientation,-cone_angle)*line_len;
+  Vector2 p2 = attract_point + Vector2Rotate(player.data.orientation,cone_angle)*line_len;
+
+  DrawLineEx(attract_point, p1, 1, RED);
+  DrawLineEx(attract_point, p2, 1, RED);
+
+  if(asteroids.size() != player_asteroid_distance.size())
+  {
+    return;
+  }
+  float attract_distance = 400;
+  for(size_t ii = 0; ii < asteroids.size(); ++ii)
+  {
+    if(player_asteroid_distance[ii] <= attract_distance)
+    {
+      //check if inside cone
+      Vector2 A = p1 - attract_point;
+      Vector2 B = asteroids[ii].data.position - attract_point;
+      Vector2 C = p2 - attract_point;
+      if (Vector2Cross(A,B) * Vector2Cross(A,C) >= 0
+          && Vector2Cross(C,B) * Vector2Cross(C,A) >= 0)
+      {
+        Rectangle asteroid_bound;
+        float margin = 10;
+        asteroid_bound.x = asteroids[ii].data.position.x - asteroids[ii].data.radius - margin;
+        asteroid_bound.y = asteroids[ii].data.position.y - asteroids[ii].data.radius - margin;
+        asteroid_bound.width = 2*(asteroids[ii].data.radius + margin);
+        asteroid_bound.height = 2*(asteroids[ii].data.radius + margin);
+        DrawRectangleLinesEx(asteroid_bound, 2, RED);
+      }
+      //todo check wrapping...
     }
   }
+
 }
-#endif
 
 void suckAttack(const Vector2 &position, const Vector2& rotation, SuckAttack &suckAttack)
 {

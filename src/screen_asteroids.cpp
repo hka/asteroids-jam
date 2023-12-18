@@ -193,7 +193,7 @@ void AsteroidsScreen::Update()
   // =================================================================
   // Spawn enteties
   // =================================================================
-  if(m_spawnAsteroidTimer.getElapsed() >= 5.f )
+  if(m_spawnAsteroidTimer.getElapsed() >= 5.f || m_asteroids.empty())
   {
     m_asteroids.push_back(CreateAsteroid(worldBound));
     m_spawnAsteroidTimer.start();
@@ -227,6 +227,7 @@ void AsteroidsScreen::Paint()
   DrawShip(m_player);
   DrawGun(m_player);
   DrawShoots(m_playerBullets);
+  PaintAttractAsteroids(m_player, m_asteroids, m_player_asteroid_distance);
 
   if(m_player.suckAttack.isOngoing){
     SuckAttack suckAttack = m_player.suckAttack;
