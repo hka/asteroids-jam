@@ -9,16 +9,9 @@
 
 struct Particle{
   Color color;
-  Vector2 position;
-  float lifeTime;
   float radius;
   float distance;
-
-  //////
   float speed;
-  float amplitude;
-  float frequency;
-  float angle;
 };
 
 struct Laser
@@ -37,9 +30,10 @@ struct Laser
   bool isHitting;
 
   Timer spawnParticleTimer;
-  std::vector<Particle> particlesRight;
-  std::vector<Particle> particlesLeft;
+  std::vector<Particle> particles;
 };
+
+constexpr const std::size_t MAXIMUM_PARTICLES = 60;
 
 void OnStart(Laser& laser, const Vector2& direction, const Vector2& startPoint);
 void Update(Laser &laser, const Vector2 &direction, const Vector2 &origin);
@@ -47,9 +41,9 @@ void CheckCollision(Laser& laser, std::vector<Asteroid> asteroids);
 void Clear(Laser& laser);
 void DrawLaser(Laser& laser);
 
-Particle CreateLaserParticle(Laser& laser, Color color);
+Particle CreateLaserParticle(Color color);
 void UpdateParticles(Laser& laser);
-void UpdateParticle(Particle &p, Laser &laser, bool leftToRight);
-void DrawParticles(std::vector<Particle>& particles);
+void UpdateParticle(Particle &p, Laser &laser);
+void DrawParticles(std::vector<Particle> &particles, const Vector2 &laserStart, const Vector2 &laserDirection);
 
 #endif

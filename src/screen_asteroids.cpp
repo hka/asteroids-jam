@@ -6,6 +6,9 @@
 
 #include "Collision.h"
 
+//debug
+#include <iostream>
+
 AsteroidsScreen::AsteroidsScreen():
   m_player(createPlayer({options.screenWidth / 2.f, options.screenHeight / 2.f}))
 {
@@ -193,6 +196,7 @@ void AsteroidsScreen::Paint()
   if(m_player.laser.isOngoing){
     DrawLaser(m_player.laser);
   }
+
 }
 
 Screen::GameScreen AsteroidsScreen::Finish()

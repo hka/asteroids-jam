@@ -11,9 +11,9 @@ void OnStart(Laser &laser, const Vector2 &direction, const Vector2 &origin){
   laser.start = origin;
   laser.length = 0.f;
   laser.maxLength = 200.f;
-  laser.growRate = 500.f;
+  laser.growRate = 800.f;
 
-  laser.width = 5.f;
+  laser.width = 10.f;
 
   laser.spawnParticleTimer.start();
 }
@@ -39,9 +39,21 @@ void Update(Laser &laser, const Vector2 &direction, const Vector2 &origin)
     laser.length += (laser.growRate * GetFrameTime());
   }
 
-  if(laser.spawnParticleTimer.getElapsed() > 0.1f){
-    laser.particlesRight.push_back(CreateLaserParticle(laser, YELLOW));
-    laser.particlesLeft.push_back(CreateLaserParticle(laser, WHITE));
+  if(laser.spawnParticleTimer.getElapsed() > 0.25f && laser.particles.size() < MAXIMUM_PARTICLES){
+    Color particleColor;
+    int chance = GetRandomValue(0, 100);
+    if(chance > 50){
+      particleColor = { 255,
+                        0,
+                        0,
+                        255 };
+    }else{
+      particleColor = {255,
+                       255,
+                       255,
+                       255};
+    }
+    laser.particles.push_back(CreateLaserParticle(particleColor));
     laser.spawnParticleTimer.start();
   }
 
@@ -69,8 +81,32 @@ void CheckCollision(Laser &laser, std::vector<Asteroid> asteroids){
 void Clear(Laser &laser)
 {
   laser.isOngoing = false;
-  laser.particlesRight.clear();
-  laser.particlesLeft.clear();
+  laser.particles.clear();
+}
+
+void print(int i)
+{
+  switch (i)
+  {
+  case BLEND_ADDITIVE:
+    std::cout << "ADDITIVE" << '\n';
+    break;
+  case BLEND_ADD_COLORS:
+    std::cout << "ADD_COLORS" << '\n';
+    break;
+  case BLEND_ALPHA:
+    std::cout << "ALPHA" << '\n';
+    break;
+  case BLEND_ALPHA_PREMULTIPLY:
+    std::cout << "ALPHA_PREMULTIPLY" << '\n';
+    break;
+  case BLEND_MULTIPLIED:
+    std::cout << "BLEND_MULTIPLIED" << '\n';
+    break;
+  case BLEND_SUBTRACT_COLORS:
+    std::cout << "SUBTRACT_COLORS" << '\n';
+    break;
+  }
 }
 
 void DrawLaser(Laser &laser){
@@ -81,104 +117,79 @@ void DrawLaser(Laser &laser){
       p1.x + (laser.direction.x * laser.length * 0.98f),
       p1.y + (laser.direction.y * laser.length * 0.98f)
     };
-  DrawLineEx(p1, p2, laser.width, RED);
-  DrawLineEx(p1, p3, laser.width / 5.f, WHITE);
-  if(laser.isHitting){
-    BeginBlendMode(BLEND_SUBTRACT_COLORS | BLEND_ADDITIVE);
-      
-    EndBlendMode();
-  }
 
-  DrawParticles(laser.particlesRight);
-  DrawParticles(laser.particlesLeft);
-}
+  int blendModes[6] = {
+      BLEND_ADDITIVE, BLEND_ADD_COLORS, BLEND_ALPHA,
+      BLEND_ALPHA_PREMULTIPLY, BLEND_MULTIPLIED,
+      BLEND_SUBTRACT_COLORS};
+  static int mode = 0;
 
-Particle CreateLaserParticle(Laser &laser, Color color)
-{
-  Particle particle;
-  particle.position = {laser.start.x, laser.start.y};
-  particle.color = color;
-  particle.lifeTime = 0.f;
-  particle.radius = 2.f;
-  particle.distance = 0.f;
-
-  particle.speed = 100.f;
-  particle.amplitude = 2.f;
-  particle.frequency = 10.f;
-
-  particle.angle = 0.f;
-  return particle;
-}
-
-void UpdateParticles(Laser &laser)
-{
-  Vector2 perpendicular = {-laser.direction.y, laser.direction.x};
-  float particleLifeTime = 1.90f;
-  for(std::size_t i = 0; i < laser.particlesRight.size(); ++i){
-    laser.particlesRight[i].lifeTime += GetFrameTime();
-    if (laser.particlesRight[i].lifeTime > particleLifeTime)
-    {
-      std::swap(laser.particlesRight[i], laser.particlesRight.back());
-      laser.particlesRight.pop_back();
-      --i;
-      continue;
-    }
-    UpdateParticle(laser.particlesRight[i], laser, true);
-  }
-  
-  perpendicular = {laser.direction.y, -laser.direction.x};
-  for (std::size_t i = 0; i < laser.particlesLeft.size(); ++i)
+  if (IsKeyPressed(KEY_LEFT))
   {
-    laser.particlesLeft[i].lifeTime += GetFrameTime();
-    if (laser.particlesLeft[i].lifeTime > particleLifeTime - 0.05f)
-    {
-      std::swap(laser.particlesLeft[i], laser.particlesLeft.back());
-      laser.particlesLeft.pop_back();
-      --i;
-      continue;
-    }
+    mode = mode - 1 < 0 ? 5 : mode - 1;
+    print(mode);
+  }
+  else if (IsKeyPressed(KEY_RIGHT))
+  {
+    mode = mode + 1 > 4 ? 0 : mode + 1;
+    print(mode);
+  }
 
-    UpdateParticle(laser.particlesLeft[i], laser, false);
+  static unsigned char a = 0;
+  a += (unsigned char)1;
+  if(a > (unsigned char) 100){
+    a = (unsigned char)0;
+  }
+  Color r0 = {255, 0,0, (unsigned char)(200 - a)};
+  Color r1 = {200, 0, 0, (unsigned char)(155 - a)};
+  Color r2 = {155, 0, 0, (unsigned char) 100 };
+  Color r3 = {55, 0, 0, (unsigned char) 50 };
+
+  BeginBlendMode(BLEND_SUBTRACT_COLORS | BLEND_ADDITIVE | BLEND_ALPHA);
+    DrawParticles(laser.particles, laser.start, laser.direction);
+  EndBlendMode();
+
+  BeginBlendMode(BLEND_ALPHA_PREMULTIPLY | BLEND_ADDITIVE);
+    DrawLineEx(p1, p2, laser.width / 6.f, r0);
+    DrawLineEx(p1, p2, laser.width / 3.f, r1);
+    DrawLineEx(p1, p2, laser.width / 2.f, r2);
+    DrawLineEx(p1, p2, laser.width, r3);
+  EndBlendMode();
+
+}
+
+Particle CreateLaserParticle(Color color){
+  Particle p;
+  p.color = color;
+  p.distance = 0.f;
+  p.radius = 2.f;
+  p.speed = 200.f;
+  return p;
+}
+
+void UpdateParticles(Laser &laser){
+  for(Particle& p : laser.particles){
+    UpdateParticle(p, laser);
   }
 }
 
-void UpdateParticle(Particle &particle, Laser &laser, bool leftToRight)
-{
-  Vector2 direction = laser.direction;
-  float radius = laser.width * 0.80f;
+void UpdateParticle(Particle &p, Laser &laser){
+  p.distance += p.speed * GetFrameTime();
 
-  // Move in the direction of travel
-  particle.position.x += direction.x * particle.speed * GetFrameTime();
-  particle.position.y += direction.y * particle.speed * GetFrameTime();
-
-  // Update the oscillation angle based on the speed and radius
-  particle.angle += (leftToRight ? (particle.speed / radius) : -(particle.speed / radius)) * GetFrameTime(); 
-
-  // Calculate the offset for oscillation
-  Vector2 offset = {radius * cos(particle.angle), radius * sin(particle.angle)};
-
-  Vector2 perpendicular = leftToRight ? Vector2{direction.y, -direction.x} : Vector2{-direction.y, direction.x}; 
-
-  Vector2 oscillation = {perpendicular.x * offset.x - perpendicular.y * offset.y,
-                         perpendicular.x * offset.y + perpendicular.y * offset.x};
-
-  // Update position with oscillation
-  particle.position.x += oscillation.x;
-  particle.position.y += oscillation.y;
+  if(p.distance >= (laser.length - 5.f)){
+    p.distance = 0.f;
+  }
 }
 
-/*
-om du gör det med vektorer kan du ex göra följande för en partikel som snurar runt vektorn
-om lasern börjar i p0 och pekar i d0
-låt d1 var vinkelrät mot d0 (dvs ex d1.x=d0.y, d1.y=-d0.x)
-låt p1 = p0+d0A; där A är hur långt från starten av lasern som partikeln ska snurra
-låt p2 = p1+d1B; där B är avstånd från lasern
-vill du att den ska rotera med radie R så sätt att om B=abs(B)>R?-B:B;
-*/
-
-void DrawParticles(std::vector<Particle> &particles)
+void DrawParticles(std::vector<Particle> &particles, const Vector2 &laserStart, const Vector2& laserDirection)
 {
+
+  float startOffset = 5.f;
   for(const Particle& p : particles){
-    DrawCircleV(p.position, p.radius, p.color);
+    Vector2 position = {
+      laserStart.x + (laserDirection.x * p.distance  + (startOffset * laserDirection.x)),
+      laserStart.y + (laserDirection.y * p.distance  + (startOffset * laserDirection.y))
+    };
+    DrawCircleV(position, p.radius, p.color);
   }
 }
