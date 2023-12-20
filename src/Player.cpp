@@ -3,6 +3,10 @@
 #include "helpers.h"
 #include "raylib_operators.h"
 
+#define RAY2D_COLLISION_IMPLEMENTATION //only this once!
+#include <ray_collision_2d.h>
+#undef RAY2D_COLLISION_IMPLEMENTATION
+
 PlayerState createPlayer(Vector2 startPos){
   PlayerState player;
   player.data.position = startPos;
@@ -94,7 +98,7 @@ void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids
 
   //visualize cone
   float cone_angle = 15*M_PI/180; //should be part of player state and controllable
-  float line_len = 100;
+  float line_len = 400;
   Vector2 p1 = attract_point + Vector2Rotate(player.data.orientation,-cone_angle)*line_len;
   Vector2 p2 = attract_point + Vector2Rotate(player.data.orientation,cone_angle)*line_len;
 
@@ -114,6 +118,22 @@ void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids
       Vector2 A = p1 - attract_point;
       Vector2 B = asteroids[ii].data.position - attract_point;
       Vector2 C = p2 - attract_point;
+
+      //or maybe wrapped cone
+      Vector2 collision_point;
+      float collision_dist;
+      bool check_wrap = false;
+      Rectangle bound = {0,0,options.screenWidth, options.screenHeight};
+      Ray2d r;
+      r.Origin = attract_point;
+      r.Direction = player.data.orientation;
+      r.Direction = -r.Direction;
+      if(CheckCollisionRay2dRect(r, bound, &collision_point))
+      {
+        collision_dist = Vector2Length(r.Origin - collision_point);
+        check_wrap = collision_dist < attract_distance;
+      }
+
       if (Vector2Cross(A,B) * Vector2Cross(A,C) >= 0
           && Vector2Cross(C,B) * Vector2Cross(C,A) >= 0)
       {
@@ -125,7 +145,38 @@ void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids
         asteroid_bound.height = 2*(asteroids[ii].data.radius + margin);
         DrawRectangleLinesEx(asteroid_bound, 2, RED);
       }
-      //todo check wrapping...
+      else if(check_wrap) // for wrapping, check wrapped cone
+      {
+        Vector2 collision_point_back;
+        float collision_dist_back;
+        r.Direction *= -1;
+        if(CheckCollisionRay2dRect(r, bound, &collision_point_back))
+        {
+          Vector2 alt_attract = collision_point_back - collision_dist*player.data.orientation;
+
+          p1 = alt_attract + Vector2Rotate(player.data.orientation,-cone_angle)*line_len;
+          p2 = alt_attract + Vector2Rotate(player.data.orientation,cone_angle)*line_len;
+
+          DrawLineEx(alt_attract, p1, 1, RED);
+          DrawLineEx(alt_attract, p2, 1, RED);
+
+          A = p1 - alt_attract;
+          B = asteroids[ii].data.position - alt_attract;
+          C = p2 - alt_attract;
+          if (Vector2Length(asteroids[ii].data.position - alt_attract) < attract_distance
+              && Vector2Cross(A,B) * Vector2Cross(A,C) >= 0
+              && Vector2Cross(C,B) * Vector2Cross(C,A) >= 0)
+          {
+            Rectangle asteroid_bound;
+            float margin = 10;
+            asteroid_bound.x = asteroids[ii].data.position.x - asteroids[ii].data.radius - margin;
+            asteroid_bound.y = asteroids[ii].data.position.y - asteroids[ii].data.radius - margin;
+            asteroid_bound.width = 2*(asteroids[ii].data.radius + margin);
+            asteroid_bound.height = 2*(asteroids[ii].data.radius + margin);
+            DrawRectangleLinesEx(asteroid_bound, 2, RED);
+          }
+        }
+      }
     }
   }
 
