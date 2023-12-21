@@ -99,6 +99,7 @@ extern "C"
 
 			return false;
 		}
+    return false;
 	}
 
 	// intersection using the slab method
@@ -171,7 +172,7 @@ extern "C"
 
 				float b = sqrtf(radius * radius - nearestDist * nearestDist);
 
-				*intersection = (Vector2){ ray.Origin.x + ray.Direction.x * (dot - b), ray.Origin.y + ray.Direction.y * (dot - b) };
+				*intersection = { ray.Origin.x + ray.Direction.x * (dot - b), ray.Origin.y + ray.Direction.y * (dot - b) };
 			}
 		}
 
@@ -192,8 +193,8 @@ extern "C"
 		for (int j = pointCount - 1, i = 0; i < pointCount; j = i, i++) 
 		{
 			Ray2d edgeRay = { 
-				.Origin = points[i],
-				.Direction = Vector2Subtract(points[j], points[i])
+				points[i],
+				Vector2Subtract(points[j], points[i])
 			};
 
 			float length = -INFINITY;

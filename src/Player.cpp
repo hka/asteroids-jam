@@ -88,10 +88,31 @@ void UpdatePlayerInput(PhysicsComponent& data, float dt)
   }
 }
 
-void AttractAsteroids(PhysicsComponent& player, AsteroidsScreen& screen)
+void AttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids)
 {
-
+  //Vector2 attract_point = player.data.position + player.data.orientation*(player.data.radius+50);
+  for(size_t ii = 0; ii < asteroids.size(); ++ii)
+  {
+    if(asteroids[ii].target == 1)
+    {
+      Vector2 attract_point = asteroids[ii].attract_point + player.data.orientation*50;
+      Vector2 dir = attract_point - asteroids[ii].data.position;
+      asteroids[ii].data.force += 500000*Vector2Normalize(dir);
+      if(Vector2Length(dir) < 20)
+      {
+        asteroids[ii].data.velocity = player.data.velocity;
+        asteroids[ii].data.force *= 0;
+      }
+    }
+    else if(asteroids[ii].target == 2)
+    {
+      Vector2 attract_point = asteroids[ii].attract_point + player.data.orientation*50;
+      Vector2 dir = attract_point - asteroids[ii].data.position;
+      asteroids[ii].data.force += 500000*Vector2Normalize(dir);
+    }
+  }
 }
+
 void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids, std::vector<float>& player_asteroid_distance)
 {
   Vector2 attract_point = player.data.position + player.data.orientation*player.data.radius;
@@ -112,6 +133,7 @@ void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids
   float attract_distance = 400;
   for(size_t ii = 0; ii < asteroids.size(); ++ii)
   {
+    asteroids[ii].target = 0;
     if(player_asteroid_distance[ii] <= attract_distance)
     {
       //check if inside cone
@@ -123,7 +145,7 @@ void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids
       Vector2 collision_point;
       float collision_dist;
       bool check_wrap = false;
-      Rectangle bound = {0,0,options.screenWidth, options.screenHeight};
+      Rectangle bound = {0,0,(float)options.screenWidth, (float)options.screenHeight};
       Ray2d r;
       r.Origin = attract_point;
       r.Direction = player.data.orientation;
@@ -144,13 +166,21 @@ void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids
         asteroid_bound.width = 2*(asteroids[ii].data.radius + margin);
         asteroid_bound.height = 2*(asteroids[ii].data.radius + margin);
         DrawRectangleLinesEx(asteroid_bound, 2, RED);
+        asteroids[ii].target = 1;
+        asteroids[ii].attract_point = attract_point;
       }
       else if(check_wrap) // for wrapping, check wrapped cone
       {
         Vector2 collision_point_back;
-        float collision_dist_back;
-        r.Direction *= -1;
-        if(CheckCollisionRay2dRect(r, bound, &collision_point_back))
+        //this should be possible to do in a nicer way...
+        //wrap collision_point to other side
+        Vector2 off;
+        off.x = collision_point.x > bound.width/2 ? 10.f : -10.f;
+        off.y = collision_point.y > bound.height/2 ? 10.f : -10.f;
+        collision_point_back = collision_point+off;
+        collision_point_back = mod(collision_point_back, {bound.width, bound.height});
+        collision_point_back = collision_point_back-off;
+
         {
           Vector2 alt_attract = collision_point_back - collision_dist*player.data.orientation;
 
@@ -174,6 +204,8 @@ void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids
             asteroid_bound.width = 2*(asteroids[ii].data.radius + margin);
             asteroid_bound.height = 2*(asteroids[ii].data.radius + margin);
             DrawRectangleLinesEx(asteroid_bound, 2, RED);
+            asteroids[ii].target = 2;
+            asteroids[ii].attract_point = alt_attract;
           }
         }
       }

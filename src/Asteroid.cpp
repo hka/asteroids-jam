@@ -31,7 +31,7 @@ Asteroid CreateAsteroid(const Vector2& worldBound){
 
   asteroid.data.mass = M_PI*radius*radius;
   asteroid.data.drag = 1.2f*radius/ASTEROID_MAX_RADIUS; //controlls terminal velocity should depend on radius maybe
-  asteroid.data.thrust = 50000; //todo calculate reasonable values
+  asteroid.data.thrust = 5000; //todo calculate reasonable values
   std::uniform_real_distribution<> distrib(-1.f, 1.f);
   asteroid.data.orientation = {(float)distrib(RNG),(float)distrib(RNG)};
   asteroid.data.orientation = Vector2Normalize(asteroid.data.orientation);
@@ -47,7 +47,7 @@ Asteroid CreateAsteroid(const Vector2 &pos, float radius){
 
   asteroid.data.mass = M_PI * radius * radius;
   asteroid.data.drag = 1.2f * radius / ASTEROID_MAX_RADIUS; // controlls terminal velocity should depend on radius maybe
-  asteroid.data.thrust = 50000;                             // todo calculate reasonable values
+  asteroid.data.thrust = 5000;                             // todo calculate reasonable values
   std::uniform_real_distribution<> distrib(-1.f, 1.f);
   asteroid.data.orientation = {(float)distrib(RNG), (float)distrib(RNG)};
   asteroid.data.orientation = Vector2Normalize(asteroid.data.orientation);

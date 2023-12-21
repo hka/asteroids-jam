@@ -53,6 +53,7 @@ void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot>& 
 void UpdatePlayerInput(PhysicsComponent& data, float dt);
 void suckAttack(const Vector2 &position, const Vector2& rotation, SuckAttack &suckAttack);
 void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids, std::vector<float>& player_asteroid_distance);
+void AttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids);
 void gunUpdate(const PlayerState& player, GunAttack& gun, std::vector<Shoot>& shoots);
 
 //helper
