@@ -341,39 +341,24 @@ void DrawShip(const PlayerState& player)
   vertices[2] = {pos.x - 15.f, pos.y + 10.f};
   rotateTriangle(vertices, player.data.orientation, pos);
 
-  // draw 4 times as a hack to handle wrapping
-  DrawTriangle(
-    vertices[0],
-    vertices[1],
-    vertices[2],
-    GREEN
-    );
-  Vector2 p;
-  Vector2 off = bound;
-  off.x = 0;
-  p = mod(pos + off,bound);
-  vertices[0] = p + Vector2{15.f, 0.f};
-  vertices[1] = {p.x - 15.f, p.y - 10.f};
-  vertices[2] = {p.x - 15.f, p.y + 10.f};
-  rotateTriangle(vertices, player.data.orientation, pos);
-  DrawTriangle(vertices[0], vertices[1], vertices[2], GREEN);
+  //DrawTriangle(vertices[0],vertices[1],vertices[2],GREEN);
 
-  off = bound;
-  off.y = 0;
-  p = mod(pos + off,bound);
-  vertices[0] = p + Vector2{15.f, 0.f};
-  vertices[1] = {p.x - 15.f, p.y - 10.f};
-  vertices[2] = {p.x - 15.f, p.y + 10.f};
-  rotateTriangle(vertices, player.data.orientation, pos);
-  DrawTriangle(vertices[0], vertices[1], vertices[2], GREEN);
+ float r = player.data.radius;
+ float x = pos.x;
+ float y = pos.y;
 
-  off = bound;
-  p = mod(pos + off,bound);
-  vertices[0] = p + Vector2{15.f, 0.f};
-  vertices[1] = {p.x - 15.f, p.y - 10.f};
-  vertices[2] = {p.x - 15.f, p.y + 10.f};
-  rotateTriangle(vertices, player.data.orientation, pos);
-  DrawTriangle(vertices[0], vertices[1], vertices[2], GREEN);
+ Texture2D te = TEXTURES[0];
+ // Source rectangle (part of the texture to use for drawing)
+ Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
+
+ // Destination rectangle (screen rectangle where drawing part of texture)
+ Rectangle destRec = { x, y, 2*r, 2*r };
+ // Origin of the texture (rotation/scale point), it's relative to destination rectangle size
+ Vector2 origin = { r,r };
+
+ int rotation = atan2(player.data.orientation.y,player.data.orientation.x)*180/M_PI + 90;
+ DrawTexturePro(te, sourceRec, destRec, origin, (float)rotation, WHITE);
+
 }
 
 void DrawGun(const PlayerState& player)
@@ -383,6 +368,22 @@ void DrawGun(const PlayerState& player)
   DrawCircleV(player.data.position, 5,RED);
 
   DrawLineEx(player.data.position, player.data.position + 10*player.gun.direction ,3, GRAY);
+
+  float r = player.data.radius/2;
+  float x = player.data.position.x;
+  float y = player.data.position.y;
+
+  Texture2D te = TEXTURES[1];
+  // Source rectangle (part of the texture to use for drawing)
+  Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
+
+  // Destination rectangle (screen rectangle where drawing part of texture)
+  Rectangle destRec = { x, y, 2*r, 2*r };
+  // Origin of the texture (rotation/scale point), it's relative to destination rectangle size
+  Vector2 origin = { r,r };
+
+  int rotation = atan2(player.gun.direction.y,player.gun.direction.x)*180/M_PI + 90;
+  DrawTexturePro(te, sourceRec, destRec, origin, (float)rotation, WHITE);
 }
 
 void PlayerState::OnHit()
