@@ -184,5 +184,9 @@ inline Vector2 CyclicDirTo(const Vector2& from, const Vector2& to,
   return dir;
 }
 
+inline float Vector2Cross(const Vector2& a, const Vector2& b)
+{
+  return a.y*b.x-a.x*b.y;
+}
 
 #endif

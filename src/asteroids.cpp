@@ -53,6 +53,16 @@ void success()
 #endif
 }
 
+void LoadImageToTEXTURES(const char* path)
+{
+  Image art = LoadImage(path);
+  Texture2D texture = LoadTextureFromImage(art);
+  GenTextureMipmaps( &texture );
+  SetTextureFilter(texture, TEXTURE_FILTER_TRILINEAR);
+
+  TEXTURES.push_back(texture);
+}
+
 int main(void)
 {
 #if defined(PLATFORM_WEB)
@@ -113,13 +123,23 @@ int main(void)
   //printf("size: %d x %d\n",GetScreenWidth(), GetScreenHeight());
   //printf("size: %d x %d\n",GetRenderWidth(), GetRenderHeight());
   currentScreen = std::make_unique<LogoScreen>();
-  
+
   if(options.skipLogo)
   {
     currentScreen = std::make_unique<MainMenuScreen>();
   }
 
   SetTargetFPS(options.fps);
+
+  // -----------------------------------------------------------------
+  //Load textures
+  LoadImageToTEXTURES("data/ship.png");
+  LoadImageToTEXTURES("data/gun.png");
+  LoadImageToTEXTURES("data/asteroid0.png");
+  LoadImageToTEXTURES("data/asteroid1.png");
+  LoadImageToTEXTURES("data/asteroid2.png");
+
+  // -----------------------------------------------------------------
 
 #if defined(PLATFORM_WEB)
   emscripten_set_main_loop(UpdatePaintFrame, 0, 1);
@@ -129,6 +149,12 @@ int main(void)
   while (!WindowShouldClose() && currentScreen != nullptr)    // Detect window close button or ESC key
   {
     UpdatePaintFrame();
+  }
+
+  //Cleanup
+  for(auto& t : TEXTURES)
+  {
+    UnloadTexture(t);
   }
 
 #endif

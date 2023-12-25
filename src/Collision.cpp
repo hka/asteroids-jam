@@ -79,7 +79,7 @@ void handleCollision(PlayerState &player, std::vector<Asteroid> &asteroids)
   {
     Asteroid a = asteroids[j];
 
-    if(CheckCollisionCircles(player.data.position, player.data.radius, a.data.position, a.data.radius)){
+    if(a.target == 0 && CheckCollisionCircles(player.data.position, player.data.radius, a.data.position, a.data.radius)){
 
       player.OnHit();
 
