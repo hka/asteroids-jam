@@ -33,7 +33,7 @@ struct Laser
   std::vector<Particle> particles;
 };
 
-constexpr const std::size_t MAXIMUM_PARTICLES = 60;
+constexpr const std::size_t MAXIMUM_PARTICLES = 30;
 
 void OnStart(Laser& laser, const Vector2& direction, const Vector2& startPoint);
 void Update(Laser &laser, const Vector2 &direction, const Vector2 &origin);
