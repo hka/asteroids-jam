@@ -8,16 +8,12 @@
 #include <vector>
 
 struct Enemy{
-  Vector2 position;
-  float radius;
-  MovementComponent movement;
-
+  float value = 10;
   PhysicsComponent data;
 };
 
 //update
-void UpdateEnemy(Enemy &enemy, const Vector2 &worldBound,
-                 const std::vector<Asteroid>& asteroids);
+void UpdateEnemy(Enemy &enemy, const Vector2 &worldBound, float dt);
 
 //paint
 void PaintEnemy(Enemy& Enemy);

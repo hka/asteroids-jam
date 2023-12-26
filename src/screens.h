@@ -23,8 +23,21 @@ struct GameOptions
   int screenHeight = 480;
   int fps = 60;
   bool skipLogo = false;
+  bool godMode = true;
 };
-VISITABLE_STRUCT(GameOptions, screenWidth, screenHeight, fps, skipLogo);
+VISITABLE_STRUCT(GameOptions, screenWidth, screenHeight, fps, skipLogo, godMode);
+
+struct Score
+{
+  std::string name;
+  float score;
+};
+VISITABLE_STRUCT(Score, name, score);
+struct HighScore
+{
+  std::vector<Score> scores;
+};
+VISITABLE_STRUCT(HighScore, scores);
 
 class Screen
 {
@@ -104,9 +117,10 @@ class AsteroidsScreen : public Screen
   std::vector<std::vector<float>> m_enemy_asteroid_distance;
 
   void AsteroidAsteroidInteraction(const Vector2& bound);
+  void AsteroidEnemyInteraction(const Vector2& bound);
 
   GameScreen m_finishScreen;
-  PlayerSteer m_player;
+  PlayerState m_player;
   std::vector<Shoot> m_playerBullets;
 
   Timer m_spawnAsteroidTimer;
@@ -115,6 +129,9 @@ class AsteroidsScreen : public Screen
   Timer m_spawnEnemyTimer;
   std::vector<Enemy> m_enemies;
   std::vector<Shoot> m_enemyBullets;
+
+  InputBox m_namebox;
+  size_t m_frame = 0;
 };
 
 class OptionsScreen : public Screen
@@ -133,6 +150,7 @@ private:
   GameScreen m_finishScreen;
   std::vector<Button> m_buttons;
   size_t m_toggleIntroIx;
+  size_t m_toggleGodModeIx;
   std::vector<KeySelector> m_keySelector;
 };
 

@@ -54,24 +54,6 @@ void Update(Laser &laser, const Vector2 &direction, const Vector2 &origin)
   UpdateParticles(laser);
 }
 
-void CheckCollision(Laser &laser, std::vector<Asteroid> asteroids){
-  bool isHitting = false;
-  for(const Asteroid& asteroid : asteroids){
-    Vector3 asteroidPos = {asteroid.data.position.x, asteroid.data.position.y, 0.f};
-    RayCollision col = GetRayCollisionSphere(laser.ray, asteroidPos, asteroid.data.radius);
-    
-    if(col.hit && col.distance <= laser.maxLength && col.distance > 0.f){
-      isHitting = true;
-      if (laser.length > col.distance)
-      {
-        laser.length = col.distance;
-      }
-    }
-  }
-
-  laser.isHitting = isHitting;
-}
-
 void Clear(Laser &laser)
 {
   laser.isOngoing = false;
@@ -80,9 +62,6 @@ void Clear(Laser &laser)
 
 void DrawLaser(Laser &laser){
 
-  Vector2 p1 = laser.start;
-  Vector2 p2 = laser.end;
-
   BeginBlendMode(BLEND_SUBTRACT_COLORS | BLEND_ADDITIVE | BLEND_ALPHA);
     DrawParticles(laser.particles, laser.start, laser.direction);
   EndBlendMode();
@@ -90,14 +69,14 @@ void DrawLaser(Laser &laser){
   float height = laser.length;
   unsigned char value = (unsigned char)50;
   Color color = {value, 0, 0, value};
-  int steps = 15;
+  int steps = 10;
   unsigned char targetValue = (unsigned char)255;
   unsigned char f = (targetValue - value) / steps;
   float width = laser.width;
 
   BeginBlendMode(BLEND_ALPHA_PREMULTIPLY | BLEND_ADDITIVE);
     for (int i = 0; i < steps; ++i){
-      DrawLineEx(p1, p2, width, color);
+      DrawLineEx(laser.start, laser.end, width, color);
       color.a += f;
       color.r += f;
       width *= 0.5f;

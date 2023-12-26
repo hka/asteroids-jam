@@ -8,6 +8,7 @@
 #include "Timer.hpp"
 #include "EntityComponents.h"
 #include "Laser.h"
+#include "Asteroid.h"
 
 struct Shoot;
 
@@ -32,9 +33,10 @@ struct GunAttack{
   float cooldownDuration;
 };
 
-struct PlayerSteer
+struct PlayerState
 {
-  Vector2 position;
+  float score = 0;
+  bool alive = true;
 
   MovementComponent movement;
   SuckAttack suckAttack;
@@ -42,17 +44,20 @@ struct PlayerSteer
   Laser laser;
 
   PhysicsComponent data;
+
+  void OnHit();
 };
 
 // update
-void update(PlayerSteer &player, const Vector2 &worldBound, std::vector<Shoot>& shoots);
+void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot>& shoots, float dt);
 
 //input
-void RotateShip(Vector2& direction, float rotationSpeed);
-void accelerate(MovementComponent &movement);
-void suckAttack(const Vector2 &position, const float rotation, SuckAttack &suckAttack);
-void gunUpdate(const PlayerSteer& player, GunAttack& gun, std::vector<Shoot>& shoots);
-void laserUpdate(PlayerSteer& player);
+void UpdatePlayerInput(PhysicsComponent& data, float dt);
+void suckAttack(const Vector2 &position, const Vector2& rotation, SuckAttack &suckAttack);
+void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids, std::vector<float>& player_asteroid_distance);
+void AttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids);
+void gunUpdate(const PlayerState& player, GunAttack& gun, std::vector<Shoot>& shoots);
+void laserUpdate(PlayerState &player);
 
 //helper
 void rotateTriangle(Vector2 (&v)[3], const float angle);
@@ -62,10 +67,10 @@ Vector2 RandomPositionBetweenPoints(Vector2 point1, Vector2 point2);
 void moveBallTowardsPoint(Ball &ball, Vector2 targetPoint);
 
 //paint
-void DrawShip(const PlayerSteer &player);
-void DrawGun(const PlayerSteer &player);
+void DrawShip(const PlayerState &player);
+void DrawGun(const PlayerState &player);
 
 //factory
-PlayerSteer createPlayer(Vector2 startPos);
+PlayerState createPlayer(Vector2 startPos);
 
 #endif

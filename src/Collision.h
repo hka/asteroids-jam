@@ -8,8 +8,13 @@
 #include "Player.hpp"
 #include "Asteroid.h"
 
-void handleCollision(std::vector<Enemy>& enemies, std::vector<Shoot>& playerBullets);
-void handleCollision(std::vector<Asteroid> &asteroids, std::vector<Shoot> &playerBullets);
-void handleCollision(PlayerSteer& player, std::vector<Shoot>& enemyBullets);
+float handleCollision(std::vector<Enemy>& enemies, std::vector<Shoot>& playerBullets);
+float handleCollision(std::vector<Asteroid> &asteroids, std::vector<Shoot> &playerBullets);
+void handleCollision(PlayerState& player, std::vector<Shoot>& enemyBullets);
+void handleCollision(PlayerState &player, std::vector<Asteroid> &asteroids);
+float HandleLaserCollision(Laser &laser, std::vector<Asteroid> &asteroids);
+float HandleLaserCollision(Laser &laser, std::vector<Enemy> &enemies);
+
+void onAsteroidSplit(std::vector<Asteroid>& asteroids, Asteroid& asteroid);
 
 #endif

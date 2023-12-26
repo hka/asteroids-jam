@@ -335,7 +335,7 @@ void PaintDroplist(const Droplist& dl)
   }
 }
 
-void PaintTextField(const TextField& tf, int frame)
+void PaintTextField(const TextField& tf, size_t frame)
 {
   DrawRectangleRec(tf.position, tf.bg);
   DrawRectangleLines((int)tf.position.x,
@@ -370,7 +370,7 @@ void PaintTextField(const TextField& tf, int frame)
   DrawText(text+offset, (int)tf.position.x+hMargin, (int)tf.position.y+hMargin, fontSize, MAROON);
 }
 
-void PaintInputBox(const InputBox& ib, int frame)
+void PaintInputBox(const InputBox& ib, size_t frame)
 {
   DrawRectangleRec(ib.position, GRAY);
   PaintTextField(ib.input, frame);

@@ -4,8 +4,12 @@
 #include "EntityComponents.h"
 
 struct Asteroid{
-  Vector2 position;
+  float value = 1;
   PhysicsComponent data;
+
+  int target = 0;
+  Vector2 attract_point;
+  int art_ix = 2;
 };
 
 constexpr const float ASTEROID_MIN_RADIUS = 8.f;

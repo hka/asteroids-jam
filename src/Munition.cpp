@@ -3,14 +3,15 @@
 #include "raylib_operators.h"
 #include "globals.h"
 
-void UpdateShoots(std::vector<Shoot>& shoots)
+void UpdateShoots(std::vector<Shoot>& shoots, float dt)
 {
   Rectangle bound {0,0,(float)options.screenWidth,(float)options.screenHeight};
+  Vector2 worldBound = {(float)options.screenWidth,(float)options.screenHeight};
   std::vector<size_t> remove_ix;
   for(size_t ii = 0; ii < shoots.size(); ++ii)
   {
-    shoots[ii].position += shoots[ii].direction*shoots[ii].speed*GetFrameTime();
-    if(!CheckCollisionPointRec(shoots[ii].position, bound))
+    UpdatePosition(shoots[ii].data, worldBound, dt, true);
+    if(!CheckCollisionPointRec(shoots[ii].data.position, bound))
     {
       //bullet left screen
       remove_ix.push_back(ii);
@@ -29,17 +30,18 @@ void DrawShoots(const std::vector<Shoot>& shoots)
 {
   for(const Shoot& s : shoots)
   {
-    DrawCircleV(s.position, s.radius, DARKGRAY);
+    DrawCircleV(s.data.position, s.data.radius, DARKGRAY);
   }
 }
 
-void FireShoot(const Vector2& position, const Vector2& direction, const Vector2& velocity, const float maxAcceleration, std::vector<Shoot>& shoots){
+void FireShoot(const PhysicsComponent& player, const Vector2& direction, float muzzle_velocity, std::vector<Shoot> &shoots)
+{
   Shoot bullet;
-  bullet.position = position + 30 * direction;
-  bullet.direction = direction;
-  bullet.radius = 4;
-  float vel_component = Vector2Length(proj(velocity, direction));
-  float sign = dot(direction, velocity) < 0 ? -1 : 1;
-  bullet.speed = vel_component * sign + 2 * maxAcceleration;
+  bullet.data.position = player.position + 30 * direction;
+  bullet.data.orientation = direction;
+  bullet.data.radius = 4;
+  bullet.data.mass = 1;
+  Vector2 norm_dir = Vector2Normalize(direction);
+  bullet.data.velocity = player.velocity + norm_dir*muzzle_velocity;
   shoots.push_back(bullet);
 }

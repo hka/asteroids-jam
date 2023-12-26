@@ -3,10 +3,18 @@
 #include "helpers.h"
 #include "raylib_operators.h"
 
-PlayerSteer createPlayer(Vector2 startPos){
-  PlayerSteer player;
-  player.position = startPos;
+#define RAY2D_COLLISION_IMPLEMENTATION //only this once!
+#include <ray_collision_2d.h>
+#undef RAY2D_COLLISION_IMPLEMENTATION
+
+PlayerState createPlayer(Vector2 startPos){
+  PlayerState player;
   player.data.position = startPos;
+  float radius = 15.f;
+  player.data.radius = radius;
+  player.data.mass = M_PI*radius*radius;
+  player.data.drag = 5;
+  player.data.orientation = {0.f, -1.f};
 
   player.movement.maxAcceleration = 250.f;
   player.movement.direction = {0.f, -1.f};
@@ -30,13 +38,15 @@ PlayerSteer createPlayer(Vector2 startPos){
 ////////////////////////////////////////////////
 ///         Update                          ///
 ///////////////////////////////////////////////
-void update(PlayerSteer &player, const Vector2 &worldBound, std::vector<Shoot> &shoots)
+void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &shoots, float dt)
 {
-  RotateShip(player.movement.direction, player.movement.rotationSpeed);
-  accelerate(player.movement);
-  UpdateMovement(player.position, player.movement, worldBound);
+  UpdatePlayerInput(player.data, dt);
+  player.data.force *= 0;
+  ApplyThrustDrag(player.data);
+  UpdatePosition(player.data, worldBound, dt);
 
-  suckAttack(player.data.position, player.movement.rotation, player.suckAttack);
+
+  suckAttack(player.data.position, player.data.orientation, player.suckAttack);
   gunUpdate(player, player.gun, shoots);
   laserUpdate(player);
 }
@@ -44,50 +54,168 @@ void update(PlayerSteer &player, const Vector2 &worldBound, std::vector<Shoot> &
 ////////////////////////////////////////////////
 ///         Input                           ///
 ///////////////////////////////////////////////
-
-void RotateShip(Vector2 &direction, float rotationSpeed){
-  float angle = 0.f;
-
-  if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)){
-    angle = -rotationSpeed * GetFrameTime();
-  }else if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)){
-    angle = rotationSpeed * GetFrameTime();
+void UpdatePlayerInput(PhysicsComponent& data, float dt)
+{
+  //rotate velocity vector and update orientation to match
+  //TODO handle rotation when moving in reverse?
+  if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
+  {
+    data.velocity = Vector2Rotate(data.velocity, -(M_PI/0.8f)*dt);
+    if(Vector2LengthSqr(data.velocity)>0)
+    {
+      data.orientation = Vector2Normalize(data.velocity);
+    }
+  }
+  else if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
+  {
+    data.velocity = Vector2Rotate(data.velocity, (M_PI/0.8f)*dt);
+    if(Vector2LengthSqr(data.velocity)>0)
+    {
+      data.orientation = Vector2Normalize(data.velocity);
+    }
   }
 
-  if(angle == 0.f){
+  if(IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S))
+  {
+    data.thrust = -500000;
+  }
+  else if(IsKeyDown(KEY_UP) || IsKeyDown(KEY_W))
+  {
+    data.thrust = 500000;
+  }
+  else
+  {
+    data.thrust = 0;
+  }
+}
+
+void AttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids)
+{
+  //Vector2 attract_point = player.data.position + player.data.orientation*(player.data.radius+50);
+  for(size_t ii = 0; ii < asteroids.size(); ++ii)
+  {
+    if(asteroids[ii].target == 1)
+    {
+      Vector2 attract_point = asteroids[ii].attract_point + player.data.orientation*50;
+      Vector2 dir = attract_point - asteroids[ii].data.position;
+      asteroids[ii].data.force += 500000*Vector2Normalize(dir);
+      if(Vector2Length(dir) < 20)
+      {
+        asteroids[ii].data.velocity = player.data.velocity;
+        asteroids[ii].data.force *= 0;
+      }
+    }
+    else if(asteroids[ii].target == 2)
+    {
+      Vector2 attract_point = asteroids[ii].attract_point + player.data.orientation*50;
+      Vector2 dir = attract_point - asteroids[ii].data.position;
+      asteroids[ii].data.force += 500000*Vector2Normalize(dir);
+    }
+  }
+}
+
+void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids, std::vector<float>& player_asteroid_distance)
+{
+  Vector2 attract_point = player.data.position + player.data.orientation*player.data.radius;
+
+  //visualize cone
+  float cone_angle = 15*M_PI/180; //should be part of player state and controllable
+  float line_len = 400;
+  Vector2 p1 = attract_point + Vector2Rotate(player.data.orientation,-cone_angle)*line_len;
+  Vector2 p2 = attract_point + Vector2Rotate(player.data.orientation,cone_angle)*line_len;
+
+  DrawLineEx(attract_point, p1, 1, RED);
+  DrawLineEx(attract_point, p2, 1, RED);
+
+  if(asteroids.size() != player_asteroid_distance.size())
+  {
     return;
   }
+  float attract_distance = 400;
+  for(size_t ii = 0; ii < asteroids.size(); ++ii)
+  {
+    asteroids[ii].target = 0;
+    if(player_asteroid_distance[ii] <= attract_distance)
+    {
+      //check if inside cone
+      Vector2 A = p1 - attract_point;
+      Vector2 B = asteroids[ii].data.position - attract_point;
+      Vector2 C = p2 - attract_point;
 
-  float cosAngle = cos(angle);
-  float sinAngle = sin(angle);
-  float newX = direction.x * cosAngle - direction.y * sinAngle;
-  float newY = direction.x * sinAngle + direction.y * cosAngle;
+      //or maybe wrapped cone
+      Vector2 collision_point;
+      float collision_dist;
+      bool check_wrap = false;
+      Rectangle bound = {0,0,(float)options.screenWidth, (float)options.screenHeight};
+      Ray2d r;
+      r.Origin = attract_point;
+      r.Direction = player.data.orientation;
+      r.Direction = -r.Direction;
+      if(CheckCollisionRay2dRect(r, bound, &collision_point))
+      {
+        collision_dist = Vector2Length(r.Origin - collision_point);
+        check_wrap = collision_dist < attract_distance;
+      }
 
-  direction = Vector2Normalize({newX, newY});
-}
+      if (Vector2Cross(A,B) * Vector2Cross(A,C) >= 0
+          && Vector2Cross(C,B) * Vector2Cross(C,A) >= 0)
+      {
+        Rectangle asteroid_bound;
+        float margin = 10;
+        asteroid_bound.x = asteroids[ii].data.position.x - asteroids[ii].data.radius - margin;
+        asteroid_bound.y = asteroids[ii].data.position.y - asteroids[ii].data.radius - margin;
+        asteroid_bound.width = 2*(asteroids[ii].data.radius + margin);
+        asteroid_bound.height = 2*(asteroids[ii].data.radius + margin);
+        DrawRectangleLinesEx(asteroid_bound, 2, RED);
+        asteroids[ii].target = 1;
+        asteroids[ii].attract_point = attract_point;
+      }
+      else if(check_wrap) // for wrapping, check wrapped cone
+      {
+        Vector2 collision_point_back;
+        //this should be possible to do in a nicer way...
+        //wrap collision_point to other side
+        Vector2 off;
+        off.x = collision_point.x > bound.width/2 ? 10.f : -10.f;
+        off.y = collision_point.y > bound.height/2 ? 10.f : -10.f;
+        collision_point_back = collision_point+off;
+        collision_point_back = mod(collision_point_back, {bound.width, bound.height});
+        collision_point_back = collision_point_back-off;
 
-void accelerate(MovementComponent &movement)
-{
+        {
+          Vector2 alt_attract = collision_point_back - collision_dist*player.data.orientation;
 
-  float dampingFactor = 0.01f;
-  if(IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)){
-    if (Vector2LengthSqr(movement.velocity) > 0.001f){
-      movement.force = Vector2Scale(Vector2Normalize(movement.velocity), -(dampingFactor*2.f) * Vector2Length(movement.velocity));
-    }else{
-      movement.force = Vector2Zero();
-    }
-  }else if(IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)){
-    movement.force = Vector2Scale(movement.direction, 2.f);
-  }else{
-    if(Vector2LengthSqr(movement.velocity) > 0.001f){
-      movement.force = Vector2Scale(Vector2Normalize(movement.velocity), -dampingFactor * Vector2Length(movement.velocity));
-    }else{
-      movement.force = Vector2Zero();
+          p1 = alt_attract + Vector2Rotate(player.data.orientation,-cone_angle)*line_len;
+          p2 = alt_attract + Vector2Rotate(player.data.orientation,cone_angle)*line_len;
+
+          DrawLineEx(alt_attract, p1, 1, RED);
+          DrawLineEx(alt_attract, p2, 1, RED);
+
+          A = p1 - alt_attract;
+          B = asteroids[ii].data.position - alt_attract;
+          C = p2 - alt_attract;
+          if (Vector2Length(asteroids[ii].data.position - alt_attract) < attract_distance
+              && Vector2Cross(A,B) * Vector2Cross(A,C) >= 0
+              && Vector2Cross(C,B) * Vector2Cross(C,A) >= 0)
+          {
+            Rectangle asteroid_bound;
+            float margin = 10;
+            asteroid_bound.x = asteroids[ii].data.position.x - asteroids[ii].data.radius - margin;
+            asteroid_bound.y = asteroids[ii].data.position.y - asteroids[ii].data.radius - margin;
+            asteroid_bound.width = 2*(asteroids[ii].data.radius + margin);
+            asteroid_bound.height = 2*(asteroids[ii].data.radius + margin);
+            DrawRectangleLinesEx(asteroid_bound, 2, RED);
+            asteroids[ii].target = 2;
+            asteroids[ii].attract_point = alt_attract;
+          }
+        }
+      }
     }
   }
+
 }
 
-void suckAttack(const Vector2 &position, const float rotation, SuckAttack &suckAttack)
+void suckAttack(const Vector2 &position, const Vector2& rotation, SuckAttack &suckAttack)
 {
   if (!IsKeyDown(KEY_SPACE))
   {
@@ -101,12 +229,12 @@ void suckAttack(const Vector2 &position, const float rotation, SuckAttack &suckA
     suckAttack.addBallTimer.start();
   }
 
-  Vector2 startPoint = position + 18 * Vector2Normalize({cosf(rotation), sinf(rotation)});
+  Vector2 startPoint = position + 18 * rotation;
 
   suckAttack.isOngoing = true;
   float angle = PI / 4.f;
-  Vector2 dir1 = Vector2Normalize({cosf(rotation - angle), sinf(rotation - angle)});
-  Vector2 dir2 = Vector2Normalize({cosf(rotation + angle), sinf(rotation + angle)});
+  Vector2 dir1 = Vector2Rotate(rotation,-angle);
+  Vector2 dir2 = Vector2Rotate(rotation,angle);
   float lineLength = suckAttack.lineLength;
   suckAttack.linesEnd[0] = {startPoint.x + (dir1.x * lineLength), startPoint.y + (dir1.y * lineLength)};
   suckAttack.linesEnd[1] = {startPoint.x + (dir2.x * lineLength), startPoint.y + (dir2.y * lineLength)};
@@ -134,26 +262,27 @@ void suckAttack(const Vector2 &position, const float rotation, SuckAttack &suckA
   }
 }
 
-void gunUpdate(const PlayerSteer& player, GunAttack &gun, std::vector<Shoot> &shoots)
+void gunUpdate(const PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
 {
   //update rotation
   Vector2 mousePointer = GetMousePosition();
-  gun.direction = Vector2Normalize(mousePointer - player.position);
+  gun.direction = Vector2Normalize(mousePointer - player.data.position);
 
   //handle shooting
   if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && gun.cooldownTimer.getElapsed() >= gun.cooldownDuration){
-    FireShoot(player.position, gun.direction, player.movement.velocity, player.movement.maxAcceleration, shoots);
+    //FireShoot(player.data.position, gun.direction, player.movement.velocity, player.movement.maxAcceleration, shoots);
+    FireShoot(player.data, gun.direction,500, shoots);
     gun.cooldownTimer.start();
   }
 
 }
 
-void laserUpdate(PlayerSteer &player){
+void laserUpdate(PlayerState &player){
   if(IsMouseButtonDown(MOUSE_BUTTON_RIGHT)){
     if(!player.laser.isOngoing){
-      OnStart(player.laser, player.gun.direction, player.position); //todo change to physics components position
+      OnStart(player.laser, player.gun.direction, player.data.position);
     }else{
-      Update(player.laser, player.gun.direction, player.position); // todo change to physics components position
+      Update(player.laser, player.gun.direction, player.data.position);
     }
   }else{
     Clear(player.laser); 
@@ -216,56 +345,65 @@ void moveBallTowardsPoint(Ball &ball, Vector2 targetPoint)
 ////////////////////////////////////////////////
 ///         Paint                            ///
 ///////////////////////////////////////////////
-void DrawShip(const PlayerSteer& player)
+void DrawShip(const PlayerState& player)
 {
   Vector2 bound = {(float)options.screenWidth, (float)options.screenWidth};
-
+  Vector2 pos = player.data.position;
   Vector2 vertices[3];
-  vertices[0] = player.position + Vector2{15.f, 0.f};
-  vertices[1] = {player.position.x - 15.f, player.position.y - 10.f};
-  vertices[2] = {player.position.x - 15.f, player.position.y + 10.f};
-  rotateTriangle(vertices, player.movement.direction, player.position);
+  vertices[0] = pos + Vector2{15.f, 0.f};
+  vertices[1] = {pos.x - 15.f, pos.y - 10.f};
+  vertices[2] = {pos.x - 15.f, pos.y + 10.f};
+  rotateTriangle(vertices, player.data.orientation, pos);
 
-  // draw 4 times as a hack to handle wrapping
-  DrawTriangle(
-    vertices[0],
-    vertices[1],
-    vertices[2],
-    GREEN
-    );
-  Vector2 p;
-  Vector2 off = bound;
-  off.x = 0;
-  p = mod(player.position + off,bound);
-  vertices[0] = p + Vector2{15.f, 0.f};
-  vertices[1] = {p.x - 15.f, p.y - 10.f};
-  vertices[2] = {p.x - 15.f, p.y + 10.f};
-  rotateTriangle(vertices, player.movement.direction, player.position);
-  DrawTriangle(vertices[0], vertices[1], vertices[2], GREEN);
+  //DrawTriangle(vertices[0],vertices[1],vertices[2],GREEN);
 
-  off = bound;
-  off.y = 0;
-  p = mod(player.position + off,bound);
-  vertices[0] = p + Vector2{15.f, 0.f};
-  vertices[1] = {p.x - 15.f, p.y - 10.f};
-  vertices[2] = {p.x - 15.f, p.y + 10.f};
-  rotateTriangle(vertices, player.movement.direction, player.position);
-  DrawTriangle(vertices[0], vertices[1], vertices[2], GREEN);
+ float r = player.data.radius;
+ float x = pos.x;
+ float y = pos.y;
 
-  off = bound;
-  p = mod(player.position + off,bound);
-  vertices[0] = p + Vector2{15.f, 0.f};
-  vertices[1] = {p.x - 15.f, p.y - 10.f};
-  vertices[2] = {p.x - 15.f, p.y + 10.f};
-  rotateTriangle(vertices, player.movement.direction, player.position);
-  DrawTriangle(vertices[0], vertices[1], vertices[2], GREEN);
+ Texture2D te = TEXTURES[0];
+ // Source rectangle (part of the texture to use for drawing)
+ Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
+
+ // Destination rectangle (screen rectangle where drawing part of texture)
+ Rectangle destRec = { x, y, 2*r, 2*r };
+ // Origin of the texture (rotation/scale point), it's relative to destination rectangle size
+ Vector2 origin = { r,r };
+
+ int rotation = atan2(player.data.orientation.y,player.data.orientation.x)*180/M_PI + 90;
+ DrawTexturePro(te, sourceRec, destRec, origin, (float)rotation, WHITE);
+
 }
 
-void DrawGun(const PlayerSteer& player)
+void DrawGun(const PlayerState& player)
 {
   Vector2 bound = {(float)options.screenWidth, (float)options.screenWidth};
 
-  DrawCircleV(player.position, 5,RED);
+  DrawCircleV(player.data.position, 5,RED);
 
-  DrawLineEx(player.position, player.position + 10*player.gun.direction ,3, GRAY);
+  DrawLineEx(player.data.position, player.data.position + 10*player.gun.direction ,3, GRAY);
+
+  float r = player.data.radius/2;
+  float x = player.data.position.x;
+  float y = player.data.position.y;
+
+  Texture2D te = TEXTURES[1];
+  // Source rectangle (part of the texture to use for drawing)
+  Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
+
+  // Destination rectangle (screen rectangle where drawing part of texture)
+  Rectangle destRec = { x, y, 2*r, 2*r };
+  // Origin of the texture (rotation/scale point), it's relative to destination rectangle size
+  Vector2 origin = { r,r };
+
+  int rotation = atan2(player.gun.direction.y,player.gun.direction.x)*180/M_PI + 90;
+  DrawTexturePro(te, sourceRec, destRec, origin, (float)rotation, WHITE);
+}
+
+void PlayerState::OnHit()
+{
+  if(!options.godMode)
+  {
+    alive = false;
+  }
 }

@@ -3,6 +3,8 @@
 std::unique_ptr<Screen> currentScreen;
 GameOptions options;
 std::string options_path;
+HighScore highscore;
+std::string highscore_path;
 std::vector<Texture2D> TEXTURES;
 std::vector<Shoot> SHOOTS;
 

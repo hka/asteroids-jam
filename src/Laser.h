@@ -6,6 +6,7 @@
 #include "raylib.h"
 #include "Asteroid.h"
 #include "Timer.hpp"
+#include "enemy.h"
 
 struct Particle{
   Color color;
@@ -26,7 +27,6 @@ struct Laser
   float width;
   
   Ray ray;
-
   bool isHitting;
 
   Timer spawnParticleTimer;
@@ -37,7 +37,6 @@ constexpr const std::size_t MAXIMUM_PARTICLES = 30;
 
 void OnStart(Laser& laser, const Vector2& direction, const Vector2& startPoint);
 void Update(Laser &laser, const Vector2 &direction, const Vector2 &origin);
-void CheckCollision(Laser& laser, std::vector<Asteroid> asteroids);
 void Clear(Laser& laser);
 void DrawLaser(Laser& laser);
 
