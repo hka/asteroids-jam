@@ -12,5 +12,9 @@ float handleCollision(std::vector<Enemy>& enemies, std::vector<Shoot>& playerBul
 float handleCollision(std::vector<Asteroid> &asteroids, std::vector<Shoot> &playerBullets);
 void handleCollision(PlayerState& player, std::vector<Shoot>& enemyBullets);
 void handleCollision(PlayerState &player, std::vector<Asteroid> &asteroids);
+float HandleLaserCollision(Laser &laser, std::vector<Asteroid> &asteroids);
+float HandleLaserCollision(Laser &laser, std::vector<Enemy> &enemies);
+
+void onAsteroidSplit(std::vector<Asteroid>& asteroids, Asteroid& asteroid);
 
 #endif

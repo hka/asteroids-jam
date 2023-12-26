@@ -10,6 +10,10 @@
 #include <emscripten/emscripten.h>
 #endif
 
+//debug
+#include <iostream>
+
+
 AsteroidsScreen::AsteroidsScreen():
   m_player(createPlayer({options.screenWidth / 2.f, options.screenHeight / 2.f}))
 {
@@ -200,8 +204,8 @@ void AsteroidsScreen::Update()
   // =================================================================
   if(m_spawnAsteroidTimer.getElapsed() >= 5.f || m_asteroids.empty())
   {
-    m_asteroids.push_back(CreateAsteroid(worldBound));
-    m_spawnAsteroidTimer.start();
+    //m_asteroids.push_back(CreateAsteroid(worldBound));
+    //m_spawnAsteroidTimer.start();
   }
 
   //TODO limit number of enemies to game level or something
@@ -220,9 +224,11 @@ void AsteroidsScreen::Update()
   m_player.score += handleCollision(m_enemies, m_playerBullets);
   m_player.score += handleCollision(m_asteroids, m_playerBullets);
 
+  m_player.score += HandleLaserCollision(m_player.laser, m_asteroids);
+  m_player.score += HandleLaserCollision(m_player.laser, m_enemies);
+
   handleCollision(m_player, m_playerBullets);
   handleCollision(m_player, m_asteroids);
-
 }
 
 void AsteroidsScreen::Paint()
@@ -233,6 +239,7 @@ void AsteroidsScreen::Paint()
   DrawGun(m_player);
   DrawShoots(m_playerBullets);
   PaintAttractAsteroids(m_player, m_asteroids, m_player_asteroid_distance);
+
 
   if(m_player.suckAttack.isOngoing){
     SuckAttack suckAttack = m_player.suckAttack;
@@ -249,6 +256,10 @@ void AsteroidsScreen::Paint()
   for (size_t i = 0; i < m_enemies.size(); ++i)
   {
     PaintEnemy(m_enemies[i]);
+  }
+
+  if(m_player.laser.isOngoing){
+    DrawLaser(m_player.laser);
   }
 
   //Draw score

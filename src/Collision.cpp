@@ -18,7 +18,6 @@ float handleCollision(std::vector<Enemy> &enemies, std::vector<Shoot> &playerBul
         --i;
         --j;
       }
-
     }
   }
   return value_hit;
@@ -39,11 +38,7 @@ float handleCollision(std::vector<Asteroid> &asteroids, std::vector<Shoot> &play
         asteroids[i] = asteroids[asteroids.size() - 1];
         asteroids.pop_back();
 
-        float splitRadius = asteroid.data.radius / 1.5f;
-        if(splitRadius >= ASTEROID_MIN_RADIUS){
-          asteroids.push_back(CreateAsteroid(asteroid.data.position, splitRadius));
-          asteroids.push_back(CreateAsteroid(asteroid.data.position, splitRadius));
-        }        
+        onAsteroidSplit(asteroids, asteroids[i]);
 
         playerBullets[j] = playerBullets[playerBullets.size() - 1];
         playerBullets.pop_back();
@@ -89,4 +84,70 @@ void handleCollision(PlayerState &player, std::vector<Asteroid> &asteroids)
     }
   }
   //todo
+}
+
+float HandleLaserCollision(Laser &laser, std::vector<Asteroid> &asteroids)
+{
+  bool isHitting = false;
+  float value_hit = 0.f;
+  for (std::size_t i = 0; i < asteroids.size(); ++i)
+  {
+    Vector3 asteroidPos = {asteroids[i].data.position.x, asteroids[i].data.position.y, 0.f};
+    RayCollision col = GetRayCollisionSphere(laser.ray, asteroidPos, asteroids[i].data.radius);
+
+    if (col.hit && col.distance <= laser.maxLength && col.distance > 0.f)
+    {
+      isHitting = true;
+      if (laser.length > col.distance)
+      {
+        laser.length = col.distance;
+      }
+
+      onAsteroidSplit(asteroids, asteroids[i]);
+
+      value_hit += asteroids[i].value;
+      std::swap(asteroids[i], asteroids[asteroids.size() - 1]);
+      asteroids.pop_back();
+      --i;
+    }
+  }
+
+  laser.isHitting = isHitting;
+  return value_hit;
+}
+
+float HandleLaserCollision(Laser &laser, std::vector<Enemy> &enemies)
+{
+  bool isHitting = false;
+  float value_hit = 0.f;
+  for(std::size_t i = 0; i < enemies.size(); ++i){
+    Vector3 enemyPos = {enemies[i].data.position.x, enemies[i].data.position.y, 0.f};
+    RayCollision col = GetRayCollisionSphere(laser.ray, enemyPos, enemies[i].data.radius);
+
+    if(col.hit && col.distance <= laser.maxLength && col.distance >0.f){
+      isHitting = true;
+      if (laser.length > col.distance)
+      {
+        laser.length = col.distance;
+      }
+
+      value_hit += enemies[i].value;
+      std::swap(enemies[i], enemies[enemies.size() - 1]);
+      enemies.pop_back();
+      --i;
+    }
+  }
+
+  laser.isHitting = isHitting;
+  return value_hit;
+}
+
+void onAsteroidSplit(std::vector<Asteroid> &asteroids, Asteroid &asteroid)
+{
+  float splitRadius = asteroid.data.radius / 1.5f;
+  if (splitRadius >= ASTEROID_MIN_RADIUS)
+  {
+    asteroids.push_back(CreateAsteroid(asteroid.data.position, splitRadius));
+    asteroids.push_back(CreateAsteroid(asteroid.data.position, splitRadius));
+  }
 }

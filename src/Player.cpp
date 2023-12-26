@@ -48,6 +48,7 @@ void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &
 
   suckAttack(player.data.position, player.data.orientation, player.suckAttack);
   gunUpdate(player, player.gun, shoots);
+  laserUpdate(player);
 }
 
 ////////////////////////////////////////////////
@@ -276,10 +277,23 @@ void gunUpdate(const PlayerState& player, GunAttack &gun, std::vector<Shoot> &sh
 
 }
 
+void laserUpdate(PlayerState &player){
+  if(IsMouseButtonDown(MOUSE_BUTTON_RIGHT)){
+    if(!player.laser.isOngoing){
+      OnStart(player.laser, player.gun.direction, player.data.position);
+    }else{
+      Update(player.laser, player.gun.direction, player.data.position);
+    }
+  }else{
+    Clear(player.laser); 
+  }
+}
+
 ////////////////////////////////////////////////
 ///         Helper                          ///
 ///////////////////////////////////////////////
-void rotateTriangle(Vector2 (&v)[3], const float angle){
+void rotateTriangle(Vector2 (&v)[3], const float angle)
+{
   Vector2 center = {(v[0].x + v[1].x + v[2].x) / 3.f, (v[0].y + v[1].y + v[2].y) / 3};
   v[0] = Vector2Add(Vector2Rotate(Vector2Subtract(v[0], center), angle), center);
   v[1] = Vector2Add(Vector2Rotate(Vector2Subtract(v[1], center), angle), center);
