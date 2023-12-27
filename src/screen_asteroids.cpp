@@ -200,12 +200,12 @@ void AsteroidsScreen::Update()
   }
 
   // =================================================================
-  // Spawn enteties
+  // Spawn entities
   // =================================================================
   if(m_spawnAsteroidTimer.getElapsed() >= 5.f || m_asteroids.empty())
   {
-    //m_asteroids.push_back(CreateAsteroid(worldBound));
-    //m_spawnAsteroidTimer.start();
+    m_asteroids.push_back(CreateAsteroid(worldBound));
+    m_spawnAsteroidTimer.start();
   }
 
   //TODO limit number of enemies to game level or something
@@ -239,7 +239,7 @@ void AsteroidsScreen::Paint()
   float h = (float)std::min(te.height,options.screenHeight);
   Rectangle sourceRec = { 0.0f, 0.0f, w, h };
 
-  Rectangle destRec = {0, 0, options.screenWidth, options.screenHeight};
+  Rectangle destRec = {0, 0, (float)options.screenWidth, (float)options.screenHeight};
   Vector2 origin = {0,0};//{ options.screenWidth/2.f, options.screenHeight/2.f};
 
   float rotation = 0;
@@ -272,6 +272,20 @@ void AsteroidsScreen::Paint()
   if(m_player.laser.isOngoing){
     DrawLaser(m_player.laser);
   }
+
+  ///Draw energy ui
+  const float maxLength = options.screenWidth * 0.5f;
+  float currentLength = (m_player.energy.value / m_player.energy.maxValue) * maxLength;
+  float width = 10.f;
+  Vector2 p1{
+    (maxLength / 2.f),
+    options.screenHeight - (width * 2.f)
+  };
+  Vector2 p2{
+    p1.x + currentLength,
+    p1.y
+  };
+  DrawLineEx(p1, p2, width, ORANGE);
 
   //Draw score
   std::string score_text = "Score: "+std::to_string(m_player.score);
