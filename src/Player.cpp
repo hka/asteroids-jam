@@ -31,6 +31,10 @@ PlayerState createPlayer(Vector2 startPos){
   player.gun.direction = {0.f,0.f};
   player.gun.cooldownTimer.start();
   player.gun.cooldownDuration = 0.25f;
+  player.gun.energyCost = 10.0f;
+
+  player.energy.value = 100.f;
+  player.energy.maxValue = 100.f;
 
   return player;
 }
@@ -40,7 +44,7 @@ PlayerState createPlayer(Vector2 startPos){
 ///////////////////////////////////////////////
 void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &shoots, float dt)
 {
-  UpdatePlayerInput(player.data, dt);
+  UpdatePlayerInput(player.data, dt, player.energy);
   player.data.force *= 0;
   ApplyThrustDrag(player.data);
   UpdatePosition(player.data, worldBound, dt);
@@ -51,10 +55,17 @@ void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &
   laserUpdate(player);
 }
 
+void UpdateEnergy(Energy& energy, float value){
+  energy.value += value;
+
+  energy.value = std::min(energy.value, energy.maxValue);
+  energy.value = std::max(energy.value, 0.f);
+}
+
 ////////////////////////////////////////////////
 ///         Input                           ///
 ///////////////////////////////////////////////
-void UpdatePlayerInput(PhysicsComponent& data, float dt)
+void UpdatePlayerInput(PhysicsComponent& data, float dt, Energy& energy)
 {
   //rotate velocity vector and update orientation to match
   //TODO handle rotation when moving in reverse?
@@ -75,12 +86,15 @@ void UpdatePlayerInput(PhysicsComponent& data, float dt)
     }
   }
 
-  if(IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S))
+  const float THRUST_ENERGY_COST = 0.1f; //todo move somewhere else
+  if((IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) && hasEnoughEnergy(energy, THRUST_ENERGY_COST))
   {
+    UpdateEnergy(energy, -THRUST_ENERGY_COST);
     data.thrust = -500000;
   }
-  else if(IsKeyDown(KEY_UP) || IsKeyDown(KEY_W))
+  else if((IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) && hasEnoughEnergy(energy, THRUST_ENERGY_COST))
   {
+    UpdateEnergy(energy, -THRUST_ENERGY_COST);
     data.thrust = 500000;
   }
   else
@@ -103,6 +117,17 @@ void AttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids)
       {
         asteroids[ii].data.velocity = player.data.velocity;
         asteroids[ii].data.force *= 0;
+        
+        const float suckFactor = 0.1f; // lool
+        asteroids[ii].data.radius -= suckFactor;
+        UpdateEnergy(player.energy, suckFactor);
+
+        if(asteroids[ii].data.radius <= ASTEROID_MIN_RADIUS){
+          std::swap(asteroids[ii], asteroids[asteroids.size() - 1]);
+          asteroids.pop_back();
+          --ii;
+          continue;
+        }
       }
     }
     else if(asteroids[ii].target == 2)
@@ -245,7 +270,7 @@ void suckAttack(const Vector2 &position, const Vector2& rotation, SuckAttack &su
     float initRadius = 1.f;
     float initSpeed = 250.f;
     Ball ball = {startPos, initRadius, initSpeed};
-    suckAttack.balls.emplace_back(ball);
+    suckAttack.balls.push_back(ball);
 
     suckAttack.addBallTimer.start();
   }
@@ -262,16 +287,17 @@ void suckAttack(const Vector2 &position, const Vector2& rotation, SuckAttack &su
   }
 }
 
-void gunUpdate(const PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
+void gunUpdate(PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
 {
   //update rotation
   Vector2 mousePointer = GetMousePosition();
   gun.direction = Vector2Normalize(mousePointer - player.data.position);
 
   //handle shooting
-  if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && gun.cooldownTimer.getElapsed() >= gun.cooldownDuration){
+  if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && gun.cooldownTimer.getElapsed() >= gun.cooldownDuration && hasEnoughEnergy(player.energy, gun.energyCost)){
     //FireShoot(player.data.position, gun.direction, player.movement.velocity, player.movement.maxAcceleration, shoots);
     FireShoot(player.data, gun.direction,500, shoots);
+    UpdateEnergy(player.energy, -gun.energyCost);
     gun.cooldownTimer.start();
   }
 
@@ -342,10 +368,14 @@ void moveBallTowardsPoint(Ball &ball, Vector2 targetPoint)
   ball.position.y += direction.y * ball.speed * GetFrameTime();
 }
 
-////////////////////////////////////////////////
-///         Paint                            ///
-///////////////////////////////////////////////
-void DrawShip(const PlayerState& player)
+bool hasEnoughEnergy(const Energy& energy, const float cost){
+  return energy.value >= cost;
+}
+
+    ////////////////////////////////////////////////
+    ///         Paint                            ///
+    ///////////////////////////////////////////////
+    void DrawShip(const PlayerState &player)
 {
   Vector2 bound = {(float)options.screenWidth, (float)options.screenWidth};
   Vector2 pos = player.data.position;
