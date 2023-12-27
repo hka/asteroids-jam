@@ -196,7 +196,7 @@ void AsteroidsScreen::Update()
     UpdateAsteroid(m_asteroids[i], worldBound, dt);
   }
   for(std::size_t i = 0; i < m_enemies.size(); ++i){
-    UpdateEnemy(m_enemies[i], worldBound, dt);
+    UpdateEnemy(m_enemies[i], worldBound, m_enemyBullets, dt, m_player);
   }
 
   // =================================================================
@@ -219,6 +219,7 @@ void AsteroidsScreen::Update()
   //update player
   update(m_player, worldBound, m_playerBullets, dt);
   UpdateShoots(m_playerBullets, dt);
+  UpdateShoots(m_enemyBullets, dt);
 
   //collision
   m_player.score += handleCollision(m_enemies, m_playerBullets);
@@ -229,6 +230,7 @@ void AsteroidsScreen::Update()
 
   handleCollision(m_player, m_playerBullets);
   handleCollision(m_player, m_asteroids);
+  handleCollision(m_player, m_enemyBullets);
 }
 
 void AsteroidsScreen::Paint()
@@ -249,6 +251,7 @@ void AsteroidsScreen::Paint()
   DrawShip(m_player);
   DrawGun(m_player);
   DrawShoots(m_playerBullets);
+  DrawShoots(m_enemyBullets);
   PaintAttractAsteroids(m_player, m_asteroids, m_player_asteroid_distance);
 
 

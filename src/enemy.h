@@ -3,17 +3,22 @@
 
 #include "EntityComponents.h"
 
-#include "Asteroid.h"
+#include "Munition.h"
+#include "Player.hpp"
+
 
 #include <vector>
 
 struct Enemy{
   float value = 10;
   PhysicsComponent data;
+  float shoot_counter = 0;
 };
 
 //update
-void UpdateEnemy(Enemy &enemy, const Vector2 &worldBound, float dt);
+void UpdateEnemy(Enemy& enemy, const Vector2& worldBound,
+                 std::vector<Shoot> &shoots, float dt,
+                 const PlayerState& player);
 
 //paint
 void PaintEnemy(Enemy& Enemy);

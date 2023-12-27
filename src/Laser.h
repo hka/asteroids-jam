@@ -6,7 +6,6 @@
 #include "raylib.h"
 #include "Asteroid.h"
 #include "Timer.hpp"
-#include "enemy.h"
 
 struct Particle{
   Color color;

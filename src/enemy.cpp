@@ -4,14 +4,27 @@
 #include <math.h>
 
 #include "globals.h"
+#include "raylib_operators.h"
 
 ////////////////////////////////////////////////
 ///         Update                          ///
 ///////////////////////////////////////////////
-void UpdateEnemy(Enemy& enemy, const Vector2& worldBound, float dt)
+void UpdateEnemy(Enemy& enemy, const Vector2& worldBound,
+                 std::vector<Shoot> &shoots, float dt,
+                 const PlayerState& player)
 {
   ApplyThrustDrag(enemy.data);
   UpdatePosition(enemy.data, worldBound, dt);
+
+  enemy.shoot_counter += dt;
+  if(enemy.shoot_counter > 2)
+  {
+    Vector2 aim_point = player.data.position + player.data.velocity*dt*60;
+    Vector2 gun_direction = Vector2Normalize(aim_point - enemy.data.position);
+    FireShoot(enemy.data, gun_direction,500, shoots);
+    enemy.shoot_counter = 0;
+  }
+
 }
 
 ////////////////////////////////////////////////
