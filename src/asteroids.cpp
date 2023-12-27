@@ -139,6 +139,8 @@ int main(void)
   LoadImageToTEXTURES("data/asteroid1.png");
   LoadImageToTEXTURES("data/asteroid2.png");
 
+  LoadImageToTEXTURES("data/starfield.png");
+
   // -----------------------------------------------------------------
 
 #if defined(PLATFORM_WEB)

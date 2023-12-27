@@ -234,6 +234,17 @@ void AsteroidsScreen::Update()
 void AsteroidsScreen::Paint()
 {
   DrawRectangle(0, 0, options.screenWidth, options.screenHeight, BLACK);
+  Texture2D te = TEXTURES[5];
+  float w = (float)std::min(te.width,options.screenWidth);
+  float h = (float)std::min(te.height,options.screenHeight);
+  Rectangle sourceRec = { 0.0f, 0.0f, w, h };
+
+  Rectangle destRec = {0, 0, options.screenWidth, options.screenHeight};
+  Vector2 origin = {0,0};//{ options.screenWidth/2.f, options.screenHeight/2.f};
+
+  float rotation = 0;
+  DrawTexturePro(te, sourceRec, destRec, origin, rotation, WHITE);
+
 
   DrawShip(m_player);
   DrawGun(m_player);
