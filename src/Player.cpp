@@ -49,14 +49,21 @@ void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &
   ApplyThrustDrag(player.data);
   UpdatePosition(player.data, worldBound, dt);
 
-  if(player.storedAsteroids < MAX_STORED_ASTEROIDS)
-  {
-    suckAttack(player.data.position, player.data.orientation, player.suckAttack);
+  if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)){
+    player.suckDelayTimer.start();
   }
-  else
-  {
-    player.suckAttack.isOngoing = false;
+  
+  if(player.suckDelayTimer.getElapsed() > SUCK_DELAY){
+    if(IsMouseButtonDown(MOUSE_RIGHT_BUTTON) && player.storedAsteroids < MAX_STORED_ASTEROIDS){
+      suckAttack(player.data.position, player.data.orientation, player.suckAttack);
+    }else{
+      player.suckAttack.isOngoing = false;
+      player.suckAttack.balls.clear();
+    }
+  }else if(player.suckDelayTimer.getElapsed() < SUCK_DELAY && IsMouseButtonReleased(MOUSE_RIGHT_BUTTON)){
+    turnAsteroidToEnergy(player);
   }
+  
   gunUpdate(player, player.gun, shoots);
   laserUpdate(player);
 }
@@ -125,6 +132,7 @@ void AttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids)
         asteroids[ii].data.force *= 0;
 
         asteroids[ii].state = ABSORBED;
+        player.storedAsteroids = std::min(MAX_STORED_ASTEROIDS, player.storedAsteroids + 1);
       }
     }
     else if(asteroids[ii].target == 2)
@@ -245,13 +253,6 @@ void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids
 
 void suckAttack(const Vector2 &position, const Vector2& rotation, SuckAttack &suckAttack)
 {
-  if (!IsKeyDown(KEY_SPACE))
-  {
-    suckAttack.isOngoing = false;
-    suckAttack.balls.clear();
-    return;
-  }
-
   if (!suckAttack.isOngoing)
   {
     suckAttack.addBallTimer.start();
@@ -311,7 +312,7 @@ void gunUpdate(PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
 }
 
 void laserUpdate(PlayerState &player){
-  if(IsMouseButtonDown(MOUSE_BUTTON_RIGHT)){
+  if(IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)){
     if(!player.laser.isOngoing){
       OnStart(player.laser, player.gun.direction, player.data.position);
     }else{
@@ -320,6 +321,16 @@ void laserUpdate(PlayerState &player){
   }else{
     Clear(player.laser); 
   }
+}
+
+void turnAsteroidToEnergy(PlayerState& player){
+  if(player.storedAsteroids < 1){
+    return;
+  }
+
+  player.storedAsteroids -= 1;
+  float energyRefill = player.energy.maxValue / MAX_STORED_ASTEROIDS;
+  UpdateEnergy(player.energy, energyRefill);
 }
 
 ////////////////////////////////////////////////

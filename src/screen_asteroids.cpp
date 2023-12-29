@@ -5,6 +5,7 @@
 #include "raylib_operators.h"
 #include "helpers.h"
 #include "Collision.h"
+#include "PlayerUI.h"
 
 #if defined(PLATFORM_WEB)
 #include <emscripten/emscripten.h>
@@ -307,16 +308,14 @@ void AsteroidsScreen::Paint()
   ///Draw energy ui
   const float maxLength = options.screenWidth * 0.5f;
   float currentLength = (m_player.energy.value / m_player.energy.maxValue) * maxLength;
-  float width = 10.f;
-  Vector2 p1{
+  float height = 10.f;
+  Vector2 pos{
     (maxLength / 2.f),
-    options.screenHeight - (width * 2.f)
+    options.screenHeight - (height * 2.f)
   };
-  Vector2 p2{
-    p1.x + currentLength,
-    p1.y
-  };
-  DrawLineEx(p1, p2, width, ORANGE);
+  DrawEnergyBar(m_player.energy, pos, maxLength, height, ORANGE);
+
+  DrawStoredAsteroids(m_player, options.screenWidth, options.screenHeight);
 
   //Draw score
   std::string score_text = "Score: "+std::to_string(m_player.score);
