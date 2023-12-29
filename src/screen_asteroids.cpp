@@ -10,10 +10,6 @@
 #include <emscripten/emscripten.h>
 #endif
 
-//debug
-#include <iostream>
-
-
 AsteroidsScreen::AsteroidsScreen():
   m_player(createPlayer({options.screenWidth / 2.f, options.screenHeight / 2.f}))
 {
@@ -159,6 +155,34 @@ void AsteroidsScreen::Update()
   if(!m_player.alive)
   {
     return;
+  }
+
+  // =================================================================
+  // Pre-update asteroids
+  // =================================================================
+  for(std::size_t ii = 0; ii < m_asteroids.size(); ++ii){
+    switch (m_asteroids[ii].state){
+      case ALIVE:
+        if(m_asteroids[ii].damageTimer.getElapsed() >= ASTEROID_DAMAGE_BLINK_TIME){
+          m_asteroids[ii].shouldDamageBlink = false;
+        }
+        break;
+      case KILLED:
+
+        {
+          int type = m_asteroids[ii].type;
+          Vector2 pos = m_asteroids[ii].data.position;
+          std::swap(m_asteroids[ii], m_asteroids[m_asteroids.size() - 1]);
+          m_asteroids.pop_back();
+          OnAsteroidSplit(m_asteroids, type, pos);
+        }
+        break;
+      case ABSORBED:
+      case DEAD_BY_COLLISION:
+        std::swap(m_asteroids[ii], m_asteroids[m_asteroids.size() - 1]);
+        m_asteroids.pop_back();
+        break;
+    }
   }
 
   Vector2 worldBound =  {(float)options.screenWidth, (float)options.screenHeight};

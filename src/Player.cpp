@@ -31,10 +31,10 @@ PlayerState createPlayer(Vector2 startPos){
   player.gun.direction = {0.f,0.f};
   player.gun.cooldownTimer.start();
   player.gun.cooldownDuration = 0.25f;
-  player.gun.energyCost = 10.0f;
 
-  player.energy.value = 100.f;
   player.energy.maxValue = 100.f;
+  player.energy.value = player.energy.maxValue;
+  player.gun.energyCost = player.energy.maxValue * 0.025f;
 
   return player;
 }
@@ -123,18 +123,8 @@ void AttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids)
       {
         asteroids[ii].data.velocity = player.data.velocity;
         asteroids[ii].data.force *= 0;
-        
-        const float suckFactor = 0.1f; // lool
-        asteroids[ii].data.radius -= suckFactor;
-        UpdateEnergy(player.energy, suckFactor);
 
-        if(asteroids[ii].data.radius <= ASTEROID_MIN_RADIUS){
-          ++player.storedAsteroids;
-          std::swap(asteroids[ii], asteroids[asteroids.size() - 1]);
-          asteroids.pop_back();
-          --ii;
-          continue;
-        }
+        asteroids[ii].state = ABSORBED;
       }
     }
     else if(asteroids[ii].target == 2)
@@ -389,10 +379,10 @@ bool hasEnoughEnergy(const Energy& energy, const float cost){
   return energy.value >= cost;
 }
 
-    ////////////////////////////////////////////////
-    ///         Paint                            ///
-    ///////////////////////////////////////////////
-    void DrawShip(const PlayerState &player)
+////////////////////////////////////////////////
+///         Paint                            ///
+///////////////////////////////////////////////
+void DrawShip(const PlayerState &player)
 {
   Vector2 bound = {(float)options.screenWidth, (float)options.screenWidth};
   Vector2 pos = player.data.position;

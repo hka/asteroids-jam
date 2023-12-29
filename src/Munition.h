@@ -8,6 +8,7 @@ struct Shoot
 {
   PhysicsComponent data;
   float time_alive = 0;
+  int damage;
 };
 
 void UpdateShoots(std::vector<Shoot>& shoots, float dt);

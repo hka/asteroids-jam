@@ -14,6 +14,32 @@ void UpdateAsteroid(Asteroid& asteroid, const Vector2& worldBound, float dt)
 }
 
 ////////////////////////////////////////////////
+///         Helper                         ///
+///////////////////////////////////////////////
+void OnAsteroidSplit(std::vector<Asteroid> &asteroids, const int type, const Vector2& pos)
+{
+  if (type == 1)
+  {
+    // nothing, just destroyed
+  }
+  else if (type == 2)
+  {
+    for (size_t ii = 0; ii < 5; ++ii)
+    {
+      asteroids.push_back(CreateAsteroid(pos, 1));
+    }
+  }
+  else if (type == 3)
+  {
+    int count = GetRandomValue(2, 3);
+    for (int ii = 0; ii < count; ++ii)
+    {
+      asteroids.push_back(CreateAsteroid(pos, 2));
+    }
+  }
+}
+
+////////////////////////////////////////////////
 ///         Paint                           ///
 ///////////////////////////////////////////////
 void PaintAsteroid(Asteroid& asteroid){
@@ -34,8 +60,8 @@ void PaintAsteroid(Asteroid& asteroid){
 
   int rotation = 0;
 
-
-  DrawTexturePro(te, sourceRec, destRec, origin, (float)rotation, WHITE);
+  Color c = asteroid.shouldDamageBlink ? RED : WHITE;
+  DrawTexturePro(te, sourceRec, destRec, origin, (float)rotation, c);
 }
 
 ////////////////////////////////////////////////
@@ -71,6 +97,9 @@ Asteroid CreateAsteroid(const Vector2& worldBound){
   std::uniform_int_distribution<> distrib_art(2, 4);
   asteroid.art_ix = distrib_art(RNG);
   
+  asteroid.state = ALIVE;
+  asteroid.shouldDamageBlink = false;
+
   return asteroid;
 }
 
@@ -105,5 +134,7 @@ Asteroid CreateAsteroid(const Vector2 &pos, int type){
   std::uniform_int_distribution<> distrib_art(2, 4);
   asteroid.art_ix = distrib_art(RNG);
 
+  asteroid.state = ALIVE;
+  asteroid.shouldDamageBlink = false;
   return asteroid;
 }

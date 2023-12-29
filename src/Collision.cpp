@@ -29,24 +29,24 @@ float handleCollision(std::vector<Asteroid> &asteroids, std::vector<Shoot> &play
   float value_hit = 0;
   for (std::size_t i = 0; i < asteroids.size(); ++i)
   {
-    Asteroid asteroid = asteroids[i];
     for (std::size_t j = 0; j < playerBullets.size(); ++j)
     {
       Shoot bullet = playerBullets[j];
 
-      if (CheckCollisionCircles(asteroid.data.position, asteroid.data.radius, bullet.data.position, bullet.data.radius))
+      if (CheckCollisionCircles(asteroids[i].data.position, asteroids[i].data.radius, bullet.data.position, bullet.data.radius))
       {
         value_hit += asteroids[i].value;
-
-        onAsteroidSplit(asteroids, asteroids[i]);
-
-        asteroids[i] = asteroids[asteroids.size() - 1];
-        asteroids.pop_back();
+        
+        asteroids[i].shouldDamageBlink = true;
+        asteroids[i].damageTimer.start();
+        asteroids[i].hp -= 1;
+        if(asteroids[i].hp <= 0){
+          asteroids[i].state = KILLED;
+        }
 
         playerBullets[j] = playerBullets[playerBullets.size() - 1];
         playerBullets.pop_back();
 
-        --i;
         --j;
       }
     }
@@ -81,9 +81,7 @@ void handleCollision(PlayerState &player, std::vector<Asteroid> &asteroids)
 
       player.OnHit();
 
-      asteroids[j] = asteroids[asteroids.size() - 1];
-      asteroids.pop_back();
-      --j;
+      asteroids[j].state = DEAD_BY_COLLISION;
     }
   }
   //todo
@@ -106,12 +104,8 @@ float HandleLaserCollision(Laser &laser, std::vector<Asteroid> &asteroids)
         laser.length = col.distance;
       }
 
-      onAsteroidSplit(asteroids, asteroids[i]);
-
       value_hit += asteroids[i].value;
-      std::swap(asteroids[i], asteroids[asteroids.size() - 1]);
-      asteroids.pop_back();
-      --i;
+      asteroids[i].state = KILLED;
     }
   }
 
@@ -143,28 +137,4 @@ float HandleLaserCollision(Laser &laser, std::vector<Enemy> &enemies)
 
   laser.isHitting = isHitting;
   return value_hit;
-}
-
-void onAsteroidSplit(std::vector<Asteroid> &asteroids, const Asteroid &asteroid)
-{
-  Vector2 pos = asteroid.data.position;
-  if(asteroid.type == 1)
-  {
-    //nothing, just destroyed
-  }
-  else if(asteroid.type == 2)
-  {
-    for(size_t ii = 0; ii < 5; ++ii)
-    {
-      asteroids.push_back(CreateAsteroid(pos, 1));
-    }
-  }
-  else if(asteroid.type == 3)
-  {
-    int count = GetRandomValue(2, 3);
-    for(int ii = 0; ii < count; ++ii)
-    {
-      asteroids.push_back(CreateAsteroid(pos, 2));
-    }
-  }
 }
