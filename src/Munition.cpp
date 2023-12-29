@@ -61,6 +61,7 @@ void FireShoot(const PhysicsComponent& player, const Vector2& direction, float m
   bullet.data.orientation = direction;
   bullet.data.radius = 4;
   bullet.data.mass = 1;
+  bullet.damage = 1;
   Vector2 norm_dir = Vector2Normalize(direction);
   bullet.data.velocity = player.velocity + norm_dir*muzzle_velocity;
   shoots.push_back(bullet);

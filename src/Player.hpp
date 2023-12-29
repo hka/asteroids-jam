@@ -11,6 +11,7 @@
 #include "Asteroid.h"
 
 constexpr int MAX_STORED_ASTEROIDS = 5;
+constexpr float SUCK_DELAY = 0.2f;
 
 struct Shoot;
 
@@ -53,6 +54,7 @@ struct PlayerState
   Energy energy;
 
   int storedAsteroids = 0;
+  Timer suckDelayTimer;
   
   PhysicsComponent data;
 
@@ -70,6 +72,7 @@ void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids
 void AttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids);
 void gunUpdate(PlayerState& player, GunAttack& gun, std::vector<Shoot>& shoots);
 void laserUpdate(PlayerState &player);
+void turnAsteroidToEnergy(PlayerState &player);
 
 //helper
 void rotateTriangle(Vector2 (&v)[3], const float angle);
