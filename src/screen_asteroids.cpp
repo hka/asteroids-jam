@@ -115,7 +115,7 @@ void AsteroidsScreen::AsteroidAsteroidInteraction(const Vector2& bound)
       {
         float dist = std::sqrt(dist2);
         dist = dist - (a0.data.radius + a1.data.radius);
-        dist2 = dist*dist;
+        dist2 = dist*dist + 1;
         float k = 100000000;//InteractionConstant(ASTEROID,ASTEROID);
         //printf("%f, %f -- %f %f\n", a0.data.position.x, a0.data.position.y, a1.data.position.x, a1.data.position.y);
         Vector2 force = k*CyclicDirTo(a0.data.position,a1.data.position,bound)/dist2;
@@ -231,6 +231,7 @@ void AsteroidsScreen::Update()
   handleCollision(m_player, m_playerBullets);
   handleCollision(m_player, m_asteroids);
   handleCollision(m_player, m_enemyBullets);
+  RemoveOldShoots(m_enemyBullets, 10);
 }
 
 void AsteroidsScreen::Paint()
@@ -252,7 +253,10 @@ void AsteroidsScreen::Paint()
   DrawGun(m_player);
   DrawShoots(m_playerBullets);
   DrawShoots(m_enemyBullets);
-  PaintAttractAsteroids(m_player, m_asteroids, m_player_asteroid_distance);
+  if(m_player.suckAttack.isOngoing) //TODO consider showing targeting always
+  {
+    PaintAttractAsteroids(m_player, m_asteroids, m_player_asteroid_distance);
+  }
 
 
   if(m_player.suckAttack.isOngoing){
@@ -303,6 +307,12 @@ void AsteroidsScreen::Paint()
     m_namebox.visible = true;
     PaintInputBox(m_namebox, m_frame);
     ++m_frame;
+  }
+  if(m_player.storedAsteroids == MAX_STORED_ASTEROIDS)
+  {
+    std::string text = "Press C to fire asteroids!";
+    float w = MeasureText(text.c_str(),40);
+    DrawText(text.c_str(), options.screenWidth/2.f - w/2.f, options.screenHeight/2.f - 20, 40, RED);
   }
 }
 

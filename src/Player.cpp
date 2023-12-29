@@ -49,8 +49,14 @@ void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &
   ApplyThrustDrag(player.data);
   UpdatePosition(player.data, worldBound, dt);
 
-
-  suckAttack(player.data.position, player.data.orientation, player.suckAttack);
+  if(player.storedAsteroids < MAX_STORED_ASTEROIDS)
+  {
+    suckAttack(player.data.position, player.data.orientation, player.suckAttack);
+  }
+  else
+  {
+    player.suckAttack.isOngoing = false;
+  }
   gunUpdate(player, player.gun, shoots);
   laserUpdate(player);
 }
@@ -123,6 +129,7 @@ void AttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids)
         UpdateEnergy(player.energy, suckFactor);
 
         if(asteroids[ii].data.radius <= ASTEROID_MIN_RADIUS){
+          ++player.storedAsteroids;
           std::swap(asteroids[ii], asteroids[asteroids.size() - 1]);
           asteroids.pop_back();
           --ii;
@@ -139,6 +146,8 @@ void AttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids)
   }
 }
 
+
+//here also targeting is done...
 void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids, std::vector<float>& player_asteroid_distance)
 {
   Vector2 attract_point = player.data.position + player.data.orientation*player.data.radius;
@@ -160,6 +169,10 @@ void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids
   for(size_t ii = 0; ii < asteroids.size(); ++ii)
   {
     asteroids[ii].target = 0;
+    if(asteroids[ii].type != 1)
+    {
+      continue;
+    }
     if(player_asteroid_distance[ii] <= attract_distance)
     {
       //check if inside cone
@@ -299,6 +312,10 @@ void gunUpdate(PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
     FireShoot(player.data, gun.direction,500, shoots);
     UpdateEnergy(player.energy, -gun.energyCost);
     gun.cooldownTimer.start();
+  }
+  if(IsKeyDown(KEY_C))
+  {
+    FireShootgun(player, gun.direction,500, shoots);
   }
 
 }

@@ -15,6 +15,6 @@ void handleCollision(PlayerState &player, std::vector<Asteroid> &asteroids);
 float HandleLaserCollision(Laser &laser, std::vector<Asteroid> &asteroids);
 float HandleLaserCollision(Laser &laser, std::vector<Enemy> &enemies);
 
-void onAsteroidSplit(std::vector<Asteroid>& asteroids, Asteroid& asteroid);
+void onAsteroidSplit(std::vector<Asteroid>& asteroids, const Asteroid& asteroid);
 
 #endif

@@ -43,7 +43,21 @@ void PaintAsteroid(Asteroid& asteroid){
 ///////////////////////////////////////////////
 Asteroid CreateAsteroid(const Vector2& worldBound){
   Asteroid asteroid;
-  float radius = GetRandomValue(ASTEROID_MIN_RADIUS, ASTEROID_MAX_RADIUS);
+  asteroid.type = GetRandomValue(1, 3);
+  float radius = asteroid.type*options.screenWidth*ASTEROID_SCALE;
+
+  switch(asteroid.type)
+  {
+  case 1:
+    asteroid.hp = 1;
+    break;
+  case 2:
+    asteroid.hp = 3;
+    break;
+  case 3:
+    asteroid.hp = 5;
+  }
+
   asteroid.data.radius = radius;
   asteroid.data.position = getRandomPosOutsideBounds({0.f,0.f, worldBound.x, worldBound.y}, radius);
 
@@ -60,9 +74,24 @@ Asteroid CreateAsteroid(const Vector2& worldBound){
   return asteroid;
 }
 
-Asteroid CreateAsteroid(const Vector2 &pos, float radius){
+Asteroid CreateAsteroid(const Vector2 &pos, int type){
   Asteroid asteroid;
 
+  float radius = type*options.screenWidth*ASTEROID_SCALE;
+
+  switch(type)
+  {
+  case 1:
+    asteroid.hp = 1;
+    break;
+  case 2:
+    asteroid.hp = 3;
+    break;
+  case 3:
+    asteroid.hp = 5;
+  }
+
+  asteroid.type = type;
   asteroid.data.radius = radius;
   asteroid.data.position = pos;
 
