@@ -1,5 +1,7 @@
 #include "Collision.h"
 
+#include <stdio.h>
+
 float handleCollision(std::vector<Enemy> &enemies, std::vector<Shoot> &playerBullets){
   float value_hit = 0;
   for(std::size_t i = 0; i < enemies.size(); ++i){
@@ -35,10 +37,11 @@ float handleCollision(std::vector<Asteroid> &asteroids, std::vector<Shoot> &play
       if (CheckCollisionCircles(asteroid.data.position, asteroid.data.radius, bullet.data.position, bullet.data.radius))
       {
         value_hit += asteroids[i].value;
-        asteroids[i] = asteroids[asteroids.size() - 1];
-        asteroids.pop_back();
 
         onAsteroidSplit(asteroids, asteroids[i]);
+
+        asteroids[i] = asteroids[asteroids.size() - 1];
+        asteroids.pop_back();
 
         playerBullets[j] = playerBullets[playerBullets.size() - 1];
         playerBullets.pop_back();
@@ -142,8 +145,9 @@ float HandleLaserCollision(Laser &laser, std::vector<Enemy> &enemies)
   return value_hit;
 }
 
-void onAsteroidSplit(std::vector<Asteroid> &asteroids, Asteroid &asteroid)
+void onAsteroidSplit(std::vector<Asteroid> &asteroids, const Asteroid &asteroid)
 {
+  Vector2 pos = asteroid.data.position;
   if(asteroid.type == 1)
   {
     //nothing, just destroyed
@@ -152,7 +156,7 @@ void onAsteroidSplit(std::vector<Asteroid> &asteroids, Asteroid &asteroid)
   {
     for(size_t ii = 0; ii < 5; ++ii)
     {
-      asteroids.push_back(CreateAsteroid(asteroid.data.position, 1));
+      asteroids.push_back(CreateAsteroid(pos, 1));
     }
   }
   else if(asteroid.type == 3)
@@ -160,7 +164,7 @@ void onAsteroidSplit(std::vector<Asteroid> &asteroids, Asteroid &asteroid)
     int count = GetRandomValue(2, 3);
     for(int ii = 0; ii < count; ++ii)
     {
-      asteroids.push_back(CreateAsteroid(asteroid.data.position, 2));
+      asteroids.push_back(CreateAsteroid(pos, 2));
     }
   }
 }

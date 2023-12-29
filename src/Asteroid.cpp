@@ -77,7 +77,7 @@ Asteroid CreateAsteroid(const Vector2& worldBound){
 Asteroid CreateAsteroid(const Vector2 &pos, int type){
   Asteroid asteroid;
 
-  float radius = asteroid.type*options.screenWidth*ASTEROID_SCALE;
+  float radius = type*options.screenWidth*ASTEROID_SCALE;
 
   switch(type)
   {
