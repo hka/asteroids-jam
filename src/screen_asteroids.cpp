@@ -231,6 +231,7 @@ void AsteroidsScreen::Update()
   handleCollision(m_player, m_playerBullets);
   handleCollision(m_player, m_asteroids);
   handleCollision(m_player, m_enemyBullets);
+  RemoveOldShoots(m_enemyBullets, 10);
 }
 
 void AsteroidsScreen::Paint()
@@ -252,7 +253,10 @@ void AsteroidsScreen::Paint()
   DrawGun(m_player);
   DrawShoots(m_playerBullets);
   DrawShoots(m_enemyBullets);
-  PaintAttractAsteroids(m_player, m_asteroids, m_player_asteroid_distance);
+  if(m_player.suckAttack.isOngoing) //TODO consider showing targeting always
+  {
+    PaintAttractAsteroids(m_player, m_asteroids, m_player_asteroid_distance);
+  }
 
 
   if(m_player.suckAttack.isOngoing){

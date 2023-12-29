@@ -3,6 +3,25 @@
 #include "raylib_operators.h"
 #include "globals.h"
 
+void RemoveOldShoots(std::vector<Shoot>& shoots, float t)
+{
+  std::vector<size_t> remove_ix;
+  for(size_t ii = 0; ii < shoots.size(); ++ii)
+  {
+    if(shoots[ii].time_alive > t)
+    {
+      remove_ix.push_back(ii);
+    }
+  }
+  //remove shoots by moving them to the end and shrinking
+  for(size_t ii = 0; ii < remove_ix.size(); ++ii)
+  {
+    size_t ix = remove_ix[remove_ix.size() - 1 - ii];
+    std::swap(shoots.back(), shoots[ix]);
+    shoots.pop_back();
+  }
+}
+
 void UpdateShoots(std::vector<Shoot>& shoots, float dt)
 {
   Rectangle bound {0,0,(float)options.screenWidth,(float)options.screenHeight};
@@ -11,6 +30,7 @@ void UpdateShoots(std::vector<Shoot>& shoots, float dt)
   for(size_t ii = 0; ii < shoots.size(); ++ii)
   {
     UpdatePosition(shoots[ii].data, worldBound, dt, true);
+    shoots[ii].time_alive += dt;
     if(!CheckCollisionPointRec(shoots[ii].data.position, bound))
     {
       //bullet left screen

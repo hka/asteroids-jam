@@ -144,10 +144,23 @@ float HandleLaserCollision(Laser &laser, std::vector<Enemy> &enemies)
 
 void onAsteroidSplit(std::vector<Asteroid> &asteroids, Asteroid &asteroid)
 {
-  float splitRadius = asteroid.data.radius / 1.5f;
-  if (splitRadius >= ASTEROID_MIN_RADIUS)
+  if(asteroid.type == 1)
   {
-    asteroids.push_back(CreateAsteroid(asteroid.data.position, splitRadius));
-    asteroids.push_back(CreateAsteroid(asteroid.data.position, splitRadius));
+    //nothing, just destroyed
+  }
+  else if(asteroid.type == 2)
+  {
+    for(size_t ii = 0; ii < 5; ++ii)
+    {
+      asteroids.push_back(CreateAsteroid(asteroid.data.position, 1));
+    }
+  }
+  else if(asteroid.type == 3)
+  {
+    int count = GetRandomValue(2, 3);
+    for(int ii = 0; ii < count; ++ii)
+    {
+      asteroids.push_back(CreateAsteroid(asteroid.data.position, 2));
+    }
   }
 }

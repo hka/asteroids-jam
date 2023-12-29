@@ -7,9 +7,11 @@
 struct Shoot
 {
   PhysicsComponent data;
+  float time_alive = 0;
 };
 
 void UpdateShoots(std::vector<Shoot>& shoots, float dt);
+void RemoveOldShoots(std::vector<Shoot>& shoots, float t);
 void DrawShoots(const std::vector<Shoot>& shoots);
 void FireShoot(const Vector2 &position, const Vector2 &direction, 
                const Vector2 &velocity, const float maxAcceleration, 

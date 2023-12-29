@@ -10,6 +10,8 @@
 #include "Laser.h"
 #include "Asteroid.h"
 
+constexpr int MAX_STORED_ASTEROIDS = 5;
+
 struct Shoot;
 
 struct Ball{
@@ -49,6 +51,8 @@ struct PlayerState
   GunAttack gun;
   Laser laser;
   Energy energy;
+
+  int storedAsteroids = 0;
   
   PhysicsComponent data;
 
