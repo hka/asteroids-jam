@@ -308,6 +308,12 @@ void AsteroidsScreen::Paint()
     PaintInputBox(m_namebox, m_frame);
     ++m_frame;
   }
+  if(m_player.storedAsteroids == MAX_STORED_ASTEROIDS)
+  {
+    std::string text = "Press C to fire asteroids!";
+    float w = MeasureText(text.c_str(),40);
+    DrawText(text.c_str(), options.screenWidth/2.f - w/2.f, options.screenHeight/2.f - 20, 40, RED);
+  }
 }
 
 Screen::GameScreen AsteroidsScreen::Finish()

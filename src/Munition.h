@@ -17,5 +17,6 @@ void FireShoot(const Vector2 &position, const Vector2 &direction,
                const Vector2 &velocity, const float maxAcceleration, 
                std::vector<Shoot> &shoots);
 void FireShoot(const PhysicsComponent& player, const Vector2& direction, float muzzle_velocity, std::vector<Shoot> &shoots);
+void FireShootgun(PlayerState& player, const Vector2& direction, float muzzle_velocity, std::vector<Shoot> &shoots);
 
 #endif

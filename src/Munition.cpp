@@ -65,3 +65,25 @@ void FireShoot(const PhysicsComponent& player, const Vector2& direction, float m
   bullet.data.velocity = player.velocity + norm_dir*muzzle_velocity;
   shoots.push_back(bullet);
 }
+
+void FireShootgun(PlayerState& player, const Vector2& direction, float muzzle_velocity, std::vector<Shoot> &shoots)
+{
+  if(player.storedAsteroids == 0)
+  {
+    return;
+  }
+  for(int ii = 0; ii < player.storedAsteroids; ++ii)
+  {
+    Shoot bullet;
+    bullet.data.position = player.data.position + 30 * direction;
+    Vector2 ort_dir = {direction.y,-direction.x};
+    bullet.data.position += ort_dir*ii*20;
+    bullet.data.orientation = direction;
+    bullet.data.radius = 10;
+    bullet.data.mass = 1;
+    Vector2 norm_dir = Vector2Normalize(direction);
+    bullet.data.velocity = player.data.velocity + norm_dir*muzzle_velocity;
+    shoots.push_back(bullet);
+  }
+  player.storedAsteroids = 0;
+}

@@ -313,6 +313,10 @@ void gunUpdate(PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
     UpdateEnergy(player.energy, -gun.energyCost);
     gun.cooldownTimer.start();
   }
+  if(IsKeyDown(KEY_C))
+  {
+    FireShootgun(player, gun.direction,500, shoots);
+  }
 
 }
 
