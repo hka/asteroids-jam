@@ -50,7 +50,8 @@ void DrawShoots(const std::vector<Shoot>& shoots)
 {
   for(const Shoot& s : shoots)
   {
-    DrawCircleV(s.data.position, s.data.radius, DARKGRAY);
+    //DrawCircleV(s.data.position, s.data.radius, DARKGRAY);
+    DrawCircleGradient(s.data.position.x, s.data.position.y, s.data.radius, WHITE, BLUE);
   }
 }
 
