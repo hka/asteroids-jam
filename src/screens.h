@@ -132,6 +132,7 @@ class AsteroidsScreen : public Screen
 
   InputBox m_namebox;
   size_t m_frame = 0;
+  RenderTexture2D m_renderTexture;
 };
 
 class OptionsScreen : public Screen

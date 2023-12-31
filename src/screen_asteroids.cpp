@@ -6,6 +6,7 @@
 #include "helpers.h"
 #include "Collision.h"
 #include "PlayerUI.h"
+#include "ResourceManager.h"
 
 #if defined(PLATFORM_WEB)
 #include <emscripten/emscripten.h>
@@ -46,10 +47,13 @@ AsteroidsScreen::AsteroidsScreen():
 #endif
   };
   m_namebox.confirm.action = confirmAction;
+
+  CreateLaserTexture();
 }
 
 AsteroidsScreen::~AsteroidsScreen()
 {
+  Unload();
 }
 
 void AsteroidsScreen::CalculateDistances(const Vector2& bound)
@@ -233,11 +237,6 @@ void AsteroidsScreen::Update()
     m_spawnAsteroidTimer.start();
   }
 
-  //TODO limit number of enemies to game level or something
-  if(m_spawnEnemyTimer.getElapsed() >= 10.f && m_enemies.size() < 1 ){
-    m_enemies.push_back(CreateEnemy(worldBound));
-    m_spawnEnemyTimer.start();
-  }
 
   // =================================================================
 

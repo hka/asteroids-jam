@@ -1,21 +1,71 @@
 #include "Laser.h"
 
 #include "raymath.h"
+#include "ResourceManager.h"
+#include "ColorBlender.h"
 
-//Debug
-#include <iostream>
+void CreateLaserTexture(){
+  int height = LASER_HEIGHT;
+  int maxLength = LASER_MAX_LENGTH;
+  Color background = {255,0,0,255};
+  Image imageLaser = GenImageColor(maxLength, height, background);
+  
+  int steps = (height / 2);
+  Color c = {255, 0, 0, 255};
+  unsigned char rTarget = 50;
+  unsigned char aTarget = 50;
+
+  unsigned char rStep = (255 - rTarget) / steps;
+  unsigned char aStep = (255 - aTarget) / steps;
+
+  for(int y = 0; y < (height/2); ++y){
+    int y1 = (height / 2) - (y + 1);
+    int y2 = (height / 2) + (y + 1);
+    for(int x = 0; x < maxLength; ++x){
+      ImageDrawPixel(&imageLaser, x, y1, c);
+      ImageDrawPixel(&imageLaser, x, y2, c);
+    }
+    c.r -= rStep;
+    c.a -= aStep;
+  }
+
+  int y = height/2.f;
+  c = {255,255,255,255};
+  for(int x = 0; x < maxLength - 2; ++x){
+    ImageDrawPixel(&imageLaser, x, y, c);
+  }
+  ImageAlphaPremultiply(&imageLaser);
+  ImageMipmaps(&imageLaser);
+  LoadImage(IMAGE_LASER, imageLaser);
+
+  Image blurred = GetImage(IMAGE_LASER);
+  ImageBlurGaussian(&blurred, 1);
+  ImageMipmaps(&blurred);
+  LoadTexture(blurred, LASER_BLURRED);
+  LoadImage(IMAGE_LASER_BLURRED, blurred);
+
+  Image laserNoise = GenImagePerlinNoise(maxLength, height, 0, 0, 5.f);
+  LoadImage(IMAGE_LASER_NOISE, laserNoise);
+
+  Image laserDistortion = GenImageCellular(maxLength, height,1);
+  LoadImage(IMAGE_LASER_DISTORTION, laserDistortion);
+
+  Image finalLaser = GenImageColor(maxLength, height, WHITE);
+  ImageMipmaps(&finalLaser);
+  LoadTexture(finalLaser, LASER_FINAL);
+  LoadImage(IMAGE_LASER_FINAL, finalLaser);
+
+}
 
 void OnStart(Laser &laser, const Vector2 &direction, const Vector2 &origin){
   laser.isOngoing = true;
   laser.direction = direction;
   laser.start = origin;
   laser.length = 0.f;
-  laser.maxLength = 200.f;
-  laser.growRate = 800.f;
+  laser.maxLength = LASER_MAX_LENGTH;
+  laser.growRate = laser.maxLength * 4.f;
 
-  laser.width = 10.f;
-
-  laser.spawnParticleTimer.start();
+  laser.width = LASER_HEIGHT;
 }
 
 void Update(Laser &laser, const Vector2 &direction, const Vector2 &origin)
@@ -39,82 +89,93 @@ void Update(Laser &laser, const Vector2 &direction, const Vector2 &origin)
     laser.length += (laser.growRate * GetFrameTime());
   }
 
-  if(laser.spawnParticleTimer.getElapsed() > 0.25f && laser.particles.size() < MAXIMUM_PARTICLES){
-    Color particleColor;
-    int chance = GetRandomValue(0, 100);
-    if(chance > 50){
-      particleColor = { 255, 0, 0, 255 };
-    }else{
-      particleColor = {255, 255, 255, 255};
-    }
-    laser.particles.push_back(CreateLaserParticle(particleColor));
-    laser.spawnParticleTimer.start();
-  }
-
-  UpdateParticles(laser);
+  NoiseLaser();
+  DistortLaser();
 }
 
 void Clear(Laser &laser)
 {
   laser.isOngoing = false;
-  laser.particles.clear();
 }
 
 void DrawLaser(Laser &laser){
+  
+  float rotation = atan2f(laser.direction.y, laser.direction.x) * RAD2DEG;
+  Rectangle rec = {laser.start.x, laser.start.y, laser.length, laser.width};
+  Rectangle src = {0.f, 0.f, laser.maxLength, laser.width};
+  Vector2 origin {0.f, laser.width/ 2.f};
+  DrawTexturePro(getTexture(LASER_BLURRED), src, rec, origin, rotation, WHITE);
+  DrawTexturePro(getTexture(LASER_FINAL), src, rec, origin, rotation, WHITE);
+}
 
-  BeginBlendMode(BLEND_SUBTRACT_COLORS | BLEND_ADDITIVE | BLEND_ALPHA);
-    DrawParticles(laser.particles, laser.start, laser.direction);
-  EndBlendMode();
+static float noiseOffsetX = 0.f;
 
-  float height = laser.length;
-  unsigned char value = (unsigned char)50;
-  Color color = {value, 0, 0, value};
-  int steps = 10;
-  unsigned char targetValue = (unsigned char)255;
-  unsigned char f = (targetValue - value) / steps;
-  float width = laser.width;
+void NoiseLaser(){
 
-  BeginBlendMode(BLEND_ALPHA_PREMULTIPLY | BLEND_ADDITIVE);
-    for (int i = 0; i < steps; ++i){
-      DrawLineEx(laser.start, laser.end, width, color);
-      color.a += f;
-      color.r += f;
-      width *= 0.5f;
+  int width = LASER_MAX_LENGTH;
+  int height = LASER_HEIGHT;
+
+  Color* laserPixels = (Color*) GetImage(IMAGE_LASER).data;
+  Color *noisePixels = (Color*) GetImage(IMAGE_LASER_NOISE).data;
+  
+  float noiseSpeed = -25.f;
+  noiseOffsetX += noiseSpeed;
+  Color* finalLaserPixels = (Color*) GetImage(IMAGE_LASER_FINAL).data;
+  for (int y = 0; y < height; ++y)
+  {
+    for (int x = 0; x < width; ++x)
+    {
+      Color laserColor = laserPixels[y * width + x];
+
+      int noiseX = ((x + (int)noiseOffsetX) % width + width) % width;
+      Color noiseColor = noisePixels[y * width + noiseX];
+
+      Color finalColor = BlendColors(laserColor, noiseColor);
+      finalLaserPixels[y * width + x] = finalColor;
     }
-  EndBlendMode();
-}
-
-Particle CreateLaserParticle(Color color){
-  Particle p;
-  p.color = color;
-  p.distance = 0.f;
-  p.radius = 1.0f;
-  p.speed = 200.f;
-  return p;
-}
-
-void UpdateParticles(Laser &laser){
-  for(Particle& p : laser.particles){
-    UpdateParticle(p, laser);
   }
+  UpdateTexture(LASER_FINAL, finalLaserPixels);
+  GetImage(IMAGE_LASER_FINAL).data = finalLaserPixels;
 }
 
-void UpdateParticle(Particle &p, Laser &laser){
-  p.distance += p.speed * GetFrameTime();
+void DistortLaser(){
+  int height = (int)LASER_HEIGHT;
+  int width = (int)LASER_MAX_LENGTH;
 
-  if(p.distance >= (laser.length - 5.f)){
-    p.distance = 0.f;
-  }
-}
+  static float distortionOffsetX = 0.0f;
+  static float distortionOffsetY = 0.0f;
 
-void DrawParticles(std::vector<Particle> &particles, const Vector2 &laserStart, const Vector2& laserDirection)
-{
-  float startOffset = 5.f;
-  for(const Particle& p : particles){
-    Vector2 position = {
-      laserStart.x + (laserDirection.x * p.distance  + (startOffset * laserDirection.x)),
-      laserStart.y + (laserDirection.y * p.distance  + (startOffset * laserDirection.y))
-    };
-    DrawCircleV(position, p.radius, p.color);
+  float distortionSpeed = 1.f;
+  float maxDistortion = 20.f;
+
+  distortionOffsetX += distortionSpeed;
+  if (distortionOffsetX >= width)
+    distortionOffsetX -= width;
+
+  distortionOffsetY += distortionSpeed;
+  if (distortionOffsetY >= height)
+    distortionOffsetY -= height;
+
+
+  Color* distortionMap = (Color*)GetImage(IMAGE_LASER_NOISE).data;
+  Color *laserPixels = (Color *)GetImage(IMAGE_LASER_FINAL).data;
+  for (int y = 0; y < height; ++y)
+  {
+    for (int x = 0; x < width; ++x)
+    {
+      int index = y * width + x;
+      int distortionX = (x + (int)distortionOffsetX) % width;
+      int distortionY = (y + (int)distortionOffsetY) % height;
+      Color distortionColor = distortionMap[distortionY * width + distortionX];
+      float distortionAmount = (distortionColor.r / 255.0f - 0.5f) * maxDistortion;
+
+      int srcX = x + distortionAmount;
+      int srcY = y + distortionAmount;
+      srcX = Clamp(srcX, 0, width - 1);
+      srcY = Clamp(srcY, 0, height - 1);
+      Color finalColor = laserPixels[srcY * width + srcX];
+      laserPixels[index] = finalColor;
+    }
   }
+  UpdateTexture(LASER_FINAL, laserPixels);
 }
