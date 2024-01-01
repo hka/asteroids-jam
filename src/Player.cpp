@@ -7,6 +7,9 @@
 #include <ray_collision_2d.h>
 #undef RAY2D_COLLISION_IMPLEMENTATION
 
+//debug
+#include <iostream>
+
 PlayerState createPlayer(Vector2 startPos){
   PlayerState player;
   player.data.position = startPos;
@@ -35,6 +38,10 @@ PlayerState createPlayer(Vector2 startPos){
   player.energy.maxValue = 100.f;
   player.energy.value = player.energy.maxValue;
   player.gun.energyCost = player.energy.maxValue * 0.025f;
+
+  player.laser.isOngoing = false;
+  player.laserEnergy.maxValue = 100.f;
+  player.laserEnergy.value = player.laserEnergy.maxValue;
 
   return player;
 }
@@ -311,15 +318,21 @@ void gunUpdate(PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
 
 }
 
+static Timer timer;
 void laserUpdate(PlayerState &player){
-  if(IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)){
-    if(!player.laser.isOngoing){
-      OnStart(player.laser, player.gun.direction, player.data.position);
-    }else{
-      Update(player.laser, player.gun.direction, player.data.position);
+
+  if(IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE) && hasEnoughEnergy(player.laserEnergy, player.laserEnergy.maxValue)){
+    std::cout << "Should start" << '\n';
+    OnStart(player.laser, player.gun.direction, player.data.position);
+    timer.start();
+    player.laserEnergy.value = 0.f;
+  }
+
+  if(player.laser.isOngoing){
+    Update(player.laser, player.gun.direction, player.data.position);
+    if(timer.getElapsed() >= 3.f){
+      player.laser.isOngoing = false;
     }
-  }else{
-    Clear(player.laser); 
   }
 }
 

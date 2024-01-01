@@ -51,6 +51,7 @@ struct PlayerState
   SuckAttack suckAttack;
   GunAttack gun;
   Laser laser;
+  Energy laserEnergy;
   Energy energy;
 
   int storedAsteroids = 0;
