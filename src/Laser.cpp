@@ -55,6 +55,8 @@ void CreateLaserTexture(){
   LoadTexture(finalLaser, LASER_FINAL);
   LoadImage(IMAGE_LASER_FINAL, finalLaser);
 
+  NoiseLaser();
+  DistortLaser();
 }
 
 void OnStart(Laser &laser, const Vector2 &direction, const Vector2 &origin){

@@ -5,6 +5,8 @@
 
 #include "raylib.h"
 
+//todo Remake into class instead
+
 constexpr const int NUMBER_OF_IMAGES = 3;
 enum ImageID{
   IMAGE_LASER,

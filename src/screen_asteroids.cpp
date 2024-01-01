@@ -165,6 +165,7 @@ void AsteroidsScreen::Update()
   // =================================================================
   // Pre-update asteroids
   // =================================================================
+  const float baseLaserEnergyGain = 2.f;
   for(std::size_t ii = 0; ii < m_asteroids.size(); ++ii){
     switch (m_asteroids[ii].state){
       case ALIVE:
@@ -176,6 +177,10 @@ void AsteroidsScreen::Update()
 
         {
           int type = m_asteroids[ii].type;
+          if (!m_player.laser.isOngoing)
+          {
+            UpdateEnergy(m_player.laserEnergy, baseLaserEnergyGain * type);
+          }
           Vector2 pos = m_asteroids[ii].data.position;
           std::swap(m_asteroids[ii], m_asteroids[m_asteroids.size() - 1]);
           m_asteroids.pop_back();
@@ -183,6 +188,10 @@ void AsteroidsScreen::Update()
         }
         break;
       case ABSORBED:
+        if(!m_player.laser.isOngoing){
+          UpdateEnergy(m_player.laserEnergy, baseLaserEnergyGain);
+        }
+        //fall through
       case DEAD_BY_COLLISION:
         std::swap(m_asteroids[ii], m_asteroids[m_asteroids.size() - 1]);
         m_asteroids.pop_back();
@@ -304,7 +313,7 @@ void AsteroidsScreen::Paint()
     DrawLaser(m_player.laser);
   }
 
-  ///Draw energy ui
+  ///Draw player ui
   const float maxLength = options.screenWidth * 0.5f;
   float currentLength = (m_player.energy.value / m_player.energy.maxValue) * maxLength;
   float height = 10.f;
@@ -313,7 +322,7 @@ void AsteroidsScreen::Paint()
     options.screenHeight - (height * 2.f)
   };
   DrawEnergyBar(m_player.energy, pos, maxLength, height, ORANGE);
-
+  DrawEnergyPerc(m_player.laserEnergy, options.screenWidth, options.screenHeight);
   DrawStoredAsteroids(m_player, options.screenWidth, options.screenHeight);
 
   //Draw score
