@@ -218,7 +218,7 @@ void AsteroidsScreen::Update()
   // Update positions (apply forces)
   // =================================================================
   for(std::size_t i = 0; i < m_asteroids.size(); ++i){
-    UpdateAsteroid(m_asteroids[i], worldBound, dt);
+    UpdateAsteroid(m_asteroids[i], worldBound, m_enemyBullets, dt);
   }
   for(std::size_t i = 0; i < m_enemies.size(); ++i){
     UpdateEnemy(m_enemies[i], worldBound, m_enemyBullets, dt, m_player);
@@ -234,7 +234,7 @@ void AsteroidsScreen::Update()
   }
 
   //TODO limit number of enemies to game level or something
-  if(m_spawnEnemyTimer.getElapsed() >= 10.f && m_enemies.size() < 1 ){
+  if(false && m_spawnEnemyTimer.getElapsed() >= 10.f && m_enemies.size() < 1 ){
     m_enemies.push_back(CreateEnemy(worldBound));
     m_spawnEnemyTimer.start();
   }
@@ -256,7 +256,8 @@ void AsteroidsScreen::Update()
   handleCollision(m_player, m_playerBullets);
   handleCollision(m_player, m_asteroids);
   handleCollision(m_player, m_enemyBullets);
-  RemoveOldShoots(m_enemyBullets, 10);
+  RemoveOldShoots(m_enemyBullets, 2);
+  RemoveOldShoots(m_playerBullets, 3);
 }
 
 void AsteroidsScreen::Paint()
@@ -314,6 +315,12 @@ void AsteroidsScreen::Paint()
     options.screenHeight - (height * 2.f)
   };
   DrawEnergyBar(m_player.energy, pos, maxLength, height, ORANGE);
+  if(currentLength < 1)
+  {
+    std::string help_text = "Click right mouse button to convert absorbed asteroid to fuel!";
+    float w = MeasureText(help_text.c_str(),30);
+    DrawText(help_text.c_str(), options.screenWidth/2-w/2, pos.y-30, 30, ORANGE);
+  }
 
   DrawStoredAsteroids(m_player, options.screenWidth, options.screenHeight);
 

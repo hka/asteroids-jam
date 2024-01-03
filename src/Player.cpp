@@ -306,7 +306,7 @@ void gunUpdate(PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
   }
   if(IsKeyDown(KEY_C))
   {
-    FireShootgun(player, gun.direction,500, shoots);
+    FireShootgun(player.data, player.storedAsteroids, gun.direction,500, shoots);
   }
 
 }
