@@ -55,6 +55,15 @@ struct KeySelector
   int key;
 };
 
+struct Slider
+{
+  Rectangle pos;
+  float value;
+  float min;
+  float max;
+  MouseState state;
+};
+
 struct Droplist
 {
   Droplist(){}
@@ -144,6 +153,9 @@ bool CheckButton(const Vector2& p, Button& button);
 
 void PaintKeySelector(const KeySelector& ks);
 void UpdateKeySelector(KeySelector& ks);
+
+void PaintSlider(const Slider& s);
+bool UpdateSlider(const Vector2& p, Slider& s);
 
 void PaintDroplist(const Droplist& dl);
 void SetDroplistIx(Droplist& dl, const std::string& key);

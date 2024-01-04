@@ -64,7 +64,7 @@ void MainMenuScreen::Paint()
   //DrawRectangle(0, 0, options.screenWidth, options.screenHeight, GREEN);
   Texture2D te = TEXTURES[8];
   Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
-  Rectangle destRec = {0, 0, options.screenWidth, options.screenHeight};
+  Rectangle destRec = {0, 0, (float)options.screenWidth, (float)options.screenHeight};
   Vector2 origin = { 0,0};
   float rotation = 0;
   DrawTexturePro(te, sourceRec, destRec, origin, rotation, WHITE);

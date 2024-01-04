@@ -116,6 +116,54 @@ void PositionUnder(const Button& ref, Button& b, float px)
   b.pos.y = refCenter.y + px;
 }
 
+void PaintSlider(const Slider& s)
+{
+  DrawRectangleRec(s.pos, DARKGRAY);
+  Rectangle grab = s.pos;
+  grab.width *= 0.1;
+  float pos = (s.value-s.min)/(s.max-s.min);
+  grab.x = s.pos.x + pos*(s.pos.width*0.9);
+  switch(s.state)
+  {
+   case MouseState::NO:
+    DrawRectangleRec(grab, LIGHTGRAY);
+    break;
+   case MouseState::OVER:
+   case MouseState::CLICKED:
+     DrawRectangleRec(grab, GRAY);
+     break;
+  }
+}
+bool UpdateSlider(const Vector2& p, Slider& s)
+{
+  Rectangle grab = s.pos;
+  grab.width *= 0.1;
+  float pos = (s.value-s.min)/(s.max-s.min);
+  grab.x = s.pos.x + pos*(s.pos.width*0.9);
+  if (CheckCollisionPointRec(p, grab))
+  {
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+    {
+      s.state = MouseState::CLICKED;
+    }
+    else
+    {
+      s.state = MouseState::OVER;
+    }
+  }
+  else if(!(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && s.state == MouseState::CLICKED))
+  {
+    s.state = MouseState::NO;
+  }
+  if(s.state == MouseState::CLICKED)
+  {
+    float new_value = (p.x - s.pos.x - grab.width/2)/(s.pos.width*0.9);
+    s.value = std::clamp(new_value, s.min, s.max);
+    return true;
+  }
+  return false;
+}
+
 void PaintButtonWithText(const Button& button, const ButtonColors& c, int fontSize)
 {
   //Button

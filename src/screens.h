@@ -24,8 +24,11 @@ struct GameOptions
   int fps = 60;
   bool skipLogo = false;
   bool godMode = true;
+  bool game_music = true;
+  bool sound_fx = true;
+  float master_volume = 1.0f;
 };
-VISITABLE_STRUCT(GameOptions, screenWidth, screenHeight, fps, skipLogo, godMode);
+VISITABLE_STRUCT(GameOptions, screenWidth, screenHeight, fps, skipLogo, godMode, game_music, sound_fx, master_volume);
 
 struct Score
 {
@@ -154,7 +157,10 @@ private:
   std::vector<Button> m_buttons;
   size_t m_toggleIntroIx;
   size_t m_toggleGodModeIx;
+  size_t m_muteMusicIx;
+  size_t m_muteFxIx;
   std::vector<KeySelector> m_keySelector;
+  Slider master_volume;
 };
 
 

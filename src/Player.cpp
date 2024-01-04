@@ -301,6 +301,10 @@ void gunUpdate(PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
   if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && gun.cooldownTimer.getElapsed() >= gun.cooldownDuration && hasEnoughEnergy(player.energy, gun.energyCost)){
     //FireShoot(player.data.position, gun.direction, player.movement.velocity, player.movement.maxAcceleration, shoots);
     FireShoot(player.data, gun.direction,500, shoots);
+    if(options.sound_fx)
+    {
+      PlaySound(shoot_fx);
+    }
     UpdateEnergy(player.energy, -gun.energyCost);
     gun.cooldownTimer.start();
   }

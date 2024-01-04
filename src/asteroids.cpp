@@ -118,6 +118,13 @@ int main(void)
   InitWindow(options.screenWidth, options.screenHeight, PROGRAM_NAME);
 
 
+  InitAudioDevice();
+  SetMasterVolume(options.master_volume);
+  //main_menu_track = LoadMusicStream("data/.mp3");
+  game_track = LoadMusicStream("data/The_Ultimate_Game_in-play.mp3");
+
+  shoot_fx = LoadSound("data/laser.wav");
+
   //Maybe can window size stuff just with raylib functions...TODO
   //SetWindowState(FLAG_WINDOW_RESIZABLE|FLAG_WINDOW_HIGHDPI);
   //printf("size: %d x %d\n",GetScreenWidth(), GetScreenHeight());
@@ -165,6 +172,10 @@ int main(void)
   }
 
 #endif
+  UnloadMusicStream(game_track);
+  //UnloadMusicStream(main_menu_track);
+  UnloadSound(shoot_fx);
+  CloseAudioDevice();
   CloseWindow();
   return 0;
 }

@@ -46,6 +46,10 @@ AsteroidsScreen::AsteroidsScreen():
 #endif
   };
   m_namebox.confirm.action = confirmAction;
+  if(options.game_music)
+  {
+    PlayMusicStream(game_track);
+  }
 }
 
 AsteroidsScreen::~AsteroidsScreen()
@@ -147,6 +151,8 @@ void AsteroidsScreen::AsteroidEnemyInteraction(const Vector2& bound)
 
 void AsteroidsScreen::Update()
 {
+  UpdateMusicStream(game_track);
+
   if(!m_player.alive)
   {
     UpdateInputBox(GetMousePosition(), m_namebox, this);

@@ -20,5 +20,10 @@ constexpr const char* PROGRAM_NAME = "Asteroids";
 
 extern std::vector<Texture2D> TEXTURES;
 
+extern Music main_menu_track;
+extern Music game_track;
+
+extern Sound shoot_fx;
+
 extern std::mt19937 RNG;
 #endif
