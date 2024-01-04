@@ -7,7 +7,9 @@ MainMenuScreen::MainMenuScreen()
 {
   m_finishScreen = Screen::GameScreen::MAINMENU;
 
-  Button b_startGame("Start", options.screenWidth/2, options.screenHeight/2- 65, 300, 100, AnchorPoint::CENTER);
+  int bw = 315;
+  int bh = 115;
+  Button b_startGame("Start", options.screenWidth/2, options.screenHeight/2- 65, bw, bh, AnchorPoint::CENTER);
   auto startAction = [](void* ptr){
     MainMenuScreen* scr = (MainMenuScreen*)ptr;
     scr->m_finishScreen = Screen::GameScreen::ASTEROIDS;
@@ -17,7 +19,7 @@ MainMenuScreen::MainMenuScreen()
   b_startGame.texture1_ix = 7;
   b_startGame.texture2_ix = 7;
 
-  Button b_options("Options", options.screenWidth/2, options.screenHeight/2, 300, 100, AnchorPoint::CENTER);
+  Button b_options("Options", options.screenWidth/2, options.screenHeight/2, bw, bh, AnchorPoint::CENTER);
   PositionUnder(b_startGame, b_options);
   auto optionsAction = [](void* ptr){
     MainMenuScreen* scr = (MainMenuScreen*)ptr;
@@ -25,7 +27,7 @@ MainMenuScreen::MainMenuScreen()
   };
   b_options.action = optionsAction;
 
-  Button b_exit("Exit", options.screenWidth/2, options.screenHeight/2, 300, 100, AnchorPoint::CENTER);
+  Button b_exit("Exit", options.screenWidth/2, options.screenHeight/2, bw, bh, AnchorPoint::CENTER);
   PositionUnder(b_options, b_exit);
   auto exitAction = [](void* ptr){
     MainMenuScreen* scr = (MainMenuScreen*)ptr;
