@@ -144,6 +144,8 @@ int main(void)
   LoadImageToTEXTURES("data/commence0.png"); //6
   LoadImageToTEXTURES("data/commence1.png"); //7
 
+  LoadImageToTEXTURES("data/mainmenu.png"); //8
+
   // -----------------------------------------------------------------
 
 #if defined(PLATFORM_WEB)
