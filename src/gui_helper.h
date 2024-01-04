@@ -41,6 +41,10 @@ struct Button
   std::function<void(void*)> action;
   enum class Type {REGULAR, CHECKBOX};
   Type type = Type::REGULAR;
+
+  int texture0_ix = -1; //default
+  int texture1_ix = -1; //hover
+  int texture2_ix = -1; //click
 };
 
 struct KeySelector

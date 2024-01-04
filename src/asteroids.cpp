@@ -133,13 +133,16 @@ int main(void)
 
   // -----------------------------------------------------------------
   //Load textures
-  LoadImageToTEXTURES("data/ship.png");
-  LoadImageToTEXTURES("data/gun.png");
-  LoadImageToTEXTURES("data/asteroid0.png");
-  LoadImageToTEXTURES("data/asteroid1.png");
-  LoadImageToTEXTURES("data/asteroid2.png");
+  LoadImageToTEXTURES("data/ship.png"); //0
+  LoadImageToTEXTURES("data/gun.png"); //1
+  LoadImageToTEXTURES("data/asteroid0.png"); //2
+  LoadImageToTEXTURES("data/asteroid1.png"); //3
+  LoadImageToTEXTURES("data/asteroid2.png"); //4
 
-  LoadImageToTEXTURES("data/starfield.png");
+  LoadImageToTEXTURES("data/starfield.png"); //5
+
+  LoadImageToTEXTURES("data/commence0.png"); //6
+  LoadImageToTEXTURES("data/commence1.png"); //7
 
   // -----------------------------------------------------------------
 

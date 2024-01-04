@@ -121,18 +121,58 @@ void PaintButtonWithText(const Button& button, const ButtonColors& c, int fontSi
   //Button
   float offh = 1;
   float offw = 1;
+  bool skipText = false;
   if(button.type == Button::Type::REGULAR)
   {
     switch(button.state)
     {
     case MouseState::NO:
-      DrawRectangleRec(button.pos, c.nomouse);
+      if(button.texture0_ix != -1)
+      {
+        Texture2D te = TEXTURES[button.texture0_ix];
+        Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
+        Rectangle destRec = button.pos;
+        Vector2 origin = { 0,0};
+        float rotation = 0;
+        DrawTexturePro(te, sourceRec, destRec, origin, rotation, WHITE);
+        skipText = true;
+      }
+      else
+      {
+        DrawRectangleRec(button.pos, c.nomouse);
+      }
       break;
     case MouseState::OVER:
-      DrawRectangleRec(button.pos, c.mouseover);
+      if(button.texture1_ix != -1)
+      {
+        Texture2D te = TEXTURES[button.texture1_ix];
+        Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
+        Rectangle destRec = button.pos;
+        Vector2 origin = { 0,0};
+        float rotation = 0;
+        DrawTexturePro(te, sourceRec, destRec, origin, rotation, WHITE);
+        skipText = true;
+      }
+      else
+      {
+        DrawRectangleRec(button.pos, c.mouseover);
+      }
       break;
     case MouseState::CLICKED:
-      DrawRectangleRec(button.pos, c.clicked);
+      if(button.texture2_ix != -1)
+      {
+        Texture2D te = TEXTURES[button.texture2_ix];
+        Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
+        Rectangle destRec = button.pos;
+        Vector2 origin = { 0,0};
+        float rotation = 0;
+        DrawTexturePro(te, sourceRec, destRec, origin, rotation, WHITE);
+        skipText = true;
+      }
+      else
+      {
+        DrawRectangleRec(button.pos, c.clicked);
+      }
       break;
     }
   }
@@ -158,18 +198,21 @@ void PaintButtonWithText(const Button& button, const ButtonColors& c, int fontSi
     }
     offw += check.width + 2;
   }
-  if(fontSize <= 0)
+  if(!skipText)
   {
-    int letterCount = (int)button.text.length();
-    float bw = button.pos.width;
-    float bh = button.pos.height;
-    fontSize = (int)(std::min<float>(bh, bw/letterCount));
-    float tw = (float)MeasureText(button.text.c_str(), fontSize);
-    offw = (bw - tw)/2.f+0.5f;
-    offh = (bh - fontSize)/2.f+0.5f;
+    if(fontSize <= 0)
+    {
+      int letterCount = (int)button.text.length();
+      float bw = button.pos.width;
+      float bh = button.pos.height;
+      fontSize = (int)(std::min<float>(bh, bw/letterCount));
+      float tw = (float)MeasureText(button.text.c_str(), fontSize);
+      offw = (bw - tw)/2.f+0.5f;
+      offh = (bh - fontSize)/2.f+0.5f;
+    }
+    DrawText(button.text.c_str(), (int)(button.pos.x + offw), (int)(button.pos.y + offh), fontSize, BLACK);
+    //DrawText( processText[i], (int)( toggleRecs[i].x + toggleRecs[i].width/2 - MeasureText(processText[i], 10)/2), (int) toggleRecs[i].y + 11, 10, ((i == currentProcess) || (i == mouseHoverRec)) ? DARKBLUE : DARKGRAY);
   }
-  DrawText(button.text.c_str(), (int)(button.pos.x + offw), (int)(button.pos.y + offh), fontSize, BLACK);
-  //DrawText( processText[i], (int)( toggleRecs[i].x + toggleRecs[i].width/2 - MeasureText(processText[i], 10)/2), (int) toggleRecs[i].y + 11, 10, ((i == currentProcess) || (i == mouseHoverRec)) ? DARKBLUE : DARKGRAY);
 }
 
 bool CheckButton(const Vector2& p, Button& button)
