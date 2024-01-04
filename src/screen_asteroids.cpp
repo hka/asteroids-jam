@@ -188,6 +188,12 @@ void AsteroidsScreen::Update()
 
   Vector2 worldBound =  {(float)options.screenWidth, (float)options.screenHeight};
   float dt = 1.f/GetFPS(); // more stable than GetFrameTime()?
+  time_in_level += dt;
+  if(time_in_level > 20)
+  {
+    ++level;
+    time_in_level = 0;
+  }
   //skipping bullets for now, they will ignore the physics stuff
   //anyways
   // =================================================================
@@ -229,7 +235,20 @@ void AsteroidsScreen::Update()
   // =================================================================
   if(m_spawnAsteroidTimer.getElapsed() >= 5.f || m_asteroids.empty())
   {
-    m_asteroids.push_back(CreateAsteroid(worldBound));
+    int lvl3_count = 0;
+    for(size_t ii = 0; ii < m_asteroids.size(); ++ii)
+    {
+      lvl3_count += (m_asteroids[ii].type == 3);
+    }
+    if(lvl3_count >= level)
+    {
+      int type = GetRandomValue(1, 2);
+      m_asteroids.push_back(CreateAsteroidR(worldBound,type));
+    }
+    else
+    {
+      m_asteroids.push_back(CreateAsteroidR(worldBound));
+    }
     m_spawnAsteroidTimer.start();
   }
 
@@ -327,6 +346,13 @@ void AsteroidsScreen::Paint()
   //Draw score
   std::string score_text = "Score: "+std::to_string(m_player.score);
   DrawText(score_text.c_str(), 10, 10, 12, GREEN);
+
+  //Draw level
+  {
+    std::string level_text = "Level: "+std::to_string(level);
+    float w = MeasureText(level_text.c_str(),12);
+    DrawText(level_text.c_str(), options.screenWidth - 10 - w, 10, 12, GREEN);
+  }
 
   if(!m_player.alive)
   {

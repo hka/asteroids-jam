@@ -47,7 +47,8 @@ void OnAsteroidSplit(std::vector<Asteroid> &asteroids, const int type, const Vec
 void PaintAsteroid(Asteroid &asteroid);
 
 //factory
-Asteroid CreateAsteroid(const Vector2 &worldBound);
+Asteroid CreateAsteroidR(const Vector2 &worldBound, int type);
+Asteroid CreateAsteroidR(const Vector2 &worldBound);
 Asteroid CreateAsteroid(const Vector2& pos, int type);
 
 #endif

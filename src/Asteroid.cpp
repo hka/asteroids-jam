@@ -118,9 +118,14 @@ void PaintAsteroid(Asteroid& asteroid){
 ////////////////////////////////////////////////
 ///         Factory                         ///
 ///////////////////////////////////////////////
-Asteroid CreateAsteroid(const Vector2& worldBound){
+Asteroid CreateAsteroidR(const Vector2& worldBound)
+{
+  int type = GetRandomValue(1, 3);
+  return CreateAsteroidR(worldBound, type);
+}
+Asteroid CreateAsteroidR(const Vector2& worldBound, int type){
   Asteroid asteroid;
-  asteroid.type = GetRandomValue(1, 3);
+  asteroid.type = type;
   float radius = asteroid.type*options.screenWidth*ASTEROID_SCALE;
 
   switch(asteroid.type)

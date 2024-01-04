@@ -132,6 +132,9 @@ class AsteroidsScreen : public Screen
 
   InputBox m_namebox;
   size_t m_frame = 0;
+
+  float time_in_level = 0;
+  int level = 1;
 };
 
 class OptionsScreen : public Screen
