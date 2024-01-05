@@ -10,7 +10,7 @@ MainMenuScreen::MainMenuScreen()
   int bw = options.screenWidth*252/1920.f;
   int bh = options.screenHeight*84/1080.f;
   int x = options.screenWidth*163/1920.f;
-  int y = options.screenHeight*773/1080.f;
+  int y = options.screenHeight*765/1080.f;
   Button b_startGame("Start", x, y, bw, bh, AnchorPoint::TOP_LEFT);
   auto startAction = [](void* ptr){
     MainMenuScreen* scr = (MainMenuScreen*)ptr;
@@ -28,6 +28,9 @@ MainMenuScreen::MainMenuScreen()
     scr->m_finishScreen = Screen::GameScreen::OPTIONS;
   };
   b_options.action = optionsAction;
+  b_options.texture0_ix = 9;
+  b_options.texture1_ix = 10;
+  b_options.texture2_ix = 10;
 
   Button b_exit("Exit", x, y, bw, bh, AnchorPoint::CENTER);
   PositionUnder(b_options, b_exit);
@@ -36,6 +39,9 @@ MainMenuScreen::MainMenuScreen()
     scr->m_finishScreen = Screen::GameScreen::NOSCREEN;
   };
   b_exit.action = exitAction;
+  b_exit.texture0_ix = 11;
+  b_exit.texture1_ix = 12;
+  b_exit.texture2_ix = 12;
 
   m_buttons.push_back(b_options);//, Screen::GameScreen::OPTIONS});
   m_buttons.push_back(b_exit);//, Screen::GameScreen::NOSCREEN});
@@ -62,25 +68,40 @@ void MainMenuScreen::Update()
 void MainMenuScreen::Paint()
 {
   //DrawRectangle(0, 0, options.screenWidth, options.screenHeight, GREEN);
-  Texture2D te = TEXTURES[8];
-  Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
-  Rectangle destRec = {0, 0, (float)options.screenWidth, (float)options.screenHeight};
-  Vector2 origin = { 0,0};
-  float rotation = 0;
-  DrawTexturePro(te, sourceRec, destRec, origin, rotation, WHITE);
+  //background
+  {
+    Texture2D te = TEXTURES[8];
+    Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
+    Rectangle destRec = {0, 0, (float)options.screenWidth, (float)options.screenHeight};
+    Vector2 origin = { 0,0};
+    float rotation = 0;
+    DrawTexturePro(te, sourceRec, destRec, origin, rotation, WHITE);
+  }
+  //title TODO animate floating around by moving dest?
+  {
+    Texture2D te = TEXTURES[13];
+    Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
+    float scale = options.screenWidth/1920.f;
+    Rectangle destRec = {(float)options.screenWidth/2, (float)options.screenHeight*0.01f, (float)te.width*scale, (float)te.height*scale};
+    Vector2 origin = { destRec.width/2, 0};
+    float rotation = 0;
+    DrawTexturePro(te, sourceRec, destRec, origin, rotation, WHITE);
+  }
 
   for(const auto& b : m_buttons)
   {
     PaintButtonWithText(b);
   }
   int x = options.screenWidth*1470/1920.f;
-  int y = options.screenHeight*773/1080.f;
+  int y = options.screenHeight*765/1080.f;
   DrawText("HIGH SCORE", x, y, 30, BLUE);
   for(size_t ii = 0; ii < highscore.scores.size(); ++ii)
   {
     std::string text = highscore.scores[ii].name + " - " + std::to_string(highscore.scores[ii].score);
     DrawText(text.c_str(), x, y + ii*20 + 30, 15, GREEN);
   }
+
+
 }
 
 Screen::GameScreen MainMenuScreen::Finish()

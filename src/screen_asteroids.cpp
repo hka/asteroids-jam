@@ -376,6 +376,29 @@ void AsteroidsScreen::Paint()
     float w = MeasureText(text.c_str(),40);
     DrawText(text.c_str(), options.screenWidth/2.f - w/2.f, options.screenHeight/2.f - 20, 40, RED);
   }
+
+  //HUD
+  //if(options.control_tip)
+  {
+    {
+      Texture2D te = TEXTURES[14];
+      Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
+      float scale = options.screenWidth/1920.f;
+      Rectangle destRec = {(float)options.screenWidth*0.f, (float)options.screenHeight*0.01f, (float)te.width*scale, (float)te.height*scale};
+      Vector2 origin = { 0, 0};
+      float rotation = 0;
+      DrawTexturePro(te, sourceRec, destRec, origin, rotation, WHITE);
+    }
+    {
+      Texture2D te = TEXTURES[15];
+      Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
+      float scale = options.screenWidth/1920.f;
+      Rectangle destRec = {(float)options.screenWidth*1.f, (float)options.screenHeight*0.0f, (float)te.width*scale, (float)te.height*scale};
+      Vector2 origin = { destRec.width, 0};
+      float rotation = 0;
+      DrawTexturePro(te, sourceRec, destRec, origin, rotation, WHITE);
+    }
+  }
 }
 
 Screen::GameScreen AsteroidsScreen::Finish()

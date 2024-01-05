@@ -59,6 +59,7 @@ void LoadImageToTEXTURES(const char* path)
   Texture2D texture = LoadTextureFromImage(art);
   GenTextureMipmaps( &texture );
   SetTextureFilter(texture, TEXTURE_FILTER_TRILINEAR);
+  //SetTextureFilter(texture, TEXTURE_FILTER_POINT);
 
   TEXTURES.push_back(texture);
 }
@@ -152,6 +153,15 @@ int main(void)
   LoadImageToTEXTURES("data/commence1.png"); //7
 
   LoadImageToTEXTURES("data/mainmenu.png"); //8
+
+  LoadImageToTEXTURES("data/config_button0.png"); //9
+  LoadImageToTEXTURES("data/config_button1.png"); //10
+  LoadImageToTEXTURES("data/exit_button0.png"); //11
+  LoadImageToTEXTURES("data/exit_button1.png"); //12
+
+  LoadImageToTEXTURES("data/GameTitle.png"); //13
+  LoadImageToTEXTURES("data/DirectionalButtonsHUD.png"); //14
+  LoadImageToTEXTURES("data/MouseCanonHUD.png"); //15
 
   // -----------------------------------------------------------------
 

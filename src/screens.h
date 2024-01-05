@@ -27,8 +27,10 @@ struct GameOptions
   bool game_music = true;
   bool sound_fx = true;
   float master_volume = 1.0f;
+  bool control_tip = true;
+  bool first_launch = true;
 };
-VISITABLE_STRUCT(GameOptions, screenWidth, screenHeight, fps, skipLogo, godMode, game_music, sound_fx, master_volume);
+VISITABLE_STRUCT(GameOptions, screenWidth, screenHeight, fps, skipLogo, godMode, game_music, sound_fx, master_volume, control_tip, first_launch);
 
 struct Score
 {
