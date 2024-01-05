@@ -95,10 +95,14 @@ void MainMenuScreen::Paint()
   int x = options.screenWidth*1470/1920.f;
   int y = options.screenHeight*765/1080.f;
   DrawText("HIGH SCORE", x, y, 30, BLUE);
-  for(size_t ii = 0; ii < highscore.scores.size(); ++ii)
+  y+=30;
+  for(size_t ii = 0; ii < highscore.scores.size() && ii < 5; ++ii)
   {
-    std::string text = highscore.scores[ii].name + " - " + std::to_string(highscore.scores[ii].score);
-    DrawText(text.c_str(), x, y + ii*20 + 30, 15, GREEN);
+    char score_text[128];
+    sprintf(score_text,"%s - %09d",highscore.scores[ii].name.c_str(),(int)highscore.scores[ii].score);
+    int font_size = options.screenHeight*30/1080;
+    float w = MeasureText(score_text,font_size);
+    DrawTextEx(TNR, score_text, {x,y+font_size*1.2*ii}, font_size, 1, GREEN);
   }
 
 

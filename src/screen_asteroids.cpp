@@ -350,8 +350,13 @@ void AsteroidsScreen::Paint()
   DrawStoredAsteroids(m_player, options.screenWidth, options.screenHeight);
 
   //Draw score
-  std::string score_text = "Score: "+std::to_string(m_player.score);
-  DrawText(score_text.c_str(), 10, 10, 12, GREEN);
+  {
+    char score_text[128];
+    sprintf(score_text,"S C O R E  %09d",(int)m_player.score);
+    int font_size = options.screenHeight*50/1080;
+    float w = MeasureText(score_text,font_size);
+    DrawTextEx(TNR, score_text, {(float)options.screenWidth/2.f - w/2.f, (float)options.screenHeight*0.03f}, font_size, 1, WHITE);
+  }
 
   //Draw level
   {
@@ -378,13 +383,15 @@ void AsteroidsScreen::Paint()
   }
 
   //HUD
-  //if(options.control_tip)
+  if(options.control_tip)
   {
+    float top_margin = 0.03;
+    float side_margin = 0.02;
     {
       Texture2D te = TEXTURES[14];
       Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
       float scale = options.screenWidth/1920.f;
-      Rectangle destRec = {(float)options.screenWidth*0.f, (float)options.screenHeight*0.01f, (float)te.width*scale, (float)te.height*scale};
+      Rectangle destRec = {(float)options.screenWidth*side_margin, (float)options.screenHeight*top_margin, (float)te.width*scale, (float)te.height*scale};
       Vector2 origin = { 0, 0};
       float rotation = 0;
       DrawTexturePro(te, sourceRec, destRec, origin, rotation, WHITE);
@@ -393,7 +400,7 @@ void AsteroidsScreen::Paint()
       Texture2D te = TEXTURES[15];
       Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
       float scale = options.screenWidth/1920.f;
-      Rectangle destRec = {(float)options.screenWidth*1.f, (float)options.screenHeight*0.0f, (float)te.width*scale, (float)te.height*scale};
+      Rectangle destRec = {(float)options.screenWidth*(1.f-side_margin), (float)options.screenHeight*top_margin, (float)te.width*scale, (float)te.height*scale};
       Vector2 origin = { destRec.width, 0};
       float rotation = 0;
       DrawTexturePro(te, sourceRec, destRec, origin, rotation, WHITE);

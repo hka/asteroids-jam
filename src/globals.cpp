@@ -13,4 +13,6 @@ Music game_track;
 
 Sound shoot_fx;
 
+Font TNR;
+
 std::mt19937 RNG = std::mt19937(4);

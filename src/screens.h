@@ -19,8 +19,8 @@
 
 struct GameOptions
 {
-  int screenWidth = 720;
-  int screenHeight = 480;
+  int screenWidth = 1280;
+  int screenHeight = 800;
   int fps = 60;
   bool skipLogo = false;
   bool godMode = true;
@@ -161,6 +161,7 @@ private:
   size_t m_toggleGodModeIx;
   size_t m_muteMusicIx;
   size_t m_muteFxIx;
+  size_t m_toggleHelpIx;
   std::vector<KeySelector> m_keySelector;
   Slider master_volume;
 };

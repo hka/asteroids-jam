@@ -25,5 +25,7 @@ extern Music game_track;
 
 extern Sound shoot_fx;
 
+extern Font TNR;
+
 extern std::mt19937 RNG;
 #endif

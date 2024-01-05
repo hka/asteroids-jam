@@ -126,16 +126,19 @@ int main(void)
 
   shoot_fx = LoadSound("data/laser.wav");
 
+  TNR = LoadFont("data/times_new_roman.ttf");
+
   //Maybe can window size stuff just with raylib functions...TODO
   //SetWindowState(FLAG_WINDOW_RESIZABLE|FLAG_WINDOW_HIGHDPI);
   //printf("size: %d x %d\n",GetScreenWidth(), GetScreenHeight());
   //printf("size: %d x %d\n",GetRenderWidth(), GetRenderHeight());
   currentScreen = std::make_unique<LogoScreen>();
 
-  if(options.skipLogo)
+  if(options.skipLogo || !options.first_launch)
   {
     currentScreen = std::make_unique<MainMenuScreen>();
   }
+  options.first_launch = false;
 
   SetTargetFPS(options.fps);
 

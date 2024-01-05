@@ -29,7 +29,7 @@ OptionsScreen::OptionsScreen()
   m_buttons.push_back(b_back);
 
 
-  Button b_toggleIntro("Toggle intro", options.screenWidth-10, 10, 100, 20, AnchorPoint::TOP_RIGHT);
+  Button b_toggleIntro("Toggle intro", options.screenWidth-300, 10, 100, 20, AnchorPoint::TOP_RIGHT);
   b_toggleIntro.toggle = options.skipLogo;
   b_toggleIntro.type = Button::Type::CHECKBOX;
   auto toggleIntroAction = [](void* ptr){
@@ -41,7 +41,7 @@ OptionsScreen::OptionsScreen()
   m_toggleIntroIx = m_buttons.size();
   m_buttons.push_back(b_toggleIntro);
 
-  Button b_toggleGodMode("Toggle god mode", options.screenWidth-10, 35, 100, 20, AnchorPoint::TOP_RIGHT);
+  Button b_toggleGodMode("Toggle god mode", options.screenWidth-300, 35, 100, 20, AnchorPoint::TOP_RIGHT);
   b_toggleGodMode.toggle = options.godMode;
   b_toggleGodMode.type = Button::Type::CHECKBOX;
   auto toggleGodModeAction = [](void* ptr){
@@ -53,7 +53,7 @@ OptionsScreen::OptionsScreen()
   m_toggleGodModeIx = m_buttons.size();
   m_buttons.push_back(b_toggleGodMode);
 
-  Button b_muteFx("Mute sound effects", options.screenWidth-10, 35+25, 100, 20, AnchorPoint::TOP_RIGHT);
+  Button b_muteFx("Mute sound effects", options.screenWidth-300, 35+25, 100, 20, AnchorPoint::TOP_RIGHT);
   b_muteFx.toggle = !options.sound_fx;
   b_muteFx.type = Button::Type::CHECKBOX;
   auto muteFxAction = [](void* ptr){
@@ -65,7 +65,7 @@ OptionsScreen::OptionsScreen()
   m_muteFxIx = m_buttons.size();
   m_buttons.push_back(b_muteFx);
 
-  Button b_muteMusic("Mute sound effects", options.screenWidth-10, 35+50, 100, 20, AnchorPoint::TOP_RIGHT);
+  Button b_muteMusic("Mute sound effects", options.screenWidth-300, 35+50, 100, 20, AnchorPoint::TOP_RIGHT);
   b_muteMusic.toggle = !options.game_music;
   b_muteMusic.type = Button::Type::CHECKBOX;
   auto muteMusicAction = [](void* ptr){
@@ -82,6 +82,18 @@ OptionsScreen::OptionsScreen()
   master_volume.max = 1.f;
   master_volume.state = MouseState::NO;
   master_volume.pos = {(float)options.screenWidth - 300, 120, 250, 15};
+
+  Button b_toggleHelp("Show controller HUD", options.screenWidth-300, 145, 100, 20, AnchorPoint::TOP_RIGHT);
+  b_toggleHelp.toggle = options.control_tip;
+  b_toggleHelp.type = Button::Type::CHECKBOX;
+  auto toggleHelpAction = [](void* ptr){
+    OptionsScreen* scr = (OptionsScreen*)ptr;
+    options.control_tip = !options.control_tip;
+    scr->m_buttons[scr->m_toggleHelpIx].toggle = options.control_tip;
+  };
+  b_toggleHelp.action = toggleHelpAction;
+  m_toggleHelpIx = m_buttons.size();
+  m_buttons.push_back(b_toggleHelp);
 
   KeySelector increase_thrust;
   increase_thrust.pos = {options.screenWidth/4.f-25, 2.f*options.screenHeight/6.f-60, 50.f, 50.f};
