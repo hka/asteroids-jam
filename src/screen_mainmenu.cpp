@@ -102,7 +102,7 @@ void MainMenuScreen::Paint()
     sprintf(score_text,"%s - %09d",highscore.scores[ii].name.c_str(),(int)highscore.scores[ii].score);
     int font_size = options.screenHeight*30/1080;
     float w = MeasureText(score_text,font_size);
-    DrawTextEx(TNR, score_text, {x,y+font_size*1.2*ii}, font_size, 1, GREEN);
+    DrawTextEx(TNR, score_text, {(float)x,(float)(y+font_size*1.2f*ii)}, font_size, 1, GREEN);
   }
 
 

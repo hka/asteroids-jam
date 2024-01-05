@@ -98,22 +98,26 @@ OptionsScreen::OptionsScreen()
   KeySelector increase_thrust;
   increase_thrust.pos = {options.screenWidth/4.f-25, 2.f*options.screenHeight/6.f-60, 50.f, 50.f};
   increase_thrust.text = "Increase thrust:";
+  increase_thrust.key = options.keys[(size_t)GameOptions::ControlKeyCodes::THRUST];
   m_keySelector.push_back(increase_thrust);
 
   KeySelector decrease_thrust;
   decrease_thrust.pos = {options.screenWidth/4.f-25, 4.f*options.screenHeight/5.f+40, 50.f, 50.f};
   decrease_thrust.text = "Decrease thrust:";
+  decrease_thrust.key = options.keys[(size_t)GameOptions::ControlKeyCodes::BREAK];
   m_keySelector.push_back(decrease_thrust);
-
-  KeySelector turn_cw;
-  turn_cw.pos = {options.screenWidth/4.f + options.screenWidth/14.f, options.screenHeight/2.f, 50.f, 50.f};
-  turn_cw.text = "Turn clockwise:";
-  m_keySelector.push_back(turn_cw);
 
   KeySelector turn_ccw;
   turn_ccw.pos = {options.screenWidth/4.f - options.screenWidth/14.f - 50, options.screenHeight/2.f, 50.f, 50.f};
   turn_ccw.text = "Turn counter-clockwise:";
+  turn_ccw.key = options.keys[(size_t)GameOptions::ControlKeyCodes::TURN_LEFT];
   m_keySelector.push_back(turn_ccw);
+
+  KeySelector turn_cw;
+  turn_cw.pos = {options.screenWidth/4.f + options.screenWidth/14.f, options.screenHeight/2.f, 50.f, 50.f};
+  turn_cw.text = "Turn clockwise:";
+  turn_cw.key = options.keys[(size_t)GameOptions::ControlKeyCodes::TURN_RIGHT];
+  m_keySelector.push_back(turn_cw);
 }
 
 OptionsScreen::~OptionsScreen()

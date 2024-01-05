@@ -29,8 +29,13 @@ struct GameOptions
   float master_volume = 1.0f;
   bool control_tip = true;
   bool first_launch = true;
+
+  enum class ControlKeyCodes {THRUST = 0, BREAK, TURN_LEFT, TURN_RIGHT, DASH, FIRE, ABSORB, ULTRA, ALT_AIM_LEFT, ALT_AIM_RIGHT, ALT_AIM_UP, ALT_AIM_DOWN, SIZE, NONE};
+  std::vector<Key> keys;
 };
-VISITABLE_STRUCT(GameOptions, screenWidth, screenHeight, fps, skipLogo, godMode, game_music, sound_fx, master_volume, control_tip, first_launch);
+VISITABLE_STRUCT(GameOptions, screenWidth, screenHeight, fps, skipLogo, godMode, game_music, sound_fx, master_volume, control_tip, first_launch, keys);
+
+//IsMatchingKeyPressed(options.keys[(size_t)GameOptions::ControlKeyCodes::THRUST])
 
 struct Score
 {
@@ -58,6 +63,8 @@ class Screen
   virtual GameScreen Finish() = 0;
   virtual GameScreen GetEnum() = 0;
 };
+
+void SetDefaultKeys(std::vector<Key>& keys);
 
 class LogoScreen : public Screen
 {

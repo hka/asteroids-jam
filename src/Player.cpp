@@ -49,21 +49,25 @@ void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &
   ApplyThrustDrag(player.data);
   UpdatePosition(player.data, worldBound, dt);
 
-  if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)){
+  if(IsMatchingKeyPressed(options.keys[(size_t)GameOptions::ControlKeyCodes::ABSORB]))
+  {
     player.suckDelayTimer.start();
   }
-  
+
   if(player.suckDelayTimer.getElapsed() > SUCK_DELAY){
-    if(IsMouseButtonDown(MOUSE_RIGHT_BUTTON) && player.storedAsteroids < MAX_STORED_ASTEROIDS){
+    if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::ABSORB]) && player.storedAsteroids < MAX_STORED_ASTEROIDS)
+    {
       suckAttack(player.data.position, player.data.orientation, player.suckAttack);
     }else{
       player.suckAttack.isOngoing = false;
       player.suckAttack.balls.clear();
     }
-  }else if(player.suckDelayTimer.getElapsed() < SUCK_DELAY && IsMouseButtonReleased(MOUSE_RIGHT_BUTTON)){
+  }
+  else if(player.suckDelayTimer.getElapsed() < SUCK_DELAY  && IsMatchingKeyReleased(options.keys[(size_t)GameOptions::ControlKeyCodes::ABSORB]))
+  {
     turnAsteroidToEnergy(player);
   }
-  
+
   gunUpdate(player, player.gun, shoots);
   laserUpdate(player);
 }
@@ -82,7 +86,7 @@ void UpdatePlayerInput(PhysicsComponent& data, float dt, Energy& energy)
 {
   //rotate velocity vector and update orientation to match
   //TODO handle rotation when moving in reverse?
-  if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
+  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::TURN_LEFT]))
   {
     data.velocity = Vector2Rotate(data.velocity, -(M_PI/0.8f)*dt);
     if(Vector2LengthSqr(data.velocity)>0)
@@ -90,7 +94,7 @@ void UpdatePlayerInput(PhysicsComponent& data, float dt, Energy& energy)
       data.orientation = Vector2Normalize(data.velocity);
     }
   }
-  else if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
+  else if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::TURN_RIGHT]))
   {
     data.velocity = Vector2Rotate(data.velocity, (M_PI/0.8f)*dt);
     if(Vector2LengthSqr(data.velocity)>0)
@@ -100,12 +104,12 @@ void UpdatePlayerInput(PhysicsComponent& data, float dt, Energy& energy)
   }
 
   const float THRUST_ENERGY_COST = 0.1f; //todo move somewhere else
-  if((IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) && hasEnoughEnergy(energy, THRUST_ENERGY_COST))
+  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::BREAK]) && hasEnoughEnergy(energy, THRUST_ENERGY_COST))
   {
     UpdateEnergy(energy, -THRUST_ENERGY_COST);
     data.thrust = -500000;
   }
-  else if((IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) && hasEnoughEnergy(energy, THRUST_ENERGY_COST))
+  else if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::THRUST]) && hasEnoughEnergy(energy, THRUST_ENERGY_COST))
   {
     UpdateEnergy(energy, -THRUST_ENERGY_COST);
     data.thrust = 500000;
@@ -298,7 +302,7 @@ void gunUpdate(PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
   gun.direction = Vector2Normalize(mousePointer - player.data.position);
 
   //handle shooting
-  if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && gun.cooldownTimer.getElapsed() >= gun.cooldownDuration && hasEnoughEnergy(player.energy, gun.energyCost)){
+  if( IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::FIRE]) && gun.cooldownTimer.getElapsed() >= gun.cooldownDuration && hasEnoughEnergy(player.energy, gun.energyCost) && player.storedAsteroids == 0){
     //FireShoot(player.data.position, gun.direction, player.movement.velocity, player.movement.maxAcceleration, shoots);
     FireShoot(player.data, gun.direction,500, shoots);
     if(options.sound_fx)
@@ -308,15 +312,16 @@ void gunUpdate(PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
     UpdateEnergy(player.energy, -gun.energyCost);
     gun.cooldownTimer.start();
   }
-  if(IsKeyDown(KEY_C))
+  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::FIRE]) && player.storedAsteroids > 0)
   {
     FireShootgun(player.data, player.storedAsteroids, gun.direction,500, shoots);
+    gun.cooldownTimer.start();
   }
-
 }
 
 void laserUpdate(PlayerState &player){
-  if(IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)){
+  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::ULTRA]))
+  {
     if(!player.laser.isOngoing){
       OnStart(player.laser, player.gun.direction, player.data.position);
     }else{

@@ -300,10 +300,94 @@ void PaintKeySelector(const KeySelector& ks)
   float offw = (ks.pos.width - tw)/2.f+0.5f;
   float offh = - fontSize - 1.f;
   DrawText(ks.text.c_str(), (int)(ks.pos.x + offw), (int)(ks.pos.y + offh), fontSize, BLACK);
+
+  if(ks.key.key != -1)
+  {
+    if(ks.key.is_keyboard)
+    {
+      char key[2];
+      key[0] = (char)ks.key.key;
+      key[1] = '\0';
+      float w = MeasureText(key, bh-2);
+      DrawText(key, (int)(ks.pos.x + ks.pos.width/2.f - w/2.f), (int)(ks.pos.y + 2), bh - 2, BLACK);
+    }
+  }
 }
 void UpdateKeySelector(KeySelector& ks)
 {
 
+}
+
+bool GetKeyPress(KeySelector& ks)
+{
+  int keyboard_key = 0;
+  int mouse_key = -1;
+  if((keyboard_key = GetKeyPressed()) != 0)
+  {
+    ks.key.key = keyboard_key;
+    ks.key.is_keyboard = true;
+  }
+  else
+  {
+    //MOUSE_BUTTON_LEFT    = 0,  // Mouse button left
+    //MOUSE_BUTTON_RIGHT   = 1,  // Mouse button right
+    //MOUSE_BUTTON_MIDDLE  = 2,  // Mouse button middle (pressed wheel)
+    //MOUSE_BUTTON_SIDE    = 3,  // Mouse button side
+    //MOUSE_BUTTON_EXTRA   = 4,  // Mouse button extra
+    //MOUSE_BUTTON_FORWARD = 5,  // Mouse button forward
+    //MOUSE_BUTTON_BACK    = 6,  // Mouse button back
+    for(int key = 0; key <= 6; ++key)
+    {
+      if(IsMouseButtonPressed(key))
+      {
+        mouse_key = key;
+        ks.key.key = key;
+        ks.key.is_keyboard = false;
+        break;
+      }
+    }
+  }
+
+  return !(keyboard_key == 0 && mouse_key == -1);
+}
+
+bool IsMatchingKeyDown(const Key& k)
+{
+  if(k.is_keyboard)
+  {
+    return IsKeyDown(k.key);
+  }
+  else
+  {
+    return IsMouseButtonDown(k.key);
+  }
+  return false;
+}
+
+bool IsMatchingKeyPressed(const Key& k)
+{
+  if(k.is_keyboard)
+  {
+    return IsKeyPressed(k.key);
+  }
+  else
+  {
+    return IsMouseButtonPressed(k.key);
+  }
+  return false;
+}
+
+bool IsMatchingKeyReleased(const Key& k)
+{
+  if(k.is_keyboard)
+  {
+    return IsKeyReleased(k.key);
+  }
+  else
+  {
+    return IsMouseButtonReleased(k.key);
+  }
+  return false;
 }
 
 void UpdateInputBox(const Vector2& mousePoint, InputBox& ib, void* data)

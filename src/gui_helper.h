@@ -5,6 +5,7 @@
 #include <memory>
 #include <functional>
 #include <string>
+#include <visit_struct/visit_struct.hpp>
 
 // =============================================================================
 // enums
@@ -47,12 +48,19 @@ struct Button
   int texture2_ix = -1; //click
 };
 
+struct Key
+{
+  int key = -1;
+  bool is_keyboard = true;
+};
+VISITABLE_STRUCT(Key, key, is_keyboard);
+
 struct KeySelector
 {
   Rectangle   pos;
   std::string text;
   MouseState  state;
-  int key;
+  Key key;
 };
 
 struct Slider
@@ -153,6 +161,10 @@ bool CheckButton(const Vector2& p, Button& button);
 
 void PaintKeySelector(const KeySelector& ks);
 void UpdateKeySelector(KeySelector& ks);
+bool GetKeyPress(KeySelector& ks);
+bool IsMatchingKeyDown(const Key& k);
+bool IsMatchingKeyPressed(const Key& k);
+bool IsMatchingKeyReleased(const Key& k);
 
 void PaintSlider(const Slider& s);
 bool UpdateSlider(const Vector2& p, Slider& s);

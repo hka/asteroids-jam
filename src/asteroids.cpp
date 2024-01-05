@@ -140,6 +140,11 @@ int main(void)
   }
   options.first_launch = false;
 
+  if(options.keys.empty())
+  {
+    SetDefaultKeys(options.keys);
+  }
+
   SetTargetFPS(options.fps);
 
   // -----------------------------------------------------------------
