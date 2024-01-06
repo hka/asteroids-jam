@@ -28,6 +28,18 @@ OptionsScreen::OptionsScreen()
   b_back.action = backAction;
   m_buttons.push_back(b_back);
 
+  Button b_defaultKm("Restore default keys", 120, 10, 100, 20, AnchorPoint::TOP_LEFT);
+  auto defaultKmAction = [](void* ptr){
+    OptionsScreen* scr = (OptionsScreen*)ptr;
+    SetDefaultKeys(options.keys);
+    for(size_t ii = 0; ii < scr->m_keySelector.size(); ++ii)
+    {
+      scr->m_keySelector[ii].key = options.keys[ii];
+    }
+  };
+  b_defaultKm.action = defaultKmAction;
+  m_buttons.push_back(b_defaultKm);
+
 
   Button b_toggleIntro("Toggle intro", options.screenWidth-300, 10, 100, 20, AnchorPoint::TOP_RIGHT);
   b_toggleIntro.toggle = options.skipLogo;
@@ -95,29 +107,67 @@ OptionsScreen::OptionsScreen()
   m_toggleHelpIx = m_buttons.size();
   m_buttons.push_back(b_toggleHelp);
 
+  m_keySelector.resize((size_t)GameOptions::ControlKeyCodes::SIZE);
+
   KeySelector increase_thrust;
+  size_t ix = (size_t)GameOptions::ControlKeyCodes::THRUST;
   increase_thrust.pos = {options.screenWidth/4.f-25, 2.f*options.screenHeight/6.f-60, 50.f, 50.f};
   increase_thrust.text = "Increase thrust:";
-  increase_thrust.key = options.keys[(size_t)GameOptions::ControlKeyCodes::THRUST];
-  m_keySelector.push_back(increase_thrust);
+  increase_thrust.key = options.keys[ix];
+  m_keySelector[ix]=increase_thrust;
 
   KeySelector decrease_thrust;
+  ix = (size_t)GameOptions::ControlKeyCodes::BREAK;
   decrease_thrust.pos = {options.screenWidth/4.f-25, 4.f*options.screenHeight/5.f+40, 50.f, 50.f};
   decrease_thrust.text = "Decrease thrust:";
-  decrease_thrust.key = options.keys[(size_t)GameOptions::ControlKeyCodes::BREAK];
-  m_keySelector.push_back(decrease_thrust);
+  decrease_thrust.key = options.keys[ix];
+  m_keySelector[ix] = decrease_thrust;
 
   KeySelector turn_ccw;
+  ix = (size_t)GameOptions::ControlKeyCodes::TURN_LEFT;
   turn_ccw.pos = {options.screenWidth/4.f - options.screenWidth/14.f - 50, options.screenHeight/2.f, 50.f, 50.f};
   turn_ccw.text = "Turn counter-clockwise:";
-  turn_ccw.key = options.keys[(size_t)GameOptions::ControlKeyCodes::TURN_LEFT];
-  m_keySelector.push_back(turn_ccw);
+  turn_ccw.key = options.keys[ix];
+  m_keySelector[ix] = turn_ccw;
 
   KeySelector turn_cw;
+  ix = (size_t)GameOptions::ControlKeyCodes::TURN_RIGHT;
   turn_cw.pos = {options.screenWidth/4.f + options.screenWidth/14.f, options.screenHeight/2.f, 50.f, 50.f};
   turn_cw.text = "Turn clockwise:";
-  turn_cw.key = options.keys[(size_t)GameOptions::ControlKeyCodes::TURN_RIGHT];
-  m_keySelector.push_back(turn_cw);
+  turn_cw.key = options.keys[ix];
+  m_keySelector[ix] = turn_cw;
+
+  KeySelector dash;
+  ix = (size_t)GameOptions::ControlKeyCodes::DASH;
+  dash.pos = {options.screenWidth/4.f-25, options.screenHeight/2.f + 50, 50.f, 50.f};
+  dash.text = "Dash:";
+  dash.key = options.keys[ix];
+  m_keySelector[ix] = dash;
+
+  Vector2 gunpos = {3.f*options.screenWidth/4.f, options.screenHeight/2.f -options.screenWidth/10.f};
+
+  KeySelector fire;
+  ix = (size_t)GameOptions::ControlKeyCodes::FIRE;
+  fire.pos = {gunpos.x - 70, gunpos.y, 50.f, 50.f};
+  fire.text = "Shot:";
+  fire.key = options.keys[ix];
+  m_keySelector[ix] = fire;
+
+  KeySelector absorb;
+  ix = (size_t)GameOptions::ControlKeyCodes::ABSORB;
+  absorb.pos = {gunpos.x + 20, gunpos.y, 50.f, 50.f};
+  absorb.text = "Absorb:";
+  absorb.key = options.keys[ix];
+  m_keySelector[ix] = absorb;
+
+  Vector2 towerpos = {3.f*options.screenWidth/4.f, options.screenHeight/2.f + options.screenWidth/25.f};
+  KeySelector ultra;
+  ix = (size_t)GameOptions::ControlKeyCodes::ULTRA;
+  ultra.pos = {towerpos.x - 25, towerpos.y + 20, 50, 50};
+  ultra.text = "Ultra:";
+  ultra.key = options.keys[ix];
+  m_keySelector[ix] = ultra;
+
 }
 
 OptionsScreen::~OptionsScreen()
@@ -139,6 +189,22 @@ void OptionsScreen::Update()
   {
     options.master_volume = master_volume.value;
     SetMasterVolume(options.master_volume);
+  }
+  for(size_t ii = 0; ii < m_keySelector.size(); ++ii)
+  {
+    if(UpdateKeySelector(mousePoint,m_keySelector[ii]))
+    {
+      options.keys[ii] = m_keySelector[ii].key;
+    }
+  }
+  KeyMap defaultKeys;
+  SetDefaultKeys(defaultKeys.keys);
+  KeyMap optionKeys;
+  optionKeys.keys = options.keys;
+  if(!struct_eq(defaultKeys, optionKeys))
+  {
+    options.control_tip = false;
+    m_buttons[m_toggleHelpIx].toggle = options.control_tip;
   }
 }
 

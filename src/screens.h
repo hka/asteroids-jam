@@ -35,7 +35,11 @@ struct GameOptions
 };
 VISITABLE_STRUCT(GameOptions, screenWidth, screenHeight, fps, skipLogo, godMode, game_music, sound_fx, master_volume, control_tip, first_launch, keys);
 
-//IsMatchingKeyPressed(options.keys[(size_t)GameOptions::ControlKeyCodes::THRUST])
+struct KeyMap
+{
+  std::vector<Key> keys;
+};
+VISITABLE_STRUCT(KeyMap, keys);
 
 struct Score
 {

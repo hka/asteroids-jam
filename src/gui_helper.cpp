@@ -305,17 +305,75 @@ void PaintKeySelector(const KeySelector& ks)
   {
     if(ks.key.is_keyboard)
     {
-      char key[2];
-      key[0] = (char)ks.key.key;
-      key[1] = '\0';
-      float w = MeasureText(key, bh-2);
-      DrawText(key, (int)(ks.pos.x + ks.pos.width/2.f - w/2.f), (int)(ks.pos.y + 2), bh - 2, BLACK);
+      if(ks.key.key == KEY_SPACE)
+      {
+        char key[4];
+        key[0] = 'S';
+        key[1] = 'P';
+        key[2] = 'C';
+        key[3] = '\0';
+        float w = MeasureText(key, bh/3-2);
+        DrawText(key, (int)(ks.pos.x + ks.pos.width/2.f - w/2.f), (int)(ks.pos.y + bh/2-bh/6), bh/3 - 2, BLACK);
+      }
+      else
+      {
+        char key[2];
+        key[0] = (char)ks.key.key;
+        key[1] = '\0';
+        float w = MeasureText(key, bh-2);
+        DrawText(key, (int)(ks.pos.x + ks.pos.width/2.f - w/2.f), (int)(ks.pos.y + 2), bh - 2, BLACK);
+      }
+    }
+    else
+    {
+      char key[4];
+      switch(ks.key.key)
+      {
+      case 0:
+        key[0] = 'L';
+        break;
+      case 1:
+        key[0] = 'R';
+        break;
+      case 2:
+        key[0] = 'M';
+        break;
+      default:
+        key[0] = '?';
+        break;
+      }
+      key[1] = 'M';
+      key[2] = 'B';
+      key[3] = '\0';
+      float w = MeasureText(key, bh/3-2);
+      DrawText(key, (int)(ks.pos.x + ks.pos.width/2.f - w/2.f), (int)(ks.pos.y + bh/2-bh/6), bh/3 - 2, BLACK);
     }
   }
 }
-void UpdateKeySelector(KeySelector& ks)
+bool UpdateKeySelector(const Vector2& mousePoint, KeySelector& ks)
 {
-
+  if(CheckCollisionPointRec(mousePoint, ks.pos)
+     && ks.state != MouseState::CLICKED)
+  {
+    if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+    {
+     ks.state = MouseState::CLICKED;
+    }
+    else
+    {
+      ks.state = MouseState::OVER;
+    }
+  }
+  if(ks.state == MouseState::CLICKED)
+  {
+    bool gotKey = GetKeyPress(ks);
+    if(gotKey)
+    {
+      ks.state = MouseState::NO;
+      return true;
+    }
+  }
+  return false;
 }
 
 bool GetKeyPress(KeySelector& ks)

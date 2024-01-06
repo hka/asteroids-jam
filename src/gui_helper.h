@@ -160,7 +160,7 @@ void PaintButtonWithText(const Button& button, const ButtonColors& c = {LIME, GO
 bool CheckButton(const Vector2& p, Button& button);
 
 void PaintKeySelector(const KeySelector& ks);
-void UpdateKeySelector(KeySelector& ks);
+bool UpdateKeySelector(const Vector2& mousePoint, KeySelector& ks);
 bool GetKeyPress(KeySelector& ks);
 bool IsMatchingKeyDown(const Key& k);
 bool IsMatchingKeyPressed(const Key& k);
