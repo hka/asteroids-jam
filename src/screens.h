@@ -23,7 +23,7 @@ struct GameOptions
   int screenHeight = 800;
   int fps = 60;
   bool skipLogo = false;
-  bool godMode = true;
+  bool godMode = false;
   bool game_music = true;
   bool sound_fx = true;
   float master_volume = 1.0f;

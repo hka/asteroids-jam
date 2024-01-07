@@ -38,8 +38,8 @@ struct GunAttack{
 };
 
 struct Energy{
-  float value;
-  float maxValue;
+  float value = 0.f;
+  float maxValue = 100.f;
 };
 
 struct PlayerState
@@ -52,6 +52,8 @@ struct PlayerState
   GunAttack gun;
   Laser laser;
   Energy energy;
+  Energy ultra;
+  bool ultra_active = false;
 
   int storedAsteroids = 0;
   Timer suckDelayTimer;
@@ -64,6 +66,7 @@ struct PlayerState
 
   static constexpr float DASH_ENERGY_COST = 2.f;
   static constexpr float DASH_DISTANCE = 0.15f;
+  static constexpr float ULTRA_ENERGY_COST = 30.f;
 };
 
 // update

@@ -343,12 +343,13 @@ void AsteroidsScreen::Paint()
   ///Draw energy ui
   const float maxLength = options.screenWidth * 0.5f;
   float currentLength = (m_player.energy.value / m_player.energy.maxValue) * maxLength;
-  float height = 10.f;
-  Vector2 pos{
-    (maxLength / 2.f),
-    options.screenHeight - (height * 2.f)
-  };
-  DrawEnergyBar(m_player.energy, pos, maxLength, height, ORANGE);
+
+  Rectangle pos = {(float)options.screenWidth*0.02f, (float)options.screenHeight*(1.f - 0.14f),(float)options.screenWidth*0.22f, (float)options.screenHeight*0.1f};
+  DrawEnergyBar(m_player.energy, pos);
+
+  pos.x = (float)options.screenWidth*(1.f-0.02f) - pos.width;
+  DrawUltraBar(m_player.ultra, pos);
+
   if(currentLength < 1)
   {
     std::string help_text = "Click right mouse button to convert absorbed asteroid to fuel!";
