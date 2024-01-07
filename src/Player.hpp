@@ -42,6 +42,10 @@ struct Energy{
   float maxValue = 100.f;
 };
 
+const float DASH_ENERGY_COST = 2.f;
+const float DASH_DISTANCE = 0.15f;
+const float ULTRA_ENERGY_COST = 30.f;
+
 struct PlayerState
 {
   float score = 0;
@@ -63,10 +67,6 @@ struct PlayerState
   PhysicsComponent data;
 
   void OnHit();
-
-  static constexpr float DASH_ENERGY_COST = 2.f;
-  static constexpr float DASH_DISTANCE = 0.15f;
-  static constexpr float ULTRA_ENERGY_COST = 30.f;
 };
 
 // update

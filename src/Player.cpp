@@ -79,9 +79,9 @@ void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &
   {
     UpdateEnergy(player.ultra, dt*1.f);
   }
-  else if(player.ultra_active && hasEnoughEnergy(player.ultra, PlayerState::ULTRA_ENERGY_COST))
+  else if(player.ultra_active && hasEnoughEnergy(player.ultra, ULTRA_ENERGY_COST))
   {
-    UpdateEnergy(player.ultra, -PlayerState::ULTRA_ENERGY_COST*dt);
+    UpdateEnergy(player.ultra, -ULTRA_ENERGY_COST*dt);
   }
   else
   {
@@ -138,15 +138,15 @@ void UpdatePlayerInput(PlayerState& player, float dt, Energy& energy)
     data.thrust = 0;
   }
 
-  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::DASH]) && hasEnoughEnergy(energy, PlayerState::DASH_ENERGY_COST) && !player.dash_in_progress)
+  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::DASH]) && hasEnoughEnergy(energy, DASH_ENERGY_COST) && !player.dash_in_progress)
   {
-    UpdateEnergy(energy, -PlayerState::DASH_ENERGY_COST);
+    UpdateEnergy(energy, -DASH_ENERGY_COST);
     player.dash_in_progress = true;
   }
   else if(player.dash_in_progress && !IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::DASH]))
   {
     player.dash_in_progress = false;
-    data.position = data.position + data.orientation*options.screenWidth*PlayerState::DASH_DISTANCE;
+    data.position = data.position + data.orientation*options.screenWidth*DASH_DISTANCE;
   }
 }
 
@@ -469,7 +469,7 @@ void DrawShip(const PlayerState &player)
 
  if(player.dash_in_progress)
  {
-   Vector2 dash_pos = player.data.position + player.data.orientation*options.screenWidth*PlayerState::DASH_DISTANCE;
+   Vector2 dash_pos = player.data.position + player.data.orientation*options.screenWidth*DASH_DISTANCE;
    dash_pos = mod(dash_pos, {(float)options.screenWidth,(float)options.screenHeight});
    destRec.x = dash_pos.x;
    destRec.y = dash_pos.y;
