@@ -44,7 +44,7 @@ PlayerState createPlayer(Vector2 startPos){
 ///////////////////////////////////////////////
 void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &shoots, float dt)
 {
-  UpdatePlayerInput(player.data, dt, player.energy);
+  UpdatePlayerInput(player, dt, player.energy);
   player.data.force *= 0;
   ApplyThrustDrag(player.data);
   UpdatePosition(player.data, worldBound, dt);
@@ -82,8 +82,9 @@ void UpdateEnergy(Energy& energy, float value){
 ////////////////////////////////////////////////
 ///         Input                           ///
 ///////////////////////////////////////////////
-void UpdatePlayerInput(PhysicsComponent& data, float dt, Energy& energy)
+void UpdatePlayerInput(PlayerState& player, float dt, Energy& energy)
 {
+  PhysicsComponent& data = player.data;
   //rotate velocity vector and update orientation to match
   //TODO handle rotation when moving in reverse?
   if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::TURN_LEFT]))
@@ -117,6 +118,17 @@ void UpdatePlayerInput(PhysicsComponent& data, float dt, Energy& energy)
   else
   {
     data.thrust = 0;
+  }
+
+  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::DASH]) && hasEnoughEnergy(energy, PlayerState::DASH_ENERGY_COST) && !player.dash_in_progress)
+  {
+    UpdateEnergy(energy, -PlayerState::DASH_ENERGY_COST);
+    player.dash_in_progress = true;
+  }
+  else if(player.dash_in_progress && !IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::DASH]))
+  {
+    player.dash_in_progress = false;
+    data.position = data.position + data.orientation*options.screenWidth*PlayerState::DASH_DISTANCE;
   }
 }
 
@@ -430,6 +442,16 @@ void DrawShip(const PlayerState &player)
  int rotation = atan2(player.data.orientation.y,player.data.orientation.x)*180/M_PI + 90;
  DrawTexturePro(te, sourceRec, destRec, origin, (float)rotation, WHITE);
 
+ if(player.dash_in_progress)
+ {
+   Vector2 dash_pos = player.data.position + player.data.orientation*options.screenWidth*PlayerState::DASH_DISTANCE;
+   dash_pos = mod(dash_pos, {(float)options.screenWidth,(float)options.screenHeight});
+   destRec.x = dash_pos.x;
+   destRec.y = dash_pos.y;
+   Color ghost = WHITE;
+   ghost.a = 127;
+   DrawTexturePro(te, sourceRec, destRec, origin, (float)rotation, ghost);
+ }
 }
 
 void DrawGun(const PlayerState& player)

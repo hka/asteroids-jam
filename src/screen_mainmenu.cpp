@@ -46,6 +46,8 @@ MainMenuScreen::MainMenuScreen()
   m_buttons.push_back(b_options);//, Screen::GameScreen::OPTIONS});
   m_buttons.push_back(b_exit);//, Screen::GameScreen::NOSCREEN});
   m_buttons.push_back(b_startGame);//, Screen::GameScreen::ASTEROIDS});
+
+  SetExitKey(KEY_ESCAPE);
 }
 
 MainMenuScreen::~MainMenuScreen()

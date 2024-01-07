@@ -126,7 +126,8 @@ int main(void)
 
   shoot_fx = LoadSound("data/laser.wav");
 
-  TNR = LoadFont("data/times_new_roman.ttf");
+  //TNR = LoadFont("data/times_new_roman.ttf");
+  TNR = LoadFont("data/FreeSerifItalic.ttf");
 
   //Maybe can window size stuff just with raylib functions...TODO
   //SetWindowState(FLAG_WINDOW_RESIZABLE|FLAG_WINDOW_HIGHDPI);

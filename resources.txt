@@ -1,0 +1,3 @@
+data/FreeSerifItalic.ttf
+Source: GNU FreeFont
+License: GPL

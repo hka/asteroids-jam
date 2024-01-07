@@ -50,6 +50,9 @@ AsteroidsScreen::AsteroidsScreen():
   {
     PlayMusicStream(game_track);
   }
+
+  //SetExitKey(KEY_ESCAPE);
+  SetExitKey(1000); //no exit key from here
 }
 
 AsteroidsScreen::~AsteroidsScreen()
@@ -283,6 +286,12 @@ void AsteroidsScreen::Update()
   handleCollision(m_player, m_enemyBullets);
   RemoveOldShoots(m_enemyBullets, 2);
   RemoveOldShoots(m_playerBullets, 3);
+
+  //Abort run
+  if(IsKeyPressed(KEY_ESCAPE))
+  {
+    m_finishScreen = Screen::GameScreen::MAINMENU;
+  }
 }
 
 void AsteroidsScreen::Paint()
