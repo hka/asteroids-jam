@@ -5,6 +5,7 @@
 #include <memory>
 #include <functional>
 #include <string>
+#include <visit_struct/visit_struct.hpp>
 
 // =============================================================================
 // enums
@@ -41,14 +42,34 @@ struct Button
   std::function<void(void*)> action;
   enum class Type {REGULAR, CHECKBOX};
   Type type = Type::REGULAR;
+
+  int texture0_ix = -1; //default
+  int texture1_ix = -1; //hover
+  int texture2_ix = -1; //click
 };
+
+struct Key
+{
+  int key = -1;
+  bool is_keyboard = true;
+};
+VISITABLE_STRUCT(Key, key, is_keyboard);
 
 struct KeySelector
 {
   Rectangle   pos;
   std::string text;
   MouseState  state;
-  int key;
+  Key key;
+};
+
+struct Slider
+{
+  Rectangle pos;
+  float value;
+  float min;
+  float max;
+  MouseState state;
 };
 
 struct Droplist
@@ -139,7 +160,14 @@ void PaintButtonWithText(const Button& button, const ButtonColors& c = {LIME, GO
 bool CheckButton(const Vector2& p, Button& button);
 
 void PaintKeySelector(const KeySelector& ks);
-void UpdateKeySelector(KeySelector& ks);
+bool UpdateKeySelector(const Vector2& mousePoint, KeySelector& ks);
+bool GetKeyPress(KeySelector& ks);
+bool IsMatchingKeyDown(const Key& k);
+bool IsMatchingKeyPressed(const Key& k);
+bool IsMatchingKeyReleased(const Key& k);
+
+void PaintSlider(const Slider& s);
+bool UpdateSlider(const Vector2& p, Slider& s);
 
 void PaintDroplist(const Droplist& dl);
 void SetDroplistIx(Droplist& dl, const std::string& key);

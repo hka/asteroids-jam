@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 
+#include "raylib_operators.h"
+
 float handleCollision(std::vector<Enemy> &enemies, std::vector<Shoot> &playerBullets){
   float value_hit = 0;
   for(std::size_t i = 0; i < enemies.size(); ++i){
@@ -77,11 +79,24 @@ void handleCollision(PlayerState &player, std::vector<Asteroid> &asteroids)
   {
     Asteroid a = asteroids[j];
 
-    if(a.target == 0 && CheckCollisionCircles(player.data.position, player.data.radius, a.data.position, a.data.radius)){
+    if(CheckCollisionCircles(player.data.position, player.data.radius, a.data.position, a.data.radius))
+    {
+      //check if absorbing and we got hit in the front
+      Vector2 dir = Vector2Normalize(a.data.position - player.data.position);
+      //all in front
+      if(a.type == 1
+         && std::abs(dot(dir,player.data.orientation)) > 0.7
+         && player.suckAttack.isOngoing)
+      {
+        player.storedAsteroids = std::min(MAX_STORED_ASTEROIDS, player.storedAsteroids + 1);
+        asteroids[j].state = ABSORBED;
+      }
+      else
+      {
+        player.OnHit();
 
-      player.OnHit();
-
-      asteroids[j].state = DEAD_BY_COLLISION;
+        asteroids[j].state = DEAD_BY_COLLISION;
+      }
     }
   }
   //todo

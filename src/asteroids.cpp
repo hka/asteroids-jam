@@ -59,6 +59,7 @@ void LoadImageToTEXTURES(const char* path)
   Texture2D texture = LoadTextureFromImage(art);
   GenTextureMipmaps( &texture );
   SetTextureFilter(texture, TEXTURE_FILTER_TRILINEAR);
+  //SetTextureFilter(texture, TEXTURE_FILTER_POINT);
 
   TEXTURES.push_back(texture);
 }
@@ -118,28 +119,58 @@ int main(void)
   InitWindow(options.screenWidth, options.screenHeight, PROGRAM_NAME);
 
 
+  InitAudioDevice();
+  SetMasterVolume(options.master_volume);
+  //main_menu_track = LoadMusicStream("data/.mp3");
+  game_track = LoadMusicStream("data/The_Ultimate_Game_in-play.mp3");
+
+  shoot_fx = LoadSound("data/laser.wav");
+
+  //TNR = LoadFont("data/times_new_roman.ttf");
+  TNR = LoadFont("data/FreeSerifItalic.ttf");
+
   //Maybe can window size stuff just with raylib functions...TODO
   //SetWindowState(FLAG_WINDOW_RESIZABLE|FLAG_WINDOW_HIGHDPI);
   //printf("size: %d x %d\n",GetScreenWidth(), GetScreenHeight());
   //printf("size: %d x %d\n",GetRenderWidth(), GetRenderHeight());
   currentScreen = std::make_unique<LogoScreen>();
 
-  if(options.skipLogo)
+  if(options.skipLogo || !options.first_launch)
   {
     currentScreen = std::make_unique<MainMenuScreen>();
+  }
+  options.first_launch = false;
+
+  if(options.keys.empty())
+  {
+    SetDefaultKeys(options.keys);
   }
 
   SetTargetFPS(options.fps);
 
   // -----------------------------------------------------------------
   //Load textures
-  LoadImageToTEXTURES("data/ship.png");
-  LoadImageToTEXTURES("data/gun.png");
-  LoadImageToTEXTURES("data/asteroid0.png");
-  LoadImageToTEXTURES("data/asteroid1.png");
-  LoadImageToTEXTURES("data/asteroid2.png");
+  LoadImageToTEXTURES("data/ship.png"); //0
+  LoadImageToTEXTURES("data/gun.png"); //1
+  LoadImageToTEXTURES("data/asteroid0.png"); //2
+  LoadImageToTEXTURES("data/asteroid1.png"); //3
+  LoadImageToTEXTURES("data/asteroid2.png"); //4
 
-  LoadImageToTEXTURES("data/starfield.png");
+  LoadImageToTEXTURES("data/starfield.png"); //5
+
+  LoadImageToTEXTURES("data/commence0.png"); //6
+  LoadImageToTEXTURES("data/commence1.png"); //7
+
+  LoadImageToTEXTURES("data/mainmenu.png"); //8
+
+  LoadImageToTEXTURES("data/config_button0.png"); //9
+  LoadImageToTEXTURES("data/config_button1.png"); //10
+  LoadImageToTEXTURES("data/exit_button0.png"); //11
+  LoadImageToTEXTURES("data/exit_button1.png"); //12
+
+  LoadImageToTEXTURES("data/GameTitle.png"); //13
+  LoadImageToTEXTURES("data/DirectionalButtonsHUD.png"); //14
+  LoadImageToTEXTURES("data/MouseCanonHUD.png"); //15
 
   // -----------------------------------------------------------------
 
@@ -160,6 +191,10 @@ int main(void)
   }
 
 #endif
+  UnloadMusicStream(game_track);
+  //UnloadMusicStream(main_menu_track);
+  UnloadSound(shoot_fx);
+  CloseAudioDevice();
   CloseWindow();
   return 0;
 }

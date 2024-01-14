@@ -5,6 +5,7 @@
 
 #include "EntityComponents.h"
 #include "Timer.hpp"
+#include "Munition.h"
 
 enum State{
   ALIVE,
@@ -27,6 +28,8 @@ struct Asteroid{
 
   Timer damageTimer;
   bool shouldDamageBlink;
+
+  float shoot_counter = 0;
 };
 
 constexpr const float ASTEROID_MIN_RADIUS = 8.f;
@@ -35,7 +38,7 @@ constexpr const float ASTEROID_SCALE = 0.01f;
 constexpr const float ASTEROID_DAMAGE_BLINK_TIME = 0.2f;
 
 //update
-void UpdateAsteroid(Asteroid &asteroid, const Vector2 &worldBound, float dt);
+void UpdateAsteroid(Asteroid& asteroid, const Vector2& worldBound, std::vector<Shoot> &shoots, float dt);
 
 //Helper
 void OnAsteroidSplit(std::vector<Asteroid> &asteroids, const int type, const Vector2 &pos);
@@ -44,7 +47,8 @@ void OnAsteroidSplit(std::vector<Asteroid> &asteroids, const int type, const Vec
 void PaintAsteroid(Asteroid &asteroid);
 
 //factory
-Asteroid CreateAsteroid(const Vector2 &worldBound);
+Asteroid CreateAsteroidR(const Vector2 &worldBound, int type);
+Asteroid CreateAsteroidR(const Vector2 &worldBound);
 Asteroid CreateAsteroid(const Vector2& pos, int type);
 
 #endif

@@ -49,6 +49,13 @@ AsteroidsScreen::AsteroidsScreen():
   m_namebox.confirm.action = confirmAction;
 
   CreateLaserTexture();
+  if(options.game_music)
+  {
+    PlayMusicStream(game_track);
+  }
+
+  //SetExitKey(KEY_ESCAPE);
+  SetExitKey(1000); //no exit key from here
 }
 
 AsteroidsScreen::~AsteroidsScreen()
@@ -151,6 +158,8 @@ void AsteroidsScreen::AsteroidEnemyInteraction(const Vector2& bound)
 
 void AsteroidsScreen::Update()
 {
+  UpdateMusicStream(game_track);
+
   if(!m_player.alive)
   {
     UpdateInputBox(GetMousePosition(), m_namebox, this);
@@ -201,6 +210,12 @@ void AsteroidsScreen::Update()
 
   Vector2 worldBound =  {(float)options.screenWidth, (float)options.screenHeight};
   float dt = 1.f/GetFPS(); // more stable than GetFrameTime()?
+  time_in_level += dt;
+  if(time_in_level > 20)
+  {
+    ++level;
+    time_in_level = 0;
+  }
   //skipping bullets for now, they will ignore the physics stuff
   //anyways
   // =================================================================
@@ -231,7 +246,7 @@ void AsteroidsScreen::Update()
   // Update positions (apply forces)
   // =================================================================
   for(std::size_t i = 0; i < m_asteroids.size(); ++i){
-    UpdateAsteroid(m_asteroids[i], worldBound, dt);
+    UpdateAsteroid(m_asteroids[i], worldBound, m_enemyBullets, dt);
   }
   for(std::size_t i = 0; i < m_enemies.size(); ++i){
     UpdateEnemy(m_enemies[i], worldBound, m_enemyBullets, dt, m_player);
@@ -242,10 +257,28 @@ void AsteroidsScreen::Update()
   // =================================================================
   if(m_spawnAsteroidTimer.getElapsed() >= 5.f || m_asteroids.empty())
   {
-    m_asteroids.push_back(CreateAsteroid(worldBound));
+    int lvl3_count = 0;
+    for(size_t ii = 0; ii < m_asteroids.size(); ++ii)
+    {
+      lvl3_count += (m_asteroids[ii].type == 3);
+    }
+    if(lvl3_count >= level)
+    {
+      int type = GetRandomValue(1, 2);
+      m_asteroids.push_back(CreateAsteroidR(worldBound,type));
+    }
+    else
+    {
+      m_asteroids.push_back(CreateAsteroidR(worldBound));
+    }
     m_spawnAsteroidTimer.start();
   }
 
+  //TODO limit number of enemies to game level or something
+  if(false && m_spawnEnemyTimer.getElapsed() >= 10.f && m_enemies.size() < 1 ){
+    m_enemies.push_back(CreateEnemy(worldBound));
+    m_spawnEnemyTimer.start();
+  }
 
   // =================================================================
 
@@ -264,7 +297,14 @@ void AsteroidsScreen::Update()
   handleCollision(m_player, m_playerBullets);
   handleCollision(m_player, m_asteroids);
   handleCollision(m_player, m_enemyBullets);
-  RemoveOldShoots(m_enemyBullets, 10);
+  RemoveOldShoots(m_enemyBullets, 2);
+  RemoveOldShoots(m_playerBullets, 3);
+
+  //Abort run
+  if(IsKeyPressed(KEY_ESCAPE))
+  {
+    m_finishScreen = Screen::GameScreen::MAINMENU;
+  }
 }
 
 void AsteroidsScreen::Paint()
@@ -316,18 +356,37 @@ void AsteroidsScreen::Paint()
   ///Draw player ui
   const float maxLength = options.screenWidth * 0.5f;
   float currentLength = (m_player.energy.value / m_player.energy.maxValue) * maxLength;
-  float height = 10.f;
-  Vector2 pos{
-    (maxLength / 2.f),
-    options.screenHeight - (height * 2.f)
-  };
-  DrawEnergyBar(m_player.energy, pos, maxLength, height, ORANGE);
-  DrawEnergyPerc(m_player.laserEnergy, options.screenWidth, options.screenHeight);
+
+  Rectangle pos = {(float)options.screenWidth*0.02f, (float)options.screenHeight*(1.f - 0.14f),(float)options.screenWidth*0.22f, (float)options.screenHeight*0.1f};
+  DrawEnergyBar(m_player.energy, pos);
+
+  pos.x = (float)options.screenWidth*(1.f-0.02f) - pos.width;
+  DrawUltraBar(m_player.laserEnergy, pos);
+
+  if(currentLength < 1)
+  {
+    std::string help_text = "Click right mouse button to convert absorbed asteroid to fuel!";
+    float w = MeasureText(help_text.c_str(),30);
+    DrawText(help_text.c_str(), options.screenWidth/2-w/2, pos.y-30, 30, ORANGE);
+  }
+
   DrawStoredAsteroids(m_player, options.screenWidth, options.screenHeight);
 
   //Draw score
-  std::string score_text = "Score: "+std::to_string(m_player.score);
-  DrawText(score_text.c_str(), 10, 10, 12, GREEN);
+  {
+    char score_text[128];
+    sprintf(score_text,"S C O R E  %09d",(int)m_player.score);
+    int font_size = options.screenHeight*50/1080;
+    float w = MeasureText(score_text,font_size);
+    DrawTextEx(TNR, score_text, {(float)options.screenWidth/2.f - w/2.f, (float)options.screenHeight*0.03f}, font_size, 1, WHITE);
+  }
+
+  //Draw level
+  {
+    std::string level_text = "Level: "+std::to_string(level);
+    float w = MeasureText(level_text.c_str(),12);
+    DrawText(level_text.c_str(), options.screenWidth - 10 - w, 10, 12, GREEN);
+  }
 
   if(!m_player.alive)
   {
@@ -339,11 +398,30 @@ void AsteroidsScreen::Paint()
     PaintInputBox(m_namebox, m_frame);
     ++m_frame;
   }
-  if(m_player.storedAsteroids == MAX_STORED_ASTEROIDS)
+
+  //HUD
+  if(options.control_tip)
   {
-    std::string text = "Press C to fire asteroids!";
-    float w = MeasureText(text.c_str(),40);
-    DrawText(text.c_str(), options.screenWidth/2.f - w/2.f, options.screenHeight/2.f - 20, 40, RED);
+    float top_margin = 0.03;
+    float side_margin = 0.02;
+    {
+      Texture2D te = TEXTURES[14];
+      Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
+      float scale = options.screenWidth/1920.f;
+      Rectangle destRec = {(float)options.screenWidth*side_margin, (float)options.screenHeight*top_margin, (float)te.width*scale, (float)te.height*scale};
+      Vector2 origin = { 0, 0};
+      float rotation = 0;
+      DrawTexturePro(te, sourceRec, destRec, origin, rotation, WHITE);
+    }
+    {
+      Texture2D te = TEXTURES[15];
+      Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
+      float scale = options.screenWidth/1920.f;
+      Rectangle destRec = {(float)options.screenWidth*(1.f-side_margin), (float)options.screenHeight*top_margin, (float)te.width*scale, (float)te.height*scale};
+      Vector2 origin = { destRec.width, 0};
+      float rotation = 0;
+      DrawTexturePro(te, sourceRec, destRec, origin, rotation, WHITE);
+    }
   }
 }
 

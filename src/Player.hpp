@@ -38,9 +38,13 @@ struct GunAttack{
 };
 
 struct Energy{
-  float value;
-  float maxValue;
+  float value = 0.f;
+  float maxValue = 100.f;
 };
+
+const float DASH_ENERGY_COST = 2.f;
+const float DASH_DISTANCE = 0.15f;
+const float ULTRA_ENERGY_COST = 30.f;
 
 struct PlayerState
 {
@@ -56,6 +60,8 @@ struct PlayerState
 
   int storedAsteroids = 0;
   Timer suckDelayTimer;
+
+  bool dash_in_progress = false;
   
   PhysicsComponent data;
 
@@ -67,7 +73,7 @@ void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot>& 
 void UpdateEnergy(Energy& energy, const float value);
 
 //input
-void UpdatePlayerInput(PhysicsComponent& data, float dt, Energy& energy);
+void UpdatePlayerInput(PlayerState& player, float dt, Energy& energy);
 void suckAttack(const Vector2 &position, const Vector2& rotation, SuckAttack &suckAttack);
 void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids, std::vector<float>& player_asteroid_distance);
 void AttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids);

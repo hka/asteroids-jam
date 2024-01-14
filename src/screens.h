@@ -19,13 +19,27 @@
 
 struct GameOptions
 {
-  int screenWidth = 720;
-  int screenHeight = 480;
+  int screenWidth = 1280;
+  int screenHeight = 800;
   int fps = 60;
   bool skipLogo = false;
-  bool godMode = true;
+  bool godMode = false;
+  bool game_music = true;
+  bool sound_fx = true;
+  float master_volume = 1.0f;
+  bool control_tip = true;
+  bool first_launch = true;
+
+  enum class ControlKeyCodes {THRUST = 0, BREAK, TURN_LEFT, TURN_RIGHT, DASH, FIRE, ABSORB, ULTRA, ALT_AIM_LEFT, ALT_AIM_RIGHT, ALT_AIM_UP, ALT_AIM_DOWN, SIZE, NONE};
+  std::vector<Key> keys;
 };
-VISITABLE_STRUCT(GameOptions, screenWidth, screenHeight, fps, skipLogo, godMode);
+VISITABLE_STRUCT(GameOptions, screenWidth, screenHeight, fps, skipLogo, godMode, game_music, sound_fx, master_volume, control_tip, first_launch, keys);
+
+struct KeyMap
+{
+  std::vector<Key> keys;
+};
+VISITABLE_STRUCT(KeyMap, keys);
 
 struct Score
 {
@@ -53,6 +67,8 @@ class Screen
   virtual GameScreen Finish() = 0;
   virtual GameScreen GetEnum() = 0;
 };
+
+void SetDefaultKeys(std::vector<Key>& keys);
 
 class LogoScreen : public Screen
 {
@@ -132,7 +148,9 @@ class AsteroidsScreen : public Screen
 
   InputBox m_namebox;
   size_t m_frame = 0;
-  RenderTexture2D m_renderTexture;
+
+  float time_in_level = 0;
+  int level = 1;
 };
 
 class OptionsScreen : public Screen
@@ -152,7 +170,11 @@ private:
   std::vector<Button> m_buttons;
   size_t m_toggleIntroIx;
   size_t m_toggleGodModeIx;
+  size_t m_muteMusicIx;
+  size_t m_muteFxIx;
+  size_t m_toggleHelpIx;
   std::vector<KeySelector> m_keySelector;
+  Slider master_volume;
 };
 
 

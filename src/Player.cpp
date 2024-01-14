@@ -48,26 +48,30 @@ PlayerState createPlayer(Vector2 startPos){
 ///////////////////////////////////////////////
 void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &shoots, float dt)
 {
-  UpdatePlayerInput(player.data, dt, player.energy);
+  UpdatePlayerInput(player, dt, player.energy);
   player.data.force *= 0;
   ApplyThrustDrag(player.data);
   UpdatePosition(player.data, worldBound, dt);
 
-  if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)){
+  if(IsMatchingKeyPressed(options.keys[(size_t)GameOptions::ControlKeyCodes::ABSORB]))
+  {
     player.suckDelayTimer.start();
   }
-  
+
   if(player.suckDelayTimer.getElapsed() > SUCK_DELAY){
-    if(IsMouseButtonDown(MOUSE_RIGHT_BUTTON) && player.storedAsteroids < MAX_STORED_ASTEROIDS){
+    if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::ABSORB]) && player.storedAsteroids < MAX_STORED_ASTEROIDS)
+    {
       suckAttack(player.data.position, player.data.orientation, player.suckAttack);
     }else{
       player.suckAttack.isOngoing = false;
       player.suckAttack.balls.clear();
     }
-  }else if(player.suckDelayTimer.getElapsed() < SUCK_DELAY && IsMouseButtonReleased(MOUSE_RIGHT_BUTTON)){
+  }
+  else if(player.suckDelayTimer.getElapsed() < SUCK_DELAY  && IsMatchingKeyReleased(options.keys[(size_t)GameOptions::ControlKeyCodes::ABSORB]))
+  {
     turnAsteroidToEnergy(player);
   }
-  
+
   gunUpdate(player, player.gun, shoots);
   laserUpdate(player);
 }
@@ -82,11 +86,12 @@ void UpdateEnergy(Energy& energy, float value){
 ////////////////////////////////////////////////
 ///         Input                           ///
 ///////////////////////////////////////////////
-void UpdatePlayerInput(PhysicsComponent& data, float dt, Energy& energy)
+void UpdatePlayerInput(PlayerState& player, float dt, Energy& energy)
 {
+  PhysicsComponent& data = player.data;
   //rotate velocity vector and update orientation to match
   //TODO handle rotation when moving in reverse?
-  if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
+  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::TURN_LEFT]))
   {
     data.velocity = Vector2Rotate(data.velocity, -(M_PI/0.8f)*dt);
     if(Vector2LengthSqr(data.velocity)>0)
@@ -94,7 +99,7 @@ void UpdatePlayerInput(PhysicsComponent& data, float dt, Energy& energy)
       data.orientation = Vector2Normalize(data.velocity);
     }
   }
-  else if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
+  else if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::TURN_RIGHT]))
   {
     data.velocity = Vector2Rotate(data.velocity, (M_PI/0.8f)*dt);
     if(Vector2LengthSqr(data.velocity)>0)
@@ -104,12 +109,12 @@ void UpdatePlayerInput(PhysicsComponent& data, float dt, Energy& energy)
   }
 
   const float THRUST_ENERGY_COST = 0.1f; //todo move somewhere else
-  if((IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) && hasEnoughEnergy(energy, THRUST_ENERGY_COST))
+  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::BREAK]) && hasEnoughEnergy(energy, THRUST_ENERGY_COST))
   {
     UpdateEnergy(energy, -THRUST_ENERGY_COST);
     data.thrust = -500000;
   }
-  else if((IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) && hasEnoughEnergy(energy, THRUST_ENERGY_COST))
+  else if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::THRUST]) && hasEnoughEnergy(energy, THRUST_ENERGY_COST))
   {
     UpdateEnergy(energy, -THRUST_ENERGY_COST);
     data.thrust = 500000;
@@ -117,6 +122,17 @@ void UpdatePlayerInput(PhysicsComponent& data, float dt, Energy& energy)
   else
   {
     data.thrust = 0;
+  }
+
+  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::DASH]) && hasEnoughEnergy(energy, DASH_ENERGY_COST) && !player.dash_in_progress)
+  {
+    UpdateEnergy(energy, -DASH_ENERGY_COST);
+    player.dash_in_progress = true;
+  }
+  else if(player.dash_in_progress && !IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::DASH]))
+  {
+    player.dash_in_progress = false;
+    data.position = data.position + data.orientation*options.screenWidth*DASH_DISTANCE;
   }
 }
 
@@ -302,23 +318,28 @@ void gunUpdate(PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
   gun.direction = Vector2Normalize(mousePointer - player.data.position);
 
   //handle shooting
-  if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && gun.cooldownTimer.getElapsed() >= gun.cooldownDuration && hasEnoughEnergy(player.energy, gun.energyCost)){
+  if( IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::FIRE]) && gun.cooldownTimer.getElapsed() >= gun.cooldownDuration && hasEnoughEnergy(player.energy, gun.energyCost) && player.storedAsteroids == 0){
     //FireShoot(player.data.position, gun.direction, player.movement.velocity, player.movement.maxAcceleration, shoots);
     FireShoot(player.data, gun.direction,500, shoots);
+    if(options.sound_fx)
+    {
+      PlaySound(shoot_fx);
+    }
     UpdateEnergy(player.energy, -gun.energyCost);
     gun.cooldownTimer.start();
   }
-  if(IsKeyDown(KEY_C))
+  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::FIRE]) && player.storedAsteroids > 0)
   {
-    FireShootgun(player, gun.direction,500, shoots);
+    FireShootgun(player.data, player.storedAsteroids, gun.direction,500, shoots);
+    gun.cooldownTimer.start();
   }
-
 }
 
 static Timer timer;
 void laserUpdate(PlayerState &player){
 
-  if(IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE) && hasEnoughEnergy(player.laserEnergy, player.laserEnergy.maxValue)){
+  if (IsMatchingKeyPressed(options.keys[(size_t)GameOptions::ControlKeyCodes::ULTRA]) && hasEnoughEnergy(player.laserEnergy, player.laserEnergy.maxValue))
+  {
     OnStart(player.laser, player.gun.direction, player.data.position);
     timer.start();
     player.laserEnergy.value = 0.f;
@@ -430,6 +451,16 @@ void DrawShip(const PlayerState &player)
  int rotation = atan2(player.data.orientation.y,player.data.orientation.x)*180/M_PI + 90;
  DrawTexturePro(te, sourceRec, destRec, origin, (float)rotation, WHITE);
 
+ if(player.dash_in_progress)
+ {
+   Vector2 dash_pos = player.data.position + player.data.orientation*options.screenWidth*DASH_DISTANCE;
+   dash_pos = mod(dash_pos, {(float)options.screenWidth,(float)options.screenHeight});
+   destRec.x = dash_pos.x;
+   destRec.y = dash_pos.y;
+   Color ghost = WHITE;
+   ghost.a = 127;
+   DrawTexturePro(te, sourceRec, destRec, origin, (float)rotation, ghost);
+ }
 }
 
 void DrawGun(const PlayerState& player)

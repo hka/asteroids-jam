@@ -3,14 +3,41 @@
 #include "globals.h"
 
 #include <raymath.h>
+#include "raylib_operators.h"
 
 ////////////////////////////////////////////////
 ///         Update                          ///
 ///////////////////////////////////////////////
-void UpdateAsteroid(Asteroid& asteroid, const Vector2& worldBound, float dt)
+void UpdateAsteroid(Asteroid& asteroid, const Vector2& worldBound, std::vector<Shoot> &shoots, float dt)
 {
   ApplyThrustDrag(asteroid.data);
   UpdatePosition(asteroid.data, worldBound, dt);
+  if(asteroid.type == 3)
+  {
+    asteroid.data.orientation = Vector2Rotate(asteroid.data.orientation, 10*(M_PI/180.f)*dt);
+
+    asteroid.shoot_counter += dt;
+    if(asteroid.shoot_counter > 2)
+    {
+      std::vector<Vector2> guns;
+      Vector2 dir = asteroid.data.orientation;
+      Vector2 orth_dir = {dir.y, -dir.x};
+      Vector2 pos = asteroid.data.position;
+      guns.push_back(pos + asteroid.data.radius*dir);
+      guns.push_back(pos - asteroid.data.radius*dir);
+      guns.push_back(pos + asteroid.data.radius*orth_dir);
+      guns.push_back(pos - asteroid.data.radius*orth_dir);
+
+      for(size_t ii = 0; ii < guns.size(); ++ii)
+      {
+        float x = guns[ii].x;
+        float y = guns[ii].y;
+        Vector2 gun_direction = Vector2Normalize({x - pos.x, y - pos.y});
+        FireShoot(asteroid.data, gun_direction,500, shoots);
+      }
+      asteroid.shoot_counter = 0;
+    }
+  }
 }
 
 ////////////////////////////////////////////////
@@ -58,18 +85,47 @@ void PaintAsteroid(Asteroid& asteroid){
   // Origin of the texture (rotation/scale point), it's relative to destination rectangle size
   Vector2 origin = { r,r };
 
-  int rotation = 0;
+  int rotation = atan2(asteroid.data.orientation.y,asteroid.data.orientation.x)*180/M_PI + 90;
 
   Color c = asteroid.shouldDamageBlink ? RED : WHITE;
   DrawTexturePro(te, sourceRec, destRec, origin, (float)rotation, c);
+  if(asteroid.type == 3)
+  {
+    Texture2D te = TEXTURES[1];
+    std::vector<Vector2> guns;
+    Vector2 dir = asteroid.data.orientation;
+    Vector2 orth_dir = {dir.y, -dir.x};
+    guns.push_back(asteroid.data.position + asteroid.data.radius*dir);
+    guns.push_back(asteroid.data.position - asteroid.data.radius*dir);
+    guns.push_back(asteroid.data.position + asteroid.data.radius*orth_dir);
+    guns.push_back(asteroid.data.position - asteroid.data.radius*orth_dir);
+    for(size_t ii = 0; ii < guns.size(); ++ii)
+    {
+      Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
+      float r = asteroid.data.radius/2;
+      float x = guns[ii].x;
+      float y = guns[ii].y;
+      Rectangle destRec = { x, y, 2*r, 2*r };
+      Vector2 origin = { r,r };
+      float dx = x - asteroid.data.position.x;
+      float dy = y - asteroid.data.position.y;
+      float rot = atan2(dy,dx)*180/M_PI + 90.f;
+      DrawTexturePro(te, sourceRec, destRec, origin, rot, WHITE);
+    }
+  }
 }
 
 ////////////////////////////////////////////////
 ///         Factory                         ///
 ///////////////////////////////////////////////
-Asteroid CreateAsteroid(const Vector2& worldBound){
+Asteroid CreateAsteroidR(const Vector2& worldBound)
+{
+  int type = GetRandomValue(1, 3);
+  return CreateAsteroidR(worldBound, type);
+}
+Asteroid CreateAsteroidR(const Vector2& worldBound, int type){
   Asteroid asteroid;
-  asteroid.type = GetRandomValue(1, 3);
+  asteroid.type = type;
   float radius = asteroid.type*options.screenWidth*ASTEROID_SCALE;
 
   switch(asteroid.type)
@@ -93,6 +149,9 @@ Asteroid CreateAsteroid(const Vector2& worldBound){
   std::uniform_real_distribution<> distrib(-1.f, 1.f);
   asteroid.data.orientation = {(float)distrib(RNG),(float)distrib(RNG)};
   asteroid.data.orientation = Vector2Normalize(asteroid.data.orientation);
+
+  //initial velocity
+  asteroid.data.velocity = asteroid.data.orientation*50;
 
   std::uniform_int_distribution<> distrib_art(2, 4);
   asteroid.art_ix = distrib_art(RNG);

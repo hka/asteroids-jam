@@ -116,23 +116,111 @@ void PositionUnder(const Button& ref, Button& b, float px)
   b.pos.y = refCenter.y + px;
 }
 
+void PaintSlider(const Slider& s)
+{
+  DrawRectangleRec(s.pos, DARKGRAY);
+  Rectangle grab = s.pos;
+  grab.width *= 0.1;
+  float pos = (s.value-s.min)/(s.max-s.min);
+  grab.x = s.pos.x + pos*(s.pos.width*0.9);
+  switch(s.state)
+  {
+   case MouseState::NO:
+    DrawRectangleRec(grab, LIGHTGRAY);
+    break;
+   case MouseState::OVER:
+   case MouseState::CLICKED:
+     DrawRectangleRec(grab, GRAY);
+     break;
+  }
+}
+bool UpdateSlider(const Vector2& p, Slider& s)
+{
+  Rectangle grab = s.pos;
+  grab.width *= 0.1;
+  float pos = (s.value-s.min)/(s.max-s.min);
+  grab.x = s.pos.x + pos*(s.pos.width*0.9);
+  if (CheckCollisionPointRec(p, grab))
+  {
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+    {
+      s.state = MouseState::CLICKED;
+    }
+    else
+    {
+      s.state = MouseState::OVER;
+    }
+  }
+  else if(!(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && s.state == MouseState::CLICKED))
+  {
+    s.state = MouseState::NO;
+  }
+  if(s.state == MouseState::CLICKED)
+  {
+    float new_value = (p.x - s.pos.x - grab.width/2)/(s.pos.width*0.9);
+    s.value = std::clamp(new_value, s.min, s.max);
+    return true;
+  }
+  return false;
+}
+
 void PaintButtonWithText(const Button& button, const ButtonColors& c, int fontSize)
 {
   //Button
   float offh = 1;
   float offw = 1;
+  bool skipText = false;
   if(button.type == Button::Type::REGULAR)
   {
     switch(button.state)
     {
     case MouseState::NO:
-      DrawRectangleRec(button.pos, c.nomouse);
+      if(button.texture0_ix != -1)
+      {
+        Texture2D te = TEXTURES[button.texture0_ix];
+        Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
+        Rectangle destRec = button.pos;
+        Vector2 origin = { 0,0};
+        float rotation = 0;
+        DrawTexturePro(te, sourceRec, destRec, origin, rotation, WHITE);
+        skipText = true;
+      }
+      else
+      {
+        DrawRectangleRec(button.pos, c.nomouse);
+      }
       break;
     case MouseState::OVER:
-      DrawRectangleRec(button.pos, c.mouseover);
+      if(button.texture1_ix != -1)
+      {
+        Texture2D te = TEXTURES[button.texture1_ix];
+        Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
+        Rectangle destRec = button.pos;
+        Vector2 origin = { 0,0};
+        float rotation = 0;
+        DrawTexturePro(te, sourceRec, destRec, origin, rotation, WHITE);
+        skipText = true;
+      }
+      else
+      {
+        DrawRectangleRec(button.pos, c.mouseover);
+      }
       break;
     case MouseState::CLICKED:
-      DrawRectangleRec(button.pos, c.clicked);
+      if(button.texture2_ix != -1)
+      {
+        Texture2D te = TEXTURES[button.texture2_ix];
+        Rectangle sourceRec = { 0.0f, 0.0f, (float)te.width, (float)te.height };
+        Rectangle destRec = button.pos;
+        Vector2 origin = { 0,0};
+        float rotation = 0;
+        DrawTexturePro(te, sourceRec, destRec, origin, rotation, WHITE);
+        skipText = true;
+      }
+      else
+      {
+        DrawRectangleRec(button.pos, c.clicked);
+      }
       break;
     }
   }
@@ -158,18 +246,21 @@ void PaintButtonWithText(const Button& button, const ButtonColors& c, int fontSi
     }
     offw += check.width + 2;
   }
-  if(fontSize <= 0)
+  if(!skipText)
   {
-    int letterCount = (int)button.text.length();
-    float bw = button.pos.width;
-    float bh = button.pos.height;
-    fontSize = (int)(std::min<float>(bh, bw/letterCount));
-    float tw = (float)MeasureText(button.text.c_str(), fontSize);
-    offw = (bw - tw)/2.f+0.5f;
-    offh = (bh - fontSize)/2.f+0.5f;
+    if(fontSize <= 0)
+    {
+      int letterCount = (int)button.text.length();
+      float bw = button.pos.width;
+      float bh = button.pos.height;
+      fontSize = (int)(std::min<float>(bh, bw/letterCount));
+      float tw = (float)MeasureText(button.text.c_str(), fontSize);
+      offw = (bw - tw)/2.f+0.5f;
+      offh = (bh - fontSize)/2.f+0.5f;
+    }
+    DrawText(button.text.c_str(), (int)(button.pos.x + offw), (int)(button.pos.y + offh), fontSize, BLACK);
+    //DrawText( processText[i], (int)( toggleRecs[i].x + toggleRecs[i].width/2 - MeasureText(processText[i], 10)/2), (int) toggleRecs[i].y + 11, 10, ((i == currentProcess) || (i == mouseHoverRec)) ? DARKBLUE : DARKGRAY);
   }
-  DrawText(button.text.c_str(), (int)(button.pos.x + offw), (int)(button.pos.y + offh), fontSize, BLACK);
-  //DrawText( processText[i], (int)( toggleRecs[i].x + toggleRecs[i].width/2 - MeasureText(processText[i], 10)/2), (int) toggleRecs[i].y + 11, 10, ((i == currentProcess) || (i == mouseHoverRec)) ? DARKBLUE : DARKGRAY);
 }
 
 bool CheckButton(const Vector2& p, Button& button)
@@ -209,10 +300,152 @@ void PaintKeySelector(const KeySelector& ks)
   float offw = (ks.pos.width - tw)/2.f+0.5f;
   float offh = - fontSize - 1.f;
   DrawText(ks.text.c_str(), (int)(ks.pos.x + offw), (int)(ks.pos.y + offh), fontSize, BLACK);
-}
-void UpdateKeySelector(KeySelector& ks)
-{
 
+  if(ks.key.key != -1)
+  {
+    if(ks.key.is_keyboard)
+    {
+      if(ks.key.key == KEY_SPACE)
+      {
+        char key[4];
+        key[0] = 'S';
+        key[1] = 'P';
+        key[2] = 'C';
+        key[3] = '\0';
+        float w = MeasureText(key, bh/3-2);
+        DrawText(key, (int)(ks.pos.x + ks.pos.width/2.f - w/2.f), (int)(ks.pos.y + bh/2-bh/6), bh/3 - 2, BLACK);
+      }
+      else
+      {
+        char key[2];
+        key[0] = (char)ks.key.key;
+        key[1] = '\0';
+        float w = MeasureText(key, bh-2);
+        DrawText(key, (int)(ks.pos.x + ks.pos.width/2.f - w/2.f), (int)(ks.pos.y + 2), bh - 2, BLACK);
+      }
+    }
+    else
+    {
+      char key[4];
+      switch(ks.key.key)
+      {
+      case 0:
+        key[0] = 'L';
+        break;
+      case 1:
+        key[0] = 'R';
+        break;
+      case 2:
+        key[0] = 'M';
+        break;
+      default:
+        key[0] = '?';
+        break;
+      }
+      key[1] = 'M';
+      key[2] = 'B';
+      key[3] = '\0';
+      float w = MeasureText(key, bh/3-2);
+      DrawText(key, (int)(ks.pos.x + ks.pos.width/2.f - w/2.f), (int)(ks.pos.y + bh/2-bh/6), bh/3 - 2, BLACK);
+    }
+  }
+}
+bool UpdateKeySelector(const Vector2& mousePoint, KeySelector& ks)
+{
+  if(CheckCollisionPointRec(mousePoint, ks.pos)
+     && ks.state != MouseState::CLICKED)
+  {
+    if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+    {
+     ks.state = MouseState::CLICKED;
+    }
+    else
+    {
+      ks.state = MouseState::OVER;
+    }
+  }
+  if(ks.state == MouseState::CLICKED)
+  {
+    bool gotKey = GetKeyPress(ks);
+    if(gotKey)
+    {
+      ks.state = MouseState::NO;
+      return true;
+    }
+  }
+  return false;
+}
+
+bool GetKeyPress(KeySelector& ks)
+{
+  int keyboard_key = 0;
+  int mouse_key = -1;
+  if((keyboard_key = GetKeyPressed()) != 0)
+  {
+    ks.key.key = keyboard_key;
+    ks.key.is_keyboard = true;
+  }
+  else
+  {
+    //MOUSE_BUTTON_LEFT    = 0,  // Mouse button left
+    //MOUSE_BUTTON_RIGHT   = 1,  // Mouse button right
+    //MOUSE_BUTTON_MIDDLE  = 2,  // Mouse button middle (pressed wheel)
+    //MOUSE_BUTTON_SIDE    = 3,  // Mouse button side
+    //MOUSE_BUTTON_EXTRA   = 4,  // Mouse button extra
+    //MOUSE_BUTTON_FORWARD = 5,  // Mouse button forward
+    //MOUSE_BUTTON_BACK    = 6,  // Mouse button back
+    for(int key = 0; key <= 6; ++key)
+    {
+      if(IsMouseButtonPressed(key))
+      {
+        mouse_key = key;
+        ks.key.key = key;
+        ks.key.is_keyboard = false;
+        break;
+      }
+    }
+  }
+
+  return !(keyboard_key == 0 && mouse_key == -1);
+}
+
+bool IsMatchingKeyDown(const Key& k)
+{
+  if(k.is_keyboard)
+  {
+    return IsKeyDown(k.key);
+  }
+  else
+  {
+    return IsMouseButtonDown(k.key);
+  }
+  return false;
+}
+
+bool IsMatchingKeyPressed(const Key& k)
+{
+  if(k.is_keyboard)
+  {
+    return IsKeyPressed(k.key);
+  }
+  else
+  {
+    return IsMouseButtonPressed(k.key);
+  }
+  return false;
+}
+
+bool IsMatchingKeyReleased(const Key& k)
+{
+  if(k.is_keyboard)
+  {
+    return IsKeyReleased(k.key);
+  }
+  else
+  {
+    return IsMouseButtonReleased(k.key);
+  }
+  return false;
 }
 
 void UpdateInputBox(const Vector2& mousePoint, InputBox& ib, void* data)
