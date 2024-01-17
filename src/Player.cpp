@@ -36,7 +36,7 @@ PlayerState createPlayer(Vector2 startPos){
   player.energy.value = player.energy.maxValue;
   player.gun.energyCost = player.energy.maxValue * 0.025f;
 
-  player.laser.isOngoing = false;
+  player.laser = createLaser();
   player.laserEnergy.maxValue = 100.f;
   player.laserEnergy.value = player.laserEnergy.maxValue;
 
@@ -163,7 +163,6 @@ void AttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids)
     }
   }
 }
-
 
 //here also targeting is done...
 void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids, std::vector<float>& player_asteroid_distance)
@@ -335,21 +334,17 @@ void gunUpdate(PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
   }
 }
 
-static Timer timer;
 void laserUpdate(PlayerState &player){
 
-  if (IsMatchingKeyPressed(options.keys[(size_t)GameOptions::ControlKeyCodes::ULTRA]) && hasEnoughEnergy(player.laserEnergy, player.laserEnergy.maxValue))
+  if (IsMatchingKeyPressed(options.keys[(size_t)GameOptions::ControlKeyCodes::ULTRA])) // && hasEnoughEnergy(player.laserEnergy, player.laserEnergy.maxValue))
   {
+    std::cout << "Should start" << '\n';
     OnStart(player.laser, player.gun.direction, player.data.position);
-    timer.start();
     player.laserEnergy.value = 0.f;
   }
 
   if(player.laser.isOngoing){
     Update(player.laser, player.gun.direction, player.data.position);
-    if(timer.getElapsed() >= 3.f){
-      player.laser.isOngoing = false;
-    }
   }
 }
 

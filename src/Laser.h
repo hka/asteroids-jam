@@ -5,10 +5,14 @@
 
 #include "raylib.h"
 #include "Asteroid.h"
+#include "Timer.hpp"
 
 struct Laser
 {
   bool isOngoing;
+  Timer timer;
+  float duration;
+
   Vector2 start;
   Vector2 end;
   Vector2 direction;
@@ -25,6 +29,7 @@ constexpr const std::size_t MAXIMUM_PARTICLES = 30;
 constexpr const float LASER_MAX_LENGTH = 400;
 constexpr const float LASER_HEIGHT = 30;
 
+Laser createLaser();
 void CreateLaserTexture();
 void OnStart(Laser& laser, const Vector2& direction, const Vector2& startPoint);
 void Update(Laser &laser, const Vector2 &direction, const Vector2 &origin);

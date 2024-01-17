@@ -4,6 +4,16 @@
 #include "ResourceManager.h"
 #include "ColorBlender.h"
 
+Laser createLaser(){
+  Laser laser;
+  laser.isOngoing = false;
+  laser.maxLength = LASER_MAX_LENGTH;
+  laser.growRate = laser.maxLength * 4.f;
+  laser.width = LASER_HEIGHT; //todo set to screen width.
+  laser.duration = 3.0f;
+  return laser;
+}
+
 void CreateLaserTexture(){
   int height = LASER_HEIGHT;
   int maxLength = LASER_MAX_LENGTH;
@@ -64,14 +74,17 @@ void OnStart(Laser &laser, const Vector2 &direction, const Vector2 &origin){
   laser.direction = direction;
   laser.start = origin;
   laser.length = 0.f;
-  laser.maxLength = LASER_MAX_LENGTH;
-  laser.growRate = laser.maxLength * 4.f;
-
-  laser.width = LASER_HEIGHT;
+  laser.timer.start();
 }
 
 void Update(Laser &laser, const Vector2 &direction, const Vector2 &origin)
 {
+
+  if(laser.timer.getElapsed() >= laser.duration){
+    laser.isOngoing = false;
+    return;
+  }
+
   laser.start = {
       origin.x + (direction.x * 15.f),
       origin.y + (direction.y * 15.f),
