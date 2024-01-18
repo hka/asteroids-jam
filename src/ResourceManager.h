@@ -19,7 +19,10 @@ enum ImageID{
 constexpr const int NUMBER_OF_TEXTURES = 2;
 enum TextureID{
   LASER_FINAL = 0,
-  LASER_BLURRED
+  TEXTURE_LASER,
+  LASER_BLURRED,
+  TEXTURE_LASER_NOISE,
+  TEXUTRE_LASER_DISTORTION
 };
 
 constexpr const int NUMBER_OF_RENDER_TEXTURES = 1;

@@ -338,7 +338,6 @@ void laserUpdate(PlayerState &player){
 
   if (IsMatchingKeyPressed(options.keys[(size_t)GameOptions::ControlKeyCodes::ULTRA])) // && hasEnoughEnergy(player.laserEnergy, player.laserEnergy.maxValue))
   {
-    std::cout << "Should start" << '\n';
     OnStart(player.laser, player.gun.direction, player.data.position);
     player.laserEnergy.value = 0.f;
   }

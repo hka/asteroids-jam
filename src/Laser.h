@@ -25,9 +25,8 @@ struct Laser
   bool isHitting;
 };
 
-constexpr const std::size_t MAXIMUM_PARTICLES = 30;
-constexpr const float LASER_MAX_LENGTH = 400;
-constexpr const float LASER_HEIGHT = 30;
+constexpr const float LASER_MAX_LENGTH = 800;
+constexpr const float LASER_HEIGHT = 80;
 
 Laser createLaser();
 void CreateLaserTexture();

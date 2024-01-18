@@ -19,7 +19,7 @@ void CreateLaserTexture(){
   int maxLength = LASER_MAX_LENGTH;
   Color background = {255,0,0,255};
   Image imageLaser = GenImageColor(maxLength, height, background);
-  
+
   int steps = (height / 2);
   Color c = {255, 0, 0, 255};
   unsigned char rTarget = 50;
@@ -47,26 +47,26 @@ void CreateLaserTexture(){
   ImageAlphaPremultiply(&imageLaser);
   ImageMipmaps(&imageLaser);
   LoadImage(IMAGE_LASER, imageLaser);
+  LoadTexture(imageLaser, TEXTURE_LASER);
 
-  Image blurred = GetImage(IMAGE_LASER);
+  Image blurred = ImageCopy(GetImage(IMAGE_LASER));
   ImageBlurGaussian(&blurred, 1);
   ImageMipmaps(&blurred);
   LoadTexture(blurred, LASER_BLURRED);
   LoadImage(IMAGE_LASER_BLURRED, blurred);
 
-  Image laserNoise = GenImagePerlinNoise(maxLength, height, 0, 0, 5.f);
+  Image laserNoise = GenImagePerlinNoise(maxLength, height, 0, 0, 10.f);
   LoadImage(IMAGE_LASER_NOISE, laserNoise);
+  LoadTexture(laserNoise, TEXTURE_LASER_NOISE);
 
-  Image laserDistortion = GenImageCellular(maxLength, height,1);
+  Image laserDistortion = GenImageCellular(maxLength, height, 20);
   LoadImage(IMAGE_LASER_DISTORTION, laserDistortion);
+  LoadTexture(laserDistortion, TEXUTRE_LASER_DISTORTION);
 
-  Image finalLaser = GenImageColor(maxLength, height, WHITE);
+  Image finalLaser = ImageCopy(imageLaser);
   ImageMipmaps(&finalLaser);
   LoadTexture(finalLaser, LASER_FINAL);
   LoadImage(IMAGE_LASER_FINAL, finalLaser);
-
-  NoiseLaser();
-  DistortLaser();
 }
 
 void OnStart(Laser &laser, const Vector2 &direction, const Vector2 &origin){
@@ -119,6 +119,9 @@ void DrawLaser(Laser &laser){
   Rectangle rec = {laser.start.x, laser.start.y, laser.length, laser.width};
   Rectangle src = {0.f, 0.f, laser.maxLength, laser.width};
   Vector2 origin {0.f, laser.width/ 2.f};
+  //leave for when debuggig noise patterns
+  //DrawTexture(getTexture(TEXTURE_LASER_NOISE), 200, 200, WHITE);
+  //DrawTexture(getTexture(TEXUTRE_LASER_DISTORTION), 200, 500, WHITE);
   DrawTexturePro(getTexture(LASER_BLURRED), src, rec, origin, rotation, WHITE);
   DrawTexturePro(getTexture(LASER_FINAL), src, rec, origin, rotation, WHITE);
 }
@@ -126,16 +129,15 @@ void DrawLaser(Laser &laser){
 static float noiseOffsetX = 0.f;
 
 void NoiseLaser(){
-
   int width = LASER_MAX_LENGTH;
   int height = LASER_HEIGHT;
 
-  Color* laserPixels = (Color*) GetImage(IMAGE_LASER).data;
-  Color *noisePixels = (Color*) GetImage(IMAGE_LASER_NOISE).data;
-  
-  float noiseSpeed = -25.f;
+  Color *laserPixels = (Color *)GetImage(IMAGE_LASER).data;
+  Color *noisePixels = (Color *)GetImage(IMAGE_LASER_NOISE).data;
+
+  float noiseSpeed = -50.f;
   noiseOffsetX += noiseSpeed;
-  Color* finalLaserPixels = (Color*) GetImage(IMAGE_LASER_FINAL).data;
+  Color *finalLaserPixels = (Color *)GetImage(IMAGE_LASER_FINAL).data;
   for (int y = 0; y < height; ++y)
   {
     for (int x = 0; x < width; ++x)
@@ -160,8 +162,8 @@ void DistortLaser(){
   static float distortionOffsetX = 0.0f;
   static float distortionOffsetY = 0.0f;
 
-  float distortionSpeed = 1.f;
-  float maxDistortion = 20.f;
+  float distortionSpeed = 3.f;
+  float maxDistortion = 30.f;
 
   distortionOffsetX += distortionSpeed;
   if (distortionOffsetX >= width)
