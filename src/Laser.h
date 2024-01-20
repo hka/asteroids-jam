@@ -23,6 +23,8 @@ struct Laser
   
   Ray ray;
   bool isHitting;
+
+  float noiseOffset;
 };
 
 constexpr const float LASER_MAX_LENGTH = 800;
@@ -34,7 +36,7 @@ void OnStart(Laser& laser, const Vector2& direction, const Vector2& startPoint);
 void Update(Laser &laser, const Vector2 &direction, const Vector2 &origin);
 void Clear(Laser& laser);
 void DrawLaser(Laser& laser);
-void NoiseLaser();
+void NoiseLaser(float& noiseOffset);
 void RenderNoiseLaser();
 void DistortLaser();
 void RenderDistortLaser();
