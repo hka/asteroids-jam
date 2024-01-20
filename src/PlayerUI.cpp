@@ -87,6 +87,22 @@ void DrawUltraBar(Energy &energy, const Rectangle& pos)
   }
 }
 
+void DrawEnergyPerc(Energy &energy, const int worldWidth, const int worldHeight)
+{
+  std::string text = std::to_string((int)floor(energy.value)) + "%";
+
+  float spacing = 1.f;
+  int fontSize = 20;
+  Vector2 textSize = MeasureTextEx(GetFontDefault(), text.c_str(), fontSize, spacing);
+  float offsetX = worldWidth * 0.01f;
+  float offsetY = worldHeight * 0.01f;
+  Vector2 pos{
+      offsetX + textSize.x,
+      (float)worldHeight - offsetY - textSize.y};
+
+  DrawTextEx(GetFontDefault(), text.c_str(), pos, fontSize, spacing, WHITE);
+}
+
 void DrawStoredAsteroids(PlayerState &player, const int worldWidth, const int worldeight){
   
   std::string text = std::to_string(player.storedAsteroids) + " / " + std::to_string(MAX_STORED_ASTEROIDS);

@@ -6,6 +6,7 @@
 #include "helpers.h"
 #include "Collision.h"
 #include "PlayerUI.h"
+#include "ResourceManager.h"
 
 #if defined(PLATFORM_WEB)
 #include <emscripten/emscripten.h>
@@ -46,6 +47,8 @@ AsteroidsScreen::AsteroidsScreen():
 #endif
   };
   m_namebox.confirm.action = confirmAction;
+
+  CreateLaserTexture();
   if(options.game_music)
   {
     PlayMusicStream(game_track);
@@ -57,6 +60,7 @@ AsteroidsScreen::AsteroidsScreen():
 
 AsteroidsScreen::~AsteroidsScreen()
 {
+  Unload();
 }
 
 void AsteroidsScreen::CalculateDistances(const Vector2& bound)
@@ -170,6 +174,7 @@ void AsteroidsScreen::Update()
   // =================================================================
   // Pre-update asteroids
   // =================================================================
+  const float baseLaserEnergyGain = 2.f;
   for(std::size_t ii = 0; ii < m_asteroids.size(); ++ii){
     switch (m_asteroids[ii].state){
       case ALIVE:
@@ -181,6 +186,10 @@ void AsteroidsScreen::Update()
 
         {
           int type = m_asteroids[ii].type;
+          if (!m_player.laser.isOngoing)
+          {
+            UpdateEnergy(m_player.laserEnergy, baseLaserEnergyGain * type);
+          }
           Vector2 pos = m_asteroids[ii].data.position;
           std::swap(m_asteroids[ii], m_asteroids[m_asteroids.size() - 1]);
           m_asteroids.pop_back();
@@ -188,6 +197,10 @@ void AsteroidsScreen::Update()
         }
         break;
       case ABSORBED:
+        if(!m_player.laser.isOngoing){
+          UpdateEnergy(m_player.laserEnergy, baseLaserEnergyGain);
+        }
+        //fall through
       case DEAD_BY_COLLISION:
         std::swap(m_asteroids[ii], m_asteroids[m_asteroids.size() - 1]);
         m_asteroids.pop_back();
@@ -340,7 +353,7 @@ void AsteroidsScreen::Paint()
     DrawLaser(m_player.laser);
   }
 
-  ///Draw energy ui
+  ///Draw player ui
   const float maxLength = options.screenWidth * 0.5f;
   float currentLength = (m_player.energy.value / m_player.energy.maxValue) * maxLength;
 
@@ -348,7 +361,7 @@ void AsteroidsScreen::Paint()
   DrawEnergyBar(m_player.energy, pos);
 
   pos.x = (float)options.screenWidth*(1.f-0.02f) - pos.width;
-  DrawUltraBar(m_player.ultra, pos);
+  DrawUltraBar(m_player.laserEnergy, pos);
 
   if(currentLength < 1)
   {

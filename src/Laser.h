@@ -7,16 +7,12 @@
 #include "Asteroid.h"
 #include "Timer.hpp"
 
-struct Particle{
-  Color color;
-  float radius;
-  float distance;
-  float speed;
-};
-
 struct Laser
 {
   bool isOngoing;
+  Timer timer;
+  float duration;
+
   Vector2 start;
   Vector2 end;
   Vector2 direction;
@@ -28,20 +24,21 @@ struct Laser
   Ray ray;
   bool isHitting;
 
-  Timer spawnParticleTimer;
-  std::vector<Particle> particles;
+  float noiseOffset;
 };
 
-constexpr const std::size_t MAXIMUM_PARTICLES = 30;
+constexpr const float LASER_MAX_LENGTH = 800;
+constexpr const float LASER_HEIGHT = 80;
 
+Laser createLaser();
+void CreateLaserTexture();
 void OnStart(Laser& laser, const Vector2& direction, const Vector2& startPoint);
 void Update(Laser &laser, const Vector2 &direction, const Vector2 &origin);
 void Clear(Laser& laser);
 void DrawLaser(Laser& laser);
-
-Particle CreateLaserParticle(Color color);
-void UpdateParticles(Laser& laser);
-void UpdateParticle(Particle &p, Laser &laser);
-void DrawParticles(std::vector<Particle> &particles, const Vector2 &laserStart, const Vector2 &laserDirection);
+void NoiseLaser(float& noiseOffset);
+void RenderNoiseLaser();
+void DistortLaser();
+void RenderDistortLaser();
 
 #endif

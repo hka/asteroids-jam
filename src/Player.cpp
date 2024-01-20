@@ -36,9 +36,9 @@ PlayerState createPlayer(Vector2 startPos){
   player.energy.value = player.energy.maxValue;
   player.gun.energyCost = player.energy.maxValue * 0.025f;
 
-  player.ultra.value = 0.f;
-  player.ultra.maxValue = 100.f;
-  player.ultra_active = false;
+  player.laser = createLaser();
+  player.laserEnergy.maxValue = 100.f;
+  player.laserEnergy.value = player.laserEnergy.maxValue;
 
   return player;
 }
@@ -74,20 +74,6 @@ void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &
 
   gunUpdate(player, player.gun, shoots);
   laserUpdate(player);
-
-  if(!player.ultra_active)
-  {
-    UpdateEnergy(player.ultra, dt*1.f);
-  }
-  else if(player.ultra_active && hasEnoughEnergy(player.ultra, ULTRA_ENERGY_COST))
-  {
-    UpdateEnergy(player.ultra, -ULTRA_ENERGY_COST*dt);
-  }
-  else
-  {
-    player.ultra.value = 0;
-    player.ultra_active = false;
-  }
 }
 
 void UpdateEnergy(Energy& energy, float value){
@@ -177,7 +163,6 @@ void AttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids)
     }
   }
 }
-
 
 //here also targeting is done...
 void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids, std::vector<float>& player_asteroid_distance)
@@ -350,22 +335,15 @@ void gunUpdate(PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
 }
 
 void laserUpdate(PlayerState &player){
-  if(IsMatchingKeyPressed(options.keys[(size_t)GameOptions::ControlKeyCodes::ULTRA]))
+
+  if (IsMatchingKeyPressed(options.keys[(size_t)GameOptions::ControlKeyCodes::ULTRA])) // && hasEnoughEnergy(player.laserEnergy, player.laserEnergy.maxValue))
   {
-    if(player.ultra.value > 99.9f)
-    {
-      player.ultra_active = true;
-    }
+    OnStart(player.laser, player.gun.direction, player.data.position);
+    player.laserEnergy.value = 0.f;
   }
-  if(player.ultra_active)
-  {
-    if(!player.laser.isOngoing){
-      OnStart(player.laser, player.gun.direction, player.data.position);
-    }else{
-      Update(player.laser, player.gun.direction, player.data.position);
-    }
-  }else{
-    Clear(player.laser); 
+
+  if(player.laser.isOngoing){
+    Update(player.laser, player.gun.direction, player.data.position);
   }
 }
 

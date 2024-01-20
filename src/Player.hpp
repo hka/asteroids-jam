@@ -55,9 +55,8 @@ struct PlayerState
   SuckAttack suckAttack;
   GunAttack gun;
   Laser laser;
+  Energy laserEnergy;
   Energy energy;
-  Energy ultra;
-  bool ultra_active = false;
 
   int storedAsteroids = 0;
   Timer suckDelayTimer;
