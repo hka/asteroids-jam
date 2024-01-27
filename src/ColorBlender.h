@@ -83,22 +83,22 @@ Color BlendColorsWithAlpha(Color c1, Color c2, float blendFactor)
 }
 
 
-Color BlendColorsWithAlpha(Color laser, Color noise, Color opposite, float blendFactor)
+Color BlendColorsWithAlpha(Color c1, Color c2, Color c3, float blendFactor)
 {
   Color blended;
 
-  float alphaBlend = noise.a / 255.0f;
+  float alphaBlend = c2.a / 255.0f;
 
   // Blending laser and noise based on noise alpha
   Color intermediate;
-  intermediate.r = laser.r * (1.0f - alphaBlend) + laser.r * (noise.r / 128.0f) * alphaBlend;
-  intermediate.g = laser.g * (1.0f - alphaBlend) + laser.g * (noise.g / 128.0f) * alphaBlend;
-  intermediate.b = laser.b * (1.0f - alphaBlend) + laser.b * (noise.b / 128.0f) * alphaBlend;
+  intermediate.r = c1.r * (1.0f - alphaBlend) + c1.r * (c2.r / 128.0f) * alphaBlend;
+  intermediate.g = c1.g * (1.0f - alphaBlend) + c1.g * (c2.g / 128.0f) * alphaBlend;
+  intermediate.b = c1.b * (1.0f - alphaBlend) + c1.b * (c2.b / 128.0f) * alphaBlend;
 
   // Blending the result with the opposite color based on blendFactor
-  blended.r = intermediate.r * (1.0f - blendFactor) + opposite.r * blendFactor;
-  blended.g = intermediate.g * (1.0f - blendFactor) + opposite.g * blendFactor;
-  blended.b = intermediate.b * (1.0f - blendFactor) + opposite.b * blendFactor;
+  blended.r = intermediate.r * (1.0f - blendFactor) + c3.r * blendFactor;
+  blended.g = intermediate.g * (1.0f - blendFactor) + c3.g * blendFactor;
+  blended.b = intermediate.b * (1.0f - blendFactor) + c3.b * blendFactor;
   blended.a = 255; // Set to fully opaque
 
   return blended;
