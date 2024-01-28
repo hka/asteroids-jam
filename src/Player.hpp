@@ -34,12 +34,21 @@ struct GunAttack{
   Vector2 direction;
   Timer cooldownTimer;
   float cooldownDuration;
-  float energyCost;
 };
 
 struct Energy{
   float value = 0.f;
   float maxValue = 100.f;
+};
+
+struct EnergyShield{
+  Energy energy;
+  bool canRegain;
+  float maxDuration;
+  Timer timeSinceLastDamage;
+  float durationBeforeCanRegainAfterDamage;
+  float missingEnergy;
+  Timer regainTimer;
 };
 
 const float DASH_ENERGY_COST = 2.f;
@@ -55,8 +64,7 @@ struct PlayerState
   SuckAttack suckAttack;
   GunAttack gun;
   Laser laser;
-  Energy laserEnergy;
-  Energy energy;
+  EnergyShield shield;
 
   int storedAsteroids = 0;
   Timer suckDelayTimer;
@@ -65,21 +73,22 @@ struct PlayerState
   
   PhysicsComponent data;
 
-  void OnHit();
+  void OnHit(int damage);
 };
 
 // update
 void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot>& shoots, float dt);
 void UpdateEnergy(Energy& energy, const float value);
+void UpdateEnergyShield(EnergyShield& shield);
+void RegainEnergyShield(EnergyShield& shield);
 
 //input
-void UpdatePlayerInput(PlayerState& player, float dt, Energy& energy);
+void UpdatePlayerInput(PlayerState& player, float dt);
 void suckAttack(const Vector2 &position, const Vector2& rotation, SuckAttack &suckAttack);
 void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids, std::vector<float>& player_asteroid_distance);
 void AttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids);
 void gunUpdate(PlayerState& player, GunAttack& gun, std::vector<Shoot>& shoots);
 void laserUpdate(PlayerState &player);
-void turnAsteroidToEnergy(PlayerState &player);
 
 //helper
 void rotateTriangle(Vector2 (&v)[3], const float angle);

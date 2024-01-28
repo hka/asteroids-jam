@@ -5,6 +5,7 @@
 
 void DrawEnergyBar(Energy &energy, const Rectangle& pos);
 void DrawUltraBar(Energy &energy, const Rectangle& pos);
+void DrawEnergyShield(Energy& energy, const Rectangle& bounds);
 //todo remove this, display by texture instead
 void DrawStoredAsteroids(PlayerState &player, const int worldWidth, const int worldHeight);
 

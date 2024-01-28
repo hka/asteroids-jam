@@ -174,7 +174,6 @@ void AsteroidsScreen::Update()
   // =================================================================
   // Pre-update asteroids
   // =================================================================
-  const float baseLaserEnergyGain = 2.f;
   for(std::size_t ii = 0; ii < m_asteroids.size(); ++ii){
     switch (m_asteroids[ii].state){
       case ALIVE:
@@ -186,10 +185,6 @@ void AsteroidsScreen::Update()
 
         {
           int type = m_asteroids[ii].type;
-          if (!m_player.laser.isOngoing)
-          {
-            UpdateEnergy(m_player.laserEnergy, baseLaserEnergyGain * type);
-          }
           Vector2 pos = m_asteroids[ii].data.position;
           std::swap(m_asteroids[ii], m_asteroids[m_asteroids.size() - 1]);
           m_asteroids.pop_back();
@@ -197,10 +192,6 @@ void AsteroidsScreen::Update()
         }
         break;
       case ABSORBED:
-        if(!m_player.laser.isOngoing){
-          UpdateEnergy(m_player.laserEnergy, baseLaserEnergyGain);
-        }
-        //fall through
       case DEAD_BY_COLLISION:
         std::swap(m_asteroids[ii], m_asteroids[m_asteroids.size() - 1]);
         m_asteroids.pop_back();
@@ -354,22 +345,18 @@ void AsteroidsScreen::Paint()
   }
 
   ///Draw player ui
-  const float maxLength = options.screenWidth * 0.5f;
-  float currentLength = (m_player.energy.value / m_player.energy.maxValue) * maxLength;
+  int MAX_SHIELD_WIDTH = 600;
+  int width = std::min(options.screenWidth / 2, MAX_SHIELD_WIDTH);
+  int MAX_SHIELD_HEIGHT = 30;
+  int height = std::min(int(options.screenHeight * 0.03f), MAX_SHIELD_HEIGHT);
 
-  Rectangle pos = {(float)options.screenWidth*0.02f, (float)options.screenHeight*(1.f - 0.14f),(float)options.screenWidth*0.22f, (float)options.screenHeight*0.1f};
-  DrawEnergyBar(m_player.energy, pos);
-
-  pos.x = (float)options.screenWidth*(1.f-0.02f) - pos.width;
-  DrawUltraBar(m_player.laserEnergy, pos);
-
-  if(currentLength < 1)
-  {
-    std::string help_text = "Click right mouse button to convert absorbed asteroid to fuel!";
-    float w = MeasureText(help_text.c_str(),30);
-    DrawText(help_text.c_str(), options.screenWidth/2-w/2, pos.y-30, 30, ORANGE);
-  }
-
+  Rectangle energyShieldBounds = {
+    (options.screenWidth / 2) - (width / 2),
+    (options.screenHeight - (height * 1.1f)),
+    width,
+    height
+  };
+  DrawEnergyShield(m_player.shield.energy, energyShieldBounds);
   DrawStoredAsteroids(m_player, options.screenWidth, options.screenHeight);
 
   //Draw score
