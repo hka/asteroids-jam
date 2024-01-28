@@ -6,6 +6,8 @@
 #include "globals.h"
 #include "raylib.h"
 
+#include <iostream>
+
 void DrawEnergyBar(Energy &energy, const Rectangle& pos)
 {
   float charge = (energy.value / energy.maxValue);
@@ -135,8 +137,11 @@ void DrawEnergyShield(Energy &energy, const Rectangle &bounds){
         color = GREEN;
         canDraw = true;
       }else{
-        color = BLUE;
+        float saturation = (53.3 / 2) + (y * 5);
+        float value = (79 / 2) + (y * 5);
+        color = ColorFromHSV(194.7, saturation, value);
         canDraw = x <= (width * perc);
+        color.a = 155;
       }
 
       if(canDraw){

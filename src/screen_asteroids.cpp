@@ -345,14 +345,18 @@ void AsteroidsScreen::Paint()
   }
 
   ///Draw player ui
+  int MAX_SHIELD_WIDTH = 600;
+  int width = std::min(options.screenWidth / 2, MAX_SHIELD_WIDTH);
+  int MAX_SHIELD_HEIGHT = 30;
+  int height = std::min(int(options.screenHeight * 0.03f), MAX_SHIELD_HEIGHT);
+
   Rectangle energyShieldBounds = {
-    options.screenWidth / 4.f,
-    options.screenHeight * 0.9f,
-    options.screenWidth / 2.f,
-    options.screenHeight * 0.05f
+    (options.screenWidth / 2) - (width / 2),
+    (options.screenHeight - (height * 1.1f)),
+    width,
+    height
   };
   DrawEnergyShield(m_player.shield.energy, energyShieldBounds);
-
   DrawStoredAsteroids(m_player, options.screenWidth, options.screenHeight);
 
   //Draw score
