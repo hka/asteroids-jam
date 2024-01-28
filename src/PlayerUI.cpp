@@ -1,8 +1,10 @@
 #include "PlayerUI.h"
 
-#include "globals.h"
-
 #include <string>
+#include <vector>
+
+#include "globals.h"
+#include "raylib.h"
 
 void DrawEnergyBar(Energy &energy, const Rectangle& pos)
 {
@@ -101,6 +103,49 @@ void DrawEnergyPerc(Energy &energy, const int worldWidth, const int worldHeight)
       (float)worldHeight - offsetY - textSize.y};
 
   DrawTextEx(GetFontDefault(), text.c_str(), pos, fontSize, spacing, WHITE);
+}
+
+bool isBorder(int x, int y, int maxX, int maxY){
+  return
+    x == 0 || y == maxY || x == maxX;
+}
+
+void DrawEnergyShield(Energy &energy, const Rectangle &bounds){
+  
+  float yStartPos = bounds.y + (bounds.height / 2.f);
+  float ySteps = bounds.height / 2.f;
+  float width = bounds.width;
+  float perc = energy.value / energy.maxValue;
+
+  for(int y = 0; y <= ySteps; ++y){
+
+    if(y % 5 == 0){
+      width -= 6.f;
+    }
+    float missingX = bounds.width - width;
+    float xStart = bounds.x + (missingX / 2.f);
+    float y1 = yStartPos - y;
+    float y2 = yStartPos + y;
+
+    for(int x = 0; x <= width; ++x){
+      float xPos = xStart + x;
+      Color color;
+      bool canDraw = false;
+      if(isBorder(x, y, width, ySteps)){
+        color = GREEN;
+        canDraw = true;
+      }else{
+        color = BLUE;
+        canDraw = x <= (width * perc);
+      }
+
+      if(canDraw){
+        DrawRectangle(xPos, y1, 1.f, 1.f, color);
+        DrawRectangle(xPos, y2, 1.f, 1.f, color);
+      }
+    }
+  }
+
 }
 
 void DrawStoredAsteroids(PlayerState &player, const int worldWidth, const int worldeight){

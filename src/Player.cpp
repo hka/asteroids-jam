@@ -2,6 +2,7 @@
 #include "globals.h"
 #include "helpers.h"
 #include "raylib_operators.h"
+#include "Lerp.hpp"
 
 #define RAY2D_COLLISION_IMPLEMENTATION //only this once!
 #include <ray_collision_2d.h>
@@ -32,13 +33,15 @@ PlayerState createPlayer(Vector2 startPos){
   player.gun.cooldownTimer.start();
   player.gun.cooldownDuration = 0.25f;
 
-  player.energy.maxValue = 100.f;
-  player.energy.value = player.energy.maxValue;
-  player.gun.energyCost = player.energy.maxValue * 0.025f;
+  player.shield.canRegain = false;
+  player.shield.durationBeforeCanRegainAfterDamage = 2.f;
+  player.shield.maxDuration = 5.f;
+  player.shield.missingEnergy = 0.f;
+
+  player.shield.energy.value = player.shield.energy.maxValue;
+  player.shield.energy.maxValue = 100.f;
 
   player.laser = createLaser();
-  player.laserEnergy.maxValue = 100.f;
-  player.laserEnergy.value = player.laserEnergy.maxValue;
 
   return player;
 }
@@ -48,7 +51,7 @@ PlayerState createPlayer(Vector2 startPos){
 ///////////////////////////////////////////////
 void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &shoots, float dt)
 {
-  UpdatePlayerInput(player, dt, player.energy);
+  UpdatePlayerInput(player, dt);
   player.data.force *= 0;
   ApplyThrustDrag(player.data);
   UpdatePosition(player.data, worldBound, dt);
@@ -69,11 +72,12 @@ void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &
   }
   else if(player.suckDelayTimer.getElapsed() < SUCK_DELAY  && IsMatchingKeyReleased(options.keys[(size_t)GameOptions::ControlKeyCodes::ABSORB]))
   {
-    turnAsteroidToEnergy(player);
+    //if turn to energy by right click
   }
 
   gunUpdate(player, player.gun, shoots);
   laserUpdate(player);
+  UpdateEnergyShield(player.shield);
 }
 
 void UpdateEnergy(Energy& energy, float value){
@@ -83,10 +87,44 @@ void UpdateEnergy(Energy& energy, float value){
   energy.value = std::max(energy.value, 0.f);
 }
 
+void UpdateEnergyShield(EnergyShield &shield)
+{
+  
+  if(!shield.canRegain){
+    shield.canRegain = shield.timeSinceLastDamage.getElapsed() >= shield.durationBeforeCanRegainAfterDamage
+                       && shield.energy.value < shield.energy.maxValue;
+    shield.regainTimer.start();
+  }
+
+  if(shield.canRegain && shield.energy.value < shield.energy.maxValue){
+    RegainEnergyShield(shield);
+  }
+}
+
+void RegainEnergyShield(EnergyShield &shield)
+{
+  float duration = (shield.missingEnergy / shield.energy.maxValue) * shield.maxDuration;
+  float t = shield.regainTimer.getElapsed() / duration;
+  if(t > 1.0){
+    return;
+  }
+  float time = LerpLib::square(t);
+  float start = shield.energy.maxValue - shield.missingEnergy;
+  float end = shield.energy.maxValue;
+  float energy = LerpLib::lerp(time, start, end);
+
+  if(energy >= shield.energy.maxValue){
+    energy = shield.energy.maxValue;
+    shield.canRegain = false;
+  }
+
+  shield.energy.value = energy;
+}
+
 ////////////////////////////////////////////////
 ///         Input                           ///
 ///////////////////////////////////////////////
-void UpdatePlayerInput(PlayerState& player, float dt, Energy& energy)
+void UpdatePlayerInput(PlayerState& player, float dt)
 {
   PhysicsComponent& data = player.data;
   //rotate velocity vector and update orientation to match
@@ -108,15 +146,12 @@ void UpdatePlayerInput(PlayerState& player, float dt, Energy& energy)
     }
   }
 
-  const float THRUST_ENERGY_COST = 0.1f; //todo move somewhere else
-  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::BREAK]) && hasEnoughEnergy(energy, THRUST_ENERGY_COST))
+  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::BREAK]))
   {
-    UpdateEnergy(energy, -THRUST_ENERGY_COST);
     data.thrust = -500000;
   }
-  else if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::THRUST]) && hasEnoughEnergy(energy, THRUST_ENERGY_COST))
+  else if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::THRUST]))
   {
-    UpdateEnergy(energy, -THRUST_ENERGY_COST);
     data.thrust = 500000;
   }
   else
@@ -124,9 +159,8 @@ void UpdatePlayerInput(PlayerState& player, float dt, Energy& energy)
     data.thrust = 0;
   }
 
-  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::DASH]) && hasEnoughEnergy(energy, DASH_ENERGY_COST) && !player.dash_in_progress)
+  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::DASH]) && !player.dash_in_progress)
   {
-    UpdateEnergy(energy, -DASH_ENERGY_COST);
     player.dash_in_progress = true;
   }
   else if(player.dash_in_progress && !IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::DASH]))
@@ -317,14 +351,13 @@ void gunUpdate(PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
   gun.direction = Vector2Normalize(mousePointer - player.data.position);
 
   //handle shooting
-  if( IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::FIRE]) && gun.cooldownTimer.getElapsed() >= gun.cooldownDuration && hasEnoughEnergy(player.energy, gun.energyCost) && player.storedAsteroids == 0){
+  if( IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::FIRE]) && gun.cooldownTimer.getElapsed() >= gun.cooldownDuration && player.storedAsteroids == 0){
     //FireShoot(player.data.position, gun.direction, player.movement.velocity, player.movement.maxAcceleration, shoots);
     FireShoot(player.data, gun.direction,500, shoots);
     if(options.sound_fx)
     {
       PlaySound(shoot_fx);
     }
-    UpdateEnergy(player.energy, -gun.energyCost);
     gun.cooldownTimer.start();
   }
   if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::FIRE]) && player.storedAsteroids > 0)
@@ -336,25 +369,14 @@ void gunUpdate(PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
 
 void laserUpdate(PlayerState &player){
 
-  if (IsMatchingKeyPressed(options.keys[(size_t)GameOptions::ControlKeyCodes::ULTRA])) // && hasEnoughEnergy(player.laserEnergy, player.laserEnergy.maxValue))
+  if (IsMatchingKeyPressed(options.keys[(size_t)GameOptions::ControlKeyCodes::ULTRA]))
   {
     OnStart(player.laser, player.gun.direction, player.data.position);
-    player.laserEnergy.value = 0.f;
   }
 
   if(player.laser.isOngoing){
     Update(player.laser, player.gun.direction, player.data.position);
   }
-}
-
-void turnAsteroidToEnergy(PlayerState& player){
-  if(player.storedAsteroids < 1){
-    return;
-  }
-
-  player.storedAsteroids -= 1;
-  float energyRefill = player.energy.maxValue / MAX_STORED_ASTEROIDS;
-  UpdateEnergy(player.energy, energyRefill);
 }
 
 ////////////////////////////////////////////////
@@ -482,10 +504,18 @@ void DrawGun(const PlayerState& player)
   DrawTexturePro(te, sourceRec, destRec, origin, (float)rotation, WHITE);
 }
 
-void PlayerState::OnHit()
+void PlayerState::OnHit(int damage)
 {
-  if(!options.godMode)
-  {
+  if(options.godMode){
+    return;
+  }
+
+  shield.timeSinceLastDamage.start();
+  UpdateEnergy(shield.energy, -damage);
+  shield.canRegain = false;
+  shield.missingEnergy = shield.energy.maxValue - shield.energy.value;
+
+  if(shield.energy.value <= 0.f){
     alive = false;
   }
 }

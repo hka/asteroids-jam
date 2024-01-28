@@ -64,7 +64,7 @@ void handleCollision(PlayerState &player, std::vector<Shoot> &bullets)
 
     if(CheckCollisionCircles(player.data.position, player.data.radius, bullet.data.position, bullet.data.radius)){
 
-      player.OnHit();
+      player.OnHit(bullet.damage);
 
       bullets[j] = bullets[bullets.size() - 1];
       bullets.pop_back();
@@ -93,7 +93,25 @@ void handleCollision(PlayerState &player, std::vector<Asteroid> &asteroids)
       }
       else
       {
-        player.OnHit();
+        int damage = 0;
+        float maxShield = player.shield.energy.maxValue;
+        switch (a.type)
+        {
+          case 1:
+            damage = maxShield / 4;
+            break;
+          case 2:
+            damage = maxShield / 2;
+            break;
+          case 3:
+            damage = maxShield;
+            break;
+          default:
+            const char* c = "Default damage value";
+            TraceLog(LOG_INFO, c);
+        }
+        
+        player.OnHit(damage);
 
         asteroids[j].state = DEAD_BY_COLLISION;
       }
