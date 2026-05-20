@@ -60,6 +60,7 @@ AsteroidsScreen::AsteroidsScreen():
 
 AsteroidsScreen::~AsteroidsScreen()
 {
+  DestroyLaserResources();
   Unload();
 }
 
@@ -296,6 +297,11 @@ void AsteroidsScreen::Update()
   {
     m_finishScreen = Screen::GameScreen::MAINMENU;
   }
+
+  if(IsKeyPressed(KEY_F3))
+  {
+    m_player.laser.useShaderRendering = !m_player.laser.useShaderRendering;
+  }
 }
 
 void AsteroidsScreen::Paint()
@@ -373,6 +379,11 @@ void AsteroidsScreen::Paint()
     std::string level_text = "Level: "+std::to_string(level);
     float w = MeasureText(level_text.c_str(),12);
     DrawText(level_text.c_str(), options.screenWidth - 10 - w, 10, 12, GREEN);
+  }
+
+  {
+    const char* laserMode = m_player.laser.useShaderRendering ? "Laser: shader (F3)" : "Laser: texture (F3)";
+    DrawText(laserMode, 10, 10, 12, GREEN);
   }
 
   if(!m_player.alive)

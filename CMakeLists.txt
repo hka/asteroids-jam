@@ -42,6 +42,7 @@ endif()
 
 # Adding our source files
 file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp") 
+file(GLOB_RECURSE PROJECT_DATA CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/data/*")
 set(PROJECT_INCLUDE "${CMAKE_CURRENT_LIST_DIR}/src/") 
 
 file(GLOB IMGUI_SOURCES CONFIGURE_DEPENDS "${imgui_SOURCE_DIR}/*.cpp")
@@ -53,6 +54,7 @@ target_sources(${PROJECT_NAME}
   PRIVATE ${PROJECT_SOURCES}
   ${rlimgui_SOURCE_DIR}/rlImGui.cpp
   ${IMGUI_SOURCES}
+  ${PROJECT_DATA}
 )
 target_include_directories(${PROJECT_NAME}
   PRIVATE ${PROJECT_INCLUDE}
@@ -62,9 +64,11 @@ target_include_directories(${PROJECT_NAME}
   ${imgui_SOURCE_DIR}/
 )
 
-add_custom_command(TARGET ${PROJECT_NAME} PRE_LINK
+add_custom_target(copy_data ALL
   COMMAND ${CMAKE_COMMAND} -E copy_directory
-  ${CMAKE_CURRENT_SOURCE_DIR}/data $<TARGET_FILE_DIR:${PROJECT_NAME}>/data)
+  ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR}/data
+  DEPENDS ${PROJECT_DATA})
+add_dependencies(${PROJECT_NAME} copy_data)
 
 if (EMSCRIPTEN)
   set_target_properties(${PROJECT_NAME}
@@ -91,4 +95,3 @@ else()
     target_link_libraries(${PROJECT_NAME} PRIVATE raylib stdc++fs)
   endif()
 endif()
-
