@@ -7,7 +7,7 @@
 
 //todo Remake into class instead
 
-constexpr const int NUMBER_OF_IMAGES = 3;
+constexpr const int NUMBER_OF_IMAGES = 5;
 enum ImageID{
   IMAGE_LASER,
   IMAGE_LASER_NOISE,
@@ -16,9 +16,10 @@ enum ImageID{
   IMAGE_LASER_FINAL
 };
 
-constexpr const int NUMBER_OF_TEXTURES = 2;
+constexpr const int NUMBER_OF_TEXTURES = 6;
 enum TextureID{
   LASER_FINAL = 0,
+  LASER_SHADER_MASK,
   TEXTURE_LASER,
   LASER_BLURRED,
   TEXTURE_LASER_NOISE,

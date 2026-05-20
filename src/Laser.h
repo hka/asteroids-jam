@@ -30,6 +30,7 @@ struct Laser
   
   Ray ray;
   bool isHitting;
+  bool useShaderRendering;
 
   float noiseOffset;
 
@@ -41,6 +42,7 @@ constexpr const float LASER_HEIGHT = 80;
 
 Laser createLaser();
 void CreateLaserTexture();
+void DestroyLaserResources();
 LaserGraphics createLaserGraphics();
 
 void OnStart(Laser& laser, const Vector2& direction, const Vector2& startPoint);

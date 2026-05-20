@@ -4,6 +4,60 @@
 #include "ResourceManager.h"
 #include "ColorBlender.h"
 
+namespace
+{
+struct BeamShaderResources
+{
+  Shader shader{};
+  int timeLoc = -1;
+  int beamLengthLoc = -1;
+  bool loaded = false;
+};
+
+BeamShaderResources g_beamShader;
+
+void LoadBeamShader()
+{
+  if(g_beamShader.loaded)
+  {
+    return;
+  }
+
+#if defined(PLATFORM_WEB)
+  g_beamShader.shader = LoadShader(0, "data/beam_web.frag");
+#else
+  g_beamShader.shader = LoadShader(0, "data/beam.frag");
+#endif
+  g_beamShader.timeLoc = GetShaderLocation(g_beamShader.shader, "time");
+  g_beamShader.beamLengthLoc = GetShaderLocation(g_beamShader.shader, "beamLength");
+  g_beamShader.loaded = true;
+}
+
+void DrawLaserShader(Laser& laser)
+{
+  if(!g_beamShader.loaded)
+  {
+    return;
+  }
+
+  float time = (float)GetTime();
+  float beamLength = laser.length;
+  SetShaderValue(g_beamShader.shader, g_beamShader.timeLoc, &time, SHADER_UNIFORM_FLOAT);
+  SetShaderValue(g_beamShader.shader, g_beamShader.beamLengthLoc, &beamLength, SHADER_UNIFORM_FLOAT);
+
+  float rotation = atan2f(laser.direction.y, laser.direction.x) * RAD2DEG;
+  Rectangle src = {0.f, 0.f, 1.f, 1.f};
+  Rectangle rec = {laser.start.x, laser.start.y, laser.length, laser.width};
+  Vector2 origin {0.f, laser.width / 2.f};
+
+  BeginBlendMode(BLEND_ALPHA);
+  BeginShaderMode(g_beamShader.shader);
+  DrawTexturePro(getTexture(LASER_SHADER_MASK), src, rec, origin, rotation, WHITE);
+  EndShaderMode();
+  EndBlendMode();
+}
+}
+
 Laser createLaser(){
   Laser laser;
   laser.isOngoing = false;
@@ -11,6 +65,7 @@ Laser createLaser(){
   laser.growRate = laser.maxLength * 4.f;
   laser.width = LASER_HEIGHT; //todo set to screen width.
   laser.duration = 4.0f;
+  laser.useShaderRendering = false;
   laser.graphics = createLaserGraphics();
   return laser;
 }
@@ -77,6 +132,20 @@ void CreateLaserTexture(){
   ImageMipmaps(&finalLaser);
   LoadTexture(finalLaser, LASER_FINAL);
   LoadImage(IMAGE_LASER_FINAL, finalLaser);
+
+  Image shaderMask = GenImageColor(1, 1, WHITE);
+  LoadTexture(shaderMask, LASER_SHADER_MASK);
+  UnloadImage(shaderMask);
+
+  LoadBeamShader();
+}
+
+void DestroyLaserResources(){
+  if(g_beamShader.loaded)
+  {
+    UnloadShader(g_beamShader.shader);
+    g_beamShader = BeamShaderResources{};
+  }
 }
 
 void OnStart(Laser &laser, const Vector2 &direction, const Vector2 &origin){
@@ -115,8 +184,11 @@ void Update(Laser &laser, const Vector2 &direction, const Vector2 &origin)
     laser.length += (laser.growRate * GetFrameTime());
   }
 
-  NoiseLaserWeb(laser.noiseOffset, laser.graphics);
-  DistortLaserWeb(laser.graphics);
+  if(!laser.useShaderRendering)
+  {
+    NoiseLaserWeb(laser.noiseOffset, laser.graphics);
+    DistortLaserWeb(laser.graphics);
+  }
 }
 
 void Clear(Laser &laser)
@@ -125,6 +197,11 @@ void Clear(Laser &laser)
 }
 
 void DrawLaser(Laser &laser){
+  if(laser.useShaderRendering)
+  {
+    DrawLaserShader(laser);
+    return;
+  }
   
   float rotation = atan2f(laser.direction.y, laser.direction.x) * RAD2DEG;
   Rectangle rec = {laser.start.x, laser.start.y, laser.length, laser.width};
