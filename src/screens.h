@@ -17,6 +17,8 @@
 #include "enemy.h"
 #include "Munition.h"
 
+#include "animation/animation.h"
+
 struct GameOptions
 {
   int screenWidth = 1280;
@@ -60,6 +62,7 @@ class Screen
                           MAINMENU,
                           OPTIONS,
                           ASTEROIDS,
+                          ANIMATION_TEST,
                           NOSCREEN };
   virtual ~Screen() {};
   virtual void Update() = 0;
@@ -151,6 +154,20 @@ class AsteroidsScreen : public Screen
 
   float time_in_level = 0;
   int level = 1;
+};
+
+class AnimationTestScreen : public Screen {
+ public:
+  AnimationTestScreen();
+  ~AnimationTestScreen();
+  void Update();
+  void Paint();
+  GameScreen Finish();
+  GameScreen GetEnum(){return Screen::GameScreen::ANIMATION_TEST;}
+
+  private:
+   AnimationDatabase m_animationDb;
+   std::vector<AnimationInstance> m_animationInstances;
 };
 
 class OptionsScreen : public Screen

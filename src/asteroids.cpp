@@ -5,7 +5,6 @@
 #include "globals.h"
 
 #include <memory>
-#include <stdio.h>
 #include <string>
 
 #if defined(PLATFORM_WEB)
@@ -133,12 +132,13 @@ int main(void)
   //SetWindowState(FLAG_WINDOW_RESIZABLE|FLAG_WINDOW_HIGHDPI);
   //printf("size: %d x %d\n",GetScreenWidth(), GetScreenHeight());
   //printf("size: %d x %d\n",GetRenderWidth(), GetRenderHeight());
-  currentScreen = std::make_unique<LogoScreen>();
+  currentScreen = std::make_unique<AnimationTestScreen>();
+  SetExitKey(KEY_ESCAPE);
 
-  if(options.skipLogo || !options.first_launch)
-  {
-    currentScreen = std::make_unique<MainMenuScreen>();
-  }
+  // if(options.skipLogo || !options.first_launch)
+  // {
+  //   currentScreen = std::make_unique<MainMenuScreen>();
+  // }
   options.first_launch = false;
 
   if(options.keys.empty())
@@ -221,6 +221,9 @@ void ChangeToScreen(Screen::GameScreen screen)
     break;
    case Screen::GameScreen::OPTIONS:
     currentScreen = std::make_unique<OptionsScreen>();
+    break;
+   case Screen::GameScreen::ANIMATION_TEST:
+    currentScreen = std::make_unique<AnimationTestScreen>();
     break;
    case Screen::GameScreen::NOSCREEN:
     currentScreen = nullptr;
