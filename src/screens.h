@@ -157,17 +157,34 @@ class AsteroidsScreen : public Screen
 };
 
 class AnimationTestScreen : public Screen {
- public:
-  AnimationTestScreen();
+  public:
+   AnimationTestScreen();
   ~AnimationTestScreen();
   void Update();
   void Paint();
   GameScreen Finish();
   GameScreen GetEnum(){return Screen::GameScreen::ANIMATION_TEST;}
 
-  private:
-   AnimationDatabase m_animationDb;
-   std::vector<AnimationInstance> m_animationInstances;
+   private:
+    enum class TargetMode {
+      Mouse,
+      Random,
+    };
+
+    Vector2 randomTarget();
+    bool isVisible(size_t instanceIndex) const;
+    const char* visibleFilterLabel() const;
+
+    AnimationWorld m_animationWorld;
+    std::vector<std::string> m_instanceNames;
+    std::vector<Vector2> m_randomTargets;
+    TargetMode m_targetMode = TargetMode::Mouse;
+    size_t m_visibleFilter = 0;
+    bool m_paused = false;
+    bool m_drawSkeleton = true;
+    bool m_drawBodies = true;
+    bool m_drawAppendages = true;
+    bool m_drawTargets = true;
 };
 
 class OptionsScreen : public Screen
