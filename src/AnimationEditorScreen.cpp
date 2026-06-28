@@ -1,5 +1,6 @@
 #include "screens.h"
 
+#include "globals.h"
 #include "raymath.h"
 #include <nlohmann/json.hpp>
 
@@ -25,6 +26,106 @@ constexpr int kUiFont = 17;
 constexpr int kUiSmallFont = 16;
 constexpr int kUiTitleFont = 21;
 
+enum EditorUiId : ui::Id {
+  EditorUiTabsRow = 3000,
+  EditorUiTabBones,
+  EditorUiTabComponents,
+  EditorUiTabRender,
+  EditorUiTabExport,
+  EditorUiSummaryGroup,
+  EditorUiSummaryTitle,
+  EditorUiSummaryValue,
+  EditorUiComponentGroup,
+  EditorUiComponentToolsRow,
+  EditorUiComponentAdd,
+  EditorUiComponentPrev,
+  EditorUiComponentNext,
+  EditorUiComponentDuplicate,
+  EditorUiComponentDropdownGroup,
+  EditorUiComponentMoveRow,
+  EditorUiComponentUp,
+  EditorUiComponentDown,
+  EditorUiComponentListTitle,
+  EditorUiComponentRow0,
+  EditorUiComponentRow1,
+  EditorUiComponentRow2,
+  EditorUiComponentRow3,
+  EditorUiComponentRow4,
+  EditorUiComponentDropdown0,
+  EditorUiComponentDropdown1,
+  EditorUiComponentDropdown2,
+  EditorUiComponentDropdown3,
+  EditorUiComponentDropdown4,
+  EditorUiComponentDropdown5,
+  EditorUiRenderGroup,
+  EditorUiRenderToolsRow,
+  EditorUiRenderAdd,
+  EditorUiRenderPrev,
+  EditorUiRenderNext,
+  EditorUiRenderDropdownGroup,
+  EditorUiRenderListTitle,
+  EditorUiRenderRow0,
+  EditorUiRenderRow1,
+  EditorUiRenderRow2,
+  EditorUiRenderRow3,
+  EditorUiRenderRow4,
+  EditorUiRenderDropdown0,
+  EditorUiRenderDropdown1,
+  EditorUiRenderDropdown2,
+  EditorUiExportGroup,
+  EditorUiExportPathRig,
+  EditorUiExportPathFactory,
+  EditorUiHintLabel,
+  EditorUiParamGroup,
+  EditorUiParamRow0,
+  EditorUiParamRow1,
+  EditorUiParamRow2,
+  EditorUiParamRow3,
+  EditorUiParamRow4,
+  EditorUiParamRow5,
+  EditorUiParamRow6,
+  EditorUiParamRow7,
+  EditorUiParamRow8,
+  EditorUiParamRow9,
+  EditorUiParamRow10,
+  EditorUiParamRow11,
+  EditorUiParamLabel0,
+  EditorUiParamLabel1,
+  EditorUiParamLabel2,
+  EditorUiParamLabel3,
+  EditorUiParamLabel4,
+  EditorUiParamLabel5,
+  EditorUiParamLabel6,
+  EditorUiParamLabel7,
+  EditorUiParamLabel8,
+  EditorUiParamLabel9,
+  EditorUiParamLabel10,
+  EditorUiParamLabel11,
+  EditorUiParamField0,
+  EditorUiParamField1,
+  EditorUiParamField2,
+  EditorUiParamField3,
+  EditorUiParamField4,
+  EditorUiParamField5,
+  EditorUiParamField6,
+  EditorUiParamField7,
+  EditorUiParamField8,
+  EditorUiParamField9,
+  EditorUiParamField10,
+  EditorUiParamField11,
+  EditorUiLeftTitle,
+  EditorUiLeftSubtitle,
+  EditorUiLeftBody0,
+  EditorUiLeftBody1,
+  EditorUiLeftBody2,
+  EditorUiLeftBody3,
+  EditorUiLeftBody4,
+  EditorUiLeftStats0,
+  EditorUiLeftStats1,
+  EditorUiLeftStats2,
+  EditorUiLeftStatus,
+};
+
 Vector2 rotate(Vector2 v, float angle) {
   const float c = std::cos(angle);
   const float s = std::sin(angle);
@@ -37,14 +138,183 @@ float distanceSquared(Vector2 a, Vector2 b) {
   return dx * dx + dy * dy;
 }
 
+Font editorFont() {
+  return UI_FONT.texture.id != 0 ? UI_FONT : GetFontDefault();
+}
+
+ui::Style editorPanelButtonStyle(bool active = false) {
+  ui::Style style;
+  style.background = active ? Color{58, 86, 108, 255} : Color{34, 48, 64, 255};
+  style.border = active ? SKYBLUE : Color{118, 146, 166, 255};
+  style.borderThickness = 1.f;
+  style.text = RAYWHITE;
+  style.fontSize = kUiSmallFont;
+  return style;
+}
+
+ui::Style editorTabStyle(bool selected) {
+  ui::Style style;
+  style.background = selected ? Color{54, 70, 38, 255} : Color{32, 44, 58, 255};
+  style.border = selected ? GOLD : Color{100, 130, 150, 255};
+  style.borderThickness = 1.f;
+  style.text = RAYWHITE;
+  style.fontSize = 13;
+  return style;
+}
+
+ui::Style editorListRowStyle(bool selected) {
+  ui::Style style;
+  style.background = selected ? Color{58, 72, 40, 255} : Color{18, 24, 32, 255};
+  style.border = selected ? GOLD : Color{92, 122, 144, 255};
+  style.borderThickness = 1.f;
+  style.text = RAYWHITE;
+  style.fontSize = kUiSmallFont;
+  return style;
+}
+
+ui::Style editorLabelStyle(Color color = LIGHTGRAY, int fontSize = kUiSmallFont) {
+  ui::Style style;
+  style.text = color;
+  style.fontSize = fontSize;
+  return style;
+}
+
+ui::Style editorSectionStyle() {
+  ui::Style style;
+  style.background = Color{16, 22, 30, 210};
+  style.border = Color{74, 98, 118, 255};
+  style.borderThickness = 1.f;
+  return style;
+}
+
+ui::Style editorDropdownStyle() {
+  ui::Style style;
+  style.background = Color{10, 14, 20, 255};
+  style.border = Color{118, 146, 166, 255};
+  style.borderThickness = 1.f;
+  return style;
+}
+
+ui::Layout editorRootLayout() {
+  ui::Layout layout;
+  layout.axis = ui::Axis::Vertical;
+  layout.width = ui::Size::grow();
+  layout.height = ui::Size::grow();
+  layout.padding = ui::Edges{12.f, 42.f, 12.f, 12.f};
+  layout.gap = 12.f;
+  layout.crossAlign = ui::Align::Stretch;
+  return layout;
+}
+
+ui::Layout editorRowLayout(float gap = 8.f) {
+  ui::Layout layout;
+  layout.axis = ui::Axis::Horizontal;
+  layout.width = ui::Size::grow();
+  layout.height = ui::Size::fit();
+  layout.gap = gap;
+  layout.crossAlign = ui::Align::Center;
+  return layout;
+}
+
+ui::Layout editorColumnLayout(float gap = 8.f) {
+  ui::Layout layout;
+  layout.axis = ui::Axis::Vertical;
+  layout.width = ui::Size::grow();
+  layout.height = ui::Size::fit();
+  layout.gap = gap;
+  return layout;
+}
+
+ui::Layout editorSectionLayout(float gap = 10.f) {
+  ui::Layout layout = editorColumnLayout(gap);
+  layout.padding = ui::Edges::all(12.f);
+  return layout;
+}
+
+ui::Layout editorFitButtonLayout(float paddingX = 10.f) {
+  ui::Layout layout;
+  layout.width = ui::Size::fit();
+  layout.height = ui::Size::fit();
+  layout.padding = ui::Edges::symmetric(paddingX, 6.f);
+  return layout;
+}
+
+ui::Layout editorFillButtonLayout(float paddingX = 10.f) {
+  ui::Layout layout;
+  layout.width = ui::Size::grow();
+  layout.height = ui::Size::fit();
+  layout.padding = ui::Edges::symmetric(paddingX, 6.f);
+  return layout;
+}
+
+ui::Layout editorListRowLayout() {
+  ui::Layout layout;
+  layout.width = ui::Size::grow();
+  layout.height = ui::Size::fit();
+  layout.padding = ui::Edges::symmetric(8.f, 5.f);
+  return layout;
+}
+
+ui::Layout editorWrappedLabelLayout() {
+  ui::Layout layout;
+  layout.width = ui::Size::grow();
+  layout.height = ui::Size::fit();
+  return layout;
+}
+
+ui::Layout editorParamRowLayout() {
+  ui::Layout layout;
+  layout.axis = ui::Axis::Horizontal;
+  layout.width = ui::Size::grow();
+  layout.height = ui::Size::fit();
+  layout.gap = 10.f;
+  layout.crossAlign = ui::Align::Center;
+  return layout;
+}
+
+ui::Layout editorParamLabelLayout() {
+  ui::Layout layout;
+  layout.width = ui::Size::pixels(120.f);
+  layout.height = ui::Size::fit();
+  return layout;
+}
+
+ui::Layout editorParamFieldLayout() {
+  ui::Layout layout;
+  layout.width = ui::Size::grow();
+  layout.height = ui::Size::fit();
+  layout.padding = ui::Edges::symmetric(8.f, 5.f);
+  return layout;
+}
+
+ui::Style editorFieldStyle(bool active) {
+  ui::Style style;
+  style.background = active ? Color{42, 66, 84, 255} : Color{20, 28, 38, 255};
+  style.border = active ? SKYBLUE : Color{118, 146, 166, 255};
+  style.borderThickness = 1.f;
+  style.text = RAYWHITE;
+  style.fontSize = kUiSmallFont;
+  return style;
+}
+
+ui::Layout leftRootLayout() {
+  ui::Layout layout;
+  layout.axis = ui::Axis::Vertical;
+  layout.width = ui::Size::grow();
+  layout.height = ui::Size::grow();
+  layout.padding = ui::Edges{16.f, 38.f, 16.f, 16.f};
+  layout.gap = 10.f;
+  return layout;
+}
+
 void drawPanel(Rectangle rect, const char* title) {
   DrawRectangleRec(rect, Color{14, 18, 26, 252});
   DrawRectangleLinesEx(rect, 1.f, Color{92, 122, 144, 255});
-  DrawTextEx(GetFontDefault(), title, {rect.x + 12.f, rect.y + 10.f}, static_cast<float>(kUiTitleFont), kUiSpacing, RAYWHITE);
+  DrawTextEx(editorFont(), title, {rect.x + 12.f, rect.y + 10.f}, static_cast<float>(kUiTitleFont), kUiSpacing, RAYWHITE);
 }
 
 float textWidth(const char* text, int fontSize = kUiSmallFont) {
-  return MeasureTextEx(GetFontDefault(), text, static_cast<float>(fontSize), kUiSpacing).x;
+  return MeasureTextEx(editorFont(), text, static_cast<float>(fontSize), kUiSpacing).x;
 }
 
 Rectangle buttonRect(float x, float y, const char* text, int fontSize = kUiSmallFont, float paddingX = 10.f, float minWidth = 0.f) {
@@ -55,33 +325,11 @@ Rectangle buttonRect(float x, float y, const char* text, int fontSize = kUiSmall
 void drawButton(Rectangle rect, const char* text, bool active = false, int fontSize = kUiSmallFont) {
   DrawRectangleRec(rect, active ? Color{58, 86, 108, 255} : Color{34, 48, 64, 255});
   DrawRectangleLinesEx(rect, 1.f, active ? SKYBLUE : Color{118, 146, 166, 255});
-  DrawTextEx(GetFontDefault(), text, {rect.x + 9.f, rect.y + 6.f}, static_cast<float>(fontSize), kUiSpacing, RAYWHITE);
+  DrawTextEx(editorFont(), text, {rect.x + 9.f, rect.y + 6.f}, static_cast<float>(fontSize), kUiSpacing, RAYWHITE);
 }
 
 void drawUiText(const char* text, float x, float y, Color color = LIGHTGRAY, int fontSize = kUiSmallFont) {
-  DrawTextEx(GetFontDefault(), text, {x, y}, static_cast<float>(fontSize), kUiSpacing, color);
-}
-
-float drawWrappedUiText(const char* text, float x, float y, float maxWidth, Color color = LIGHTGRAY, int fontSize = kUiSmallFont) {
-  std::istringstream stream(text);
-  std::string word;
-  std::string line;
-  const float lineHeight = static_cast<float>(fontSize) + 6.f;
-  while (stream >> word) {
-    const std::string candidate = line.empty() ? word : line + " " + word;
-    if (MeasureTextEx(GetFontDefault(), candidate.c_str(), static_cast<float>(fontSize), kUiSpacing).x > maxWidth && !line.empty()) {
-      DrawTextEx(GetFontDefault(), line.c_str(), {x, y}, static_cast<float>(fontSize), kUiSpacing, color);
-      y += lineHeight;
-      line = word;
-    } else {
-      line = candidate;
-    }
-  }
-  if (!line.empty()) {
-    DrawTextEx(GetFontDefault(), line.c_str(), {x, y}, static_cast<float>(fontSize), kUiSpacing, color);
-    y += lineHeight;
-  }
-  return y;
+  DrawTextEx(editorFont(), text, {x, y}, static_cast<float>(fontSize), kUiSpacing, color);
 }
 
 std::string formatFloat(float value) {
@@ -232,6 +480,8 @@ AnimationEditorScreen::RenderType renderTypeFromJson(const json& value, Animatio
 AnimationEditorScreen::AnimationEditorScreen()
 {
   m_previewTransform = Transform2D{{GetScreenWidth() * 0.55f, GetScreenHeight() * 0.52f}, 0.f, {1.f, 1.f}};
+  if (UI_FONT.texture.id != 0) m_editorUi.setFont(&UI_FONT);
+  if (UI_FONT.texture.id != 0) m_leftUi.setFont(&UI_FONT);
   importSpineSample(false);
 }
 
@@ -242,6 +492,344 @@ AnimationEditorScreen::~AnimationEditorScreen()
 bool AnimationEditorScreen::isEditingText() const
 {
   return m_activeParamInput >= 0;
+}
+
+void AnimationEditorScreen::buildEditorUi()
+{
+  if (m_editorUiBuilt) return;
+
+  m_editorUi.setRootLayout(editorRootLayout());
+  m_editorUi.upsertNode(EditorUiTabsRow, ui::kNoId, ui::NodeKind::Box, editorRowLayout(6.f));
+  m_editorUi.upsertNode(EditorUiTabBones, EditorUiTabsRow, ui::NodeKind::Button, editorFillButtonLayout(), editorTabStyle(false), "Bones");
+  m_editorUi.upsertNode(EditorUiTabComponents, EditorUiTabsRow, ui::NodeKind::Button, editorFillButtonLayout(), editorTabStyle(true), "Components");
+  m_editorUi.upsertNode(EditorUiTabRender, EditorUiTabsRow, ui::NodeKind::Button, editorFillButtonLayout(), editorTabStyle(false), "Render");
+  m_editorUi.upsertNode(EditorUiTabExport, EditorUiTabsRow, ui::NodeKind::Button, editorFillButtonLayout(), editorTabStyle(false), "Export");
+
+  m_editorUi.upsertNode(EditorUiSummaryGroup, ui::kNoId, ui::NodeKind::Box, editorSectionLayout(6.f), editorSectionStyle());
+  m_editorUi.upsertNode(EditorUiSummaryTitle, EditorUiSummaryGroup, ui::NodeKind::Label, editorWrappedLabelLayout(), editorLabelStyle(RAYWHITE, 16), "Selected procedure");
+  m_editorUi.upsertNode(EditorUiSummaryValue, EditorUiSummaryGroup, ui::NodeKind::WrappedLabel, editorWrappedLabelLayout(), editorLabelStyle(LIGHTGRAY, 15), "No component selected");
+
+  m_editorUi.upsertNode(EditorUiComponentGroup, ui::kNoId, ui::NodeKind::Box, editorSectionLayout(8.f), editorSectionStyle());
+  m_editorUi.upsertNode(EditorUiComponentToolsRow, EditorUiComponentGroup, ui::NodeKind::Box, editorRowLayout());
+  m_editorUi.upsertNode(EditorUiComponentAdd, EditorUiComponentToolsRow, ui::NodeKind::Button, editorFillButtonLayout(), editorPanelButtonStyle(), "Add Component");
+  m_editorUi.upsertNode(EditorUiComponentPrev, EditorUiComponentToolsRow, ui::NodeKind::Button, editorFitButtonLayout(), editorPanelButtonStyle(), "<");
+  m_editorUi.upsertNode(EditorUiComponentNext, EditorUiComponentToolsRow, ui::NodeKind::Button, editorFitButtonLayout(), editorPanelButtonStyle(), ">");
+  m_editorUi.upsertNode(EditorUiComponentDuplicate, EditorUiComponentToolsRow, ui::NodeKind::Button, editorFillButtonLayout(), editorPanelButtonStyle(), "Duplicate");
+  m_editorUi.upsertNode(EditorUiComponentDropdownGroup, EditorUiComponentGroup, ui::NodeKind::Box, editorSectionLayout(4.f), editorDropdownStyle());
+  m_editorUi.upsertNode(EditorUiComponentMoveRow, EditorUiComponentGroup, ui::NodeKind::Box, editorRowLayout());
+  m_editorUi.upsertNode(EditorUiComponentUp, EditorUiComponentMoveRow, ui::NodeKind::Button, editorFillButtonLayout(), editorPanelButtonStyle(), "Up");
+  m_editorUi.upsertNode(EditorUiComponentDown, EditorUiComponentMoveRow, ui::NodeKind::Button, editorFillButtonLayout(), editorPanelButtonStyle(), "Down");
+  m_editorUi.upsertNode(EditorUiComponentListTitle, EditorUiComponentGroup, ui::NodeKind::Label, editorWrappedLabelLayout(), editorLabelStyle(GRAY, 16), "Added components");
+  m_editorUi.upsertNode(EditorUiComponentRow0, EditorUiComponentGroup, ui::NodeKind::Button, editorListRowLayout(), editorListRowStyle(false), "");
+  m_editorUi.upsertNode(EditorUiComponentRow1, EditorUiComponentGroup, ui::NodeKind::Button, editorListRowLayout(), editorListRowStyle(false), "");
+  m_editorUi.upsertNode(EditorUiComponentRow2, EditorUiComponentGroup, ui::NodeKind::Button, editorListRowLayout(), editorListRowStyle(false), "");
+  m_editorUi.upsertNode(EditorUiComponentRow3, EditorUiComponentGroup, ui::NodeKind::Button, editorListRowLayout(), editorListRowStyle(false), "");
+  m_editorUi.upsertNode(EditorUiComponentRow4, EditorUiComponentGroup, ui::NodeKind::Button, editorListRowLayout(), editorListRowStyle(false), "");
+  m_editorUi.upsertNode(EditorUiComponentDropdown0, EditorUiComponentDropdownGroup, ui::NodeKind::Button, editorListRowLayout(), editorPanelButtonStyle(), "RotateToVelocity");
+  m_editorUi.upsertNode(EditorUiComponentDropdown1, EditorUiComponentDropdownGroup, ui::NodeKind::Button, editorListRowLayout(), editorPanelButtonStyle(), "LookAt");
+  m_editorUi.upsertNode(EditorUiComponentDropdown2, EditorUiComponentDropdownGroup, ui::NodeKind::Button, editorListRowLayout(), editorPanelButtonStyle(), "BendChain");
+  m_editorUi.upsertNode(EditorUiComponentDropdown3, EditorUiComponentDropdownGroup, ui::NodeKind::Button, editorListRowLayout(), editorPanelButtonStyle(), "WaveChain");
+  m_editorUi.upsertNode(EditorUiComponentDropdown4, EditorUiComponentDropdownGroup, ui::NodeKind::Button, editorListRowLayout(), editorPanelButtonStyle(), "Pulse");
+  m_editorUi.upsertNode(EditorUiComponentDropdown5, EditorUiComponentDropdownGroup, ui::NodeKind::Button, editorListRowLayout(), editorPanelButtonStyle(), "SpringChain");
+
+  m_editorUi.upsertNode(EditorUiRenderGroup, ui::kNoId, ui::NodeKind::Box, editorSectionLayout(8.f), editorSectionStyle());
+  m_editorUi.upsertNode(EditorUiRenderToolsRow, EditorUiRenderGroup, ui::NodeKind::Box, editorRowLayout());
+  m_editorUi.upsertNode(EditorUiRenderAdd, EditorUiRenderToolsRow, ui::NodeKind::Button, editorFillButtonLayout(), editorPanelButtonStyle(), "Add Render Shape");
+  m_editorUi.upsertNode(EditorUiRenderPrev, EditorUiRenderToolsRow, ui::NodeKind::Button, editorFitButtonLayout(), editorPanelButtonStyle(), "<");
+  m_editorUi.upsertNode(EditorUiRenderNext, EditorUiRenderToolsRow, ui::NodeKind::Button, editorFitButtonLayout(), editorPanelButtonStyle(), ">");
+  m_editorUi.upsertNode(EditorUiRenderDropdownGroup, EditorUiRenderGroup, ui::NodeKind::Box, editorSectionLayout(4.f), editorDropdownStyle());
+  m_editorUi.upsertNode(EditorUiRenderListTitle, EditorUiRenderGroup, ui::NodeKind::Label, editorWrappedLabelLayout(), editorLabelStyle(GRAY, 16), "Added render shapes");
+  m_editorUi.upsertNode(EditorUiRenderRow0, EditorUiRenderGroup, ui::NodeKind::Button, editorListRowLayout(), editorListRowStyle(false), "");
+  m_editorUi.upsertNode(EditorUiRenderRow1, EditorUiRenderGroup, ui::NodeKind::Button, editorListRowLayout(), editorListRowStyle(false), "");
+  m_editorUi.upsertNode(EditorUiRenderRow2, EditorUiRenderGroup, ui::NodeKind::Button, editorListRowLayout(), editorListRowStyle(false), "");
+  m_editorUi.upsertNode(EditorUiRenderRow3, EditorUiRenderGroup, ui::NodeKind::Button, editorListRowLayout(), editorListRowStyle(false), "");
+  m_editorUi.upsertNode(EditorUiRenderRow4, EditorUiRenderGroup, ui::NodeKind::Button, editorListRowLayout(), editorListRowStyle(false), "");
+  m_editorUi.upsertNode(EditorUiRenderDropdown0, EditorUiRenderDropdownGroup, ui::NodeKind::Button, editorListRowLayout(), editorPanelButtonStyle(), "SpineBody");
+  m_editorUi.upsertNode(EditorUiRenderDropdown1, EditorUiRenderDropdownGroup, ui::NodeKind::Button, editorListRowLayout(), editorPanelButtonStyle(), "Appendage");
+  m_editorUi.upsertNode(EditorUiRenderDropdown2, EditorUiRenderDropdownGroup, ui::NodeKind::Button, editorListRowLayout(), editorPanelButtonStyle(), "CircleBody");
+
+  m_editorUi.upsertNode(EditorUiExportGroup, ui::kNoId, ui::NodeKind::Box, editorSectionLayout(8.f), editorSectionStyle());
+  m_editorUi.upsertNode(EditorUiExportPathRig, EditorUiExportGroup, ui::NodeKind::WrappedLabel, editorWrappedLabelLayout(), editorLabelStyle(LIGHTGRAY, 14), kRigPath);
+  m_editorUi.upsertNode(EditorUiExportPathFactory, EditorUiExportGroup, ui::NodeKind::WrappedLabel, editorWrappedLabelLayout(), editorLabelStyle(LIGHTGRAY, 14), kExportPath);
+  m_editorUi.upsertNode(EditorUiParamGroup, ui::kNoId, ui::NodeKind::Box, editorSectionLayout(6.f), editorSectionStyle());
+  const ui::Id paramRowIds[] = {EditorUiParamRow0, EditorUiParamRow1, EditorUiParamRow2, EditorUiParamRow3, EditorUiParamRow4, EditorUiParamRow5, EditorUiParamRow6, EditorUiParamRow7, EditorUiParamRow8, EditorUiParamRow9, EditorUiParamRow10, EditorUiParamRow11};
+  const ui::Id paramLabelIds[] = {EditorUiParamLabel0, EditorUiParamLabel1, EditorUiParamLabel2, EditorUiParamLabel3, EditorUiParamLabel4, EditorUiParamLabel5, EditorUiParamLabel6, EditorUiParamLabel7, EditorUiParamLabel8, EditorUiParamLabel9, EditorUiParamLabel10, EditorUiParamLabel11};
+  const ui::Id paramFieldIds[] = {EditorUiParamField0, EditorUiParamField1, EditorUiParamField2, EditorUiParamField3, EditorUiParamField4, EditorUiParamField5, EditorUiParamField6, EditorUiParamField7, EditorUiParamField8, EditorUiParamField9, EditorUiParamField10, EditorUiParamField11};
+  for (int i = 0; i < 12; ++i) {
+    m_editorUi.upsertNode(paramRowIds[i], EditorUiParamGroup, ui::NodeKind::Box, editorParamRowLayout());
+    m_editorUi.upsertNode(paramLabelIds[i], paramRowIds[i], ui::NodeKind::Label, editorParamLabelLayout(), editorLabelStyle(LIGHTGRAY, 16), "");
+    m_editorUi.upsertNode(paramFieldIds[i], paramRowIds[i], ui::NodeKind::Field, editorParamFieldLayout(), editorFieldStyle(false), "");
+  }
+  m_editorUi.upsertNode(EditorUiHintLabel, ui::kNoId, ui::NodeKind::Label, editorWrappedLabelLayout(), editorLabelStyle(GRAY, 16), "Click field, type, Enter applies");
+
+  m_editorUiBuilt = true;
+}
+
+void AnimationEditorScreen::buildLeftUi()
+{
+  if (m_leftUiBuilt) return;
+  m_leftUi.setRootLayout(leftRootLayout());
+  m_leftUi.upsertNode(EditorUiLeftTitle, ui::kNoId, ui::NodeKind::Label, editorWrappedLabelLayout(), editorLabelStyle(RAYWHITE, kUiFont), "Dev editor");
+  m_leftUi.upsertNode(EditorUiLeftSubtitle, ui::kNoId, ui::NodeKind::Label, editorWrappedLabelLayout(), editorLabelStyle(GRAY, kUiSmallFont), "F2 opens | Esc returns");
+  m_leftUi.upsertNode(EditorUiLeftBody0, ui::kNoId, ui::NodeKind::WrappedLabel, editorWrappedLabelLayout(), editorLabelStyle(LIGHTGRAY, kUiSmallFont), "Mouse: select or drag bones on the canvas. Right-click creates a child bone from the current selection.");
+  m_leftUi.upsertNode(EditorUiLeftBody1, ui::kNoId, ui::NodeKind::WrappedLabel, editorWrappedLabelLayout(), editorLabelStyle(LIGHTGRAY, kUiSmallFont), "Shift+Delete removes the selected bone subtree. Y duplicates the selected bone.");
+  m_leftUi.upsertNode(EditorUiLeftBody2, ui::kNoId, ui::NodeKind::WrappedLabel, editorWrappedLabelLayout(), editorLabelStyle(LIGHTGRAY, kUiSmallFont), "M cycles panels. G toggles snap. P pauses preview. I imports the sample rig.");
+  m_leftUi.upsertNode(EditorUiLeftBody3, ui::kNoId, ui::NodeKind::WrappedLabel, editorWrappedLabelLayout(), editorLabelStyle(LIGHTGRAY, kUiSmallFont), "1-6 add procedures. 7-9 add render shapes. Tab and V cycle current component or render selections.");
+  m_leftUi.upsertNode(EditorUiLeftBody4, ui::kNoId, ui::NodeKind::WrappedLabel, editorWrappedLabelLayout(), editorLabelStyle(LIGHTGRAY, kUiSmallFont), "C/B toggle enabled state. Delete or X is context-sensitive. Ctrl+Z/Y undo redo. Ctrl+S save. Ctrl+L load. Ctrl+E export.");
+  m_leftUi.upsertNode(EditorUiLeftStats0, ui::kNoId, ui::NodeKind::Label, editorWrappedLabelLayout(), editorLabelStyle(RAYWHITE, kUiFont), "");
+  m_leftUi.upsertNode(EditorUiLeftStats1, ui::kNoId, ui::NodeKind::Label, editorWrappedLabelLayout(), editorLabelStyle(RAYWHITE, kUiFont), "");
+  m_leftUi.upsertNode(EditorUiLeftStats2, ui::kNoId, ui::NodeKind::Label, editorWrappedLabelLayout(), editorLabelStyle(RAYWHITE, kUiFont), "");
+  m_leftUi.upsertNode(EditorUiLeftStatus, ui::kNoId, ui::NodeKind::WrappedLabel, editorWrappedLabelLayout(), editorLabelStyle(GOLD, kUiSmallFont), "");
+  m_leftUiBuilt = true;
+}
+
+void AnimationEditorScreen::updateLeftUi()
+{
+  m_leftUi.setRootLayout(leftRootLayout());
+  m_leftUi.setText(EditorUiLeftStats0, TextFormat("Bones: %zu  Selected: %d", m_bones.size(), m_selectedBone));
+  m_leftUi.setText(EditorUiLeftStats1, TextFormat("Components: %zu  Renders: %zu", m_components.size(), m_renderShapes.size()));
+  m_leftUi.setText(EditorUiLeftStats2, TextFormat("Preview: %s  Snap: %s", m_previewPaused ? "paused" : "running", m_snapToGrid ? "on" : "off"));
+  m_leftUi.setVisible(EditorUiLeftStatus, !m_statusText.empty());
+  m_leftUi.setText(EditorUiLeftStatus, m_statusText.c_str());
+}
+
+void AnimationEditorScreen::updateEditorUi(Rectangle)
+{
+  m_editorUi.setRootLayout(editorRootLayout());
+
+  const PanelMode modes[] = {PanelMode::Bone, PanelMode::Component, PanelMode::Render, PanelMode::Export};
+  const ui::Id tabIds[] = {EditorUiTabBones, EditorUiTabComponents, EditorUiTabRender, EditorUiTabExport};
+  for (size_t i = 0; i < 4; ++i) {
+    m_editorUi.setStyle(tabIds[i], editorTabStyle(m_panelMode == modes[i]));
+  }
+
+  std::string summaryTitle;
+  std::string summaryValue;
+  if (m_panelMode == PanelMode::Bone) {
+    summaryTitle = "Selected bone";
+    if (m_selectedBone >= 0 && m_selectedBone < static_cast<int>(m_bones.size())) {
+      const EditableBone& bone = m_bones[m_selectedBone];
+      summaryValue = TextFormat("%d: %s\nParent: %d", m_selectedBone, bone.name.c_str(), bone.parent);
+    } else {
+      summaryValue = "No bone selected";
+    }
+  } else if (m_panelMode == PanelMode::Component) {
+    summaryTitle = "Selected procedure";
+    if (m_selectedComponent >= 0 && m_selectedComponent < static_cast<int>(m_components.size())) {
+      const EditableComponent& c = m_components[m_selectedComponent];
+      summaryValue = TextFormat("%d: %s %s", m_selectedComponent, componentName(c.type), c.enabled ? "on" : "off");
+    } else {
+      summaryValue = "No component selected";
+    }
+  } else if (m_panelMode == PanelMode::Render) {
+    summaryTitle = "Selected render shape";
+    if (m_selectedRenderShape >= 0 && m_selectedRenderShape < static_cast<int>(m_renderShapes.size())) {
+      const EditableRenderShape& r = m_renderShapes[m_selectedRenderShape];
+      summaryValue = TextFormat("%d: %s %s", m_selectedRenderShape, renderName(r.type), r.enabled ? "on" : "off");
+    } else {
+      summaryValue = "No render selected";
+    }
+  } else {
+    summaryTitle = "Save/load/export";
+    summaryValue = "Use Ctrl+S, Ctrl+L, and Ctrl+E";
+  }
+  m_editorUi.setText(EditorUiSummaryTitle, summaryTitle.c_str());
+  m_editorUi.setText(EditorUiSummaryValue, summaryValue.c_str());
+
+  const bool componentMode = m_panelMode == PanelMode::Component;
+  const bool renderMode = m_panelMode == PanelMode::Render;
+  const bool exportMode = m_panelMode == PanelMode::Export;
+  m_editorUi.setVisible(EditorUiComponentGroup, componentMode);
+  m_editorUi.setVisible(EditorUiRenderGroup, renderMode);
+  m_editorUi.setVisible(EditorUiExportGroup, exportMode);
+  m_editorUi.setVisible(EditorUiParamGroup, !exportMode && !m_paramInputs.empty());
+  m_editorUi.setVisible(EditorUiHintLabel, !exportMode);
+  m_editorUi.setVisible(EditorUiComponentDropdownGroup, componentMode && m_componentDropdownOpen);
+  m_editorUi.setVisible(EditorUiRenderDropdownGroup, renderMode && m_renderDropdownOpen);
+
+  m_editorUi.setStyle(EditorUiComponentAdd, editorPanelButtonStyle(m_componentDropdownOpen));
+  m_editorUi.setStyle(EditorUiRenderAdd, editorPanelButtonStyle(m_renderDropdownOpen));
+
+  const ui::Id componentRowIds[] = {EditorUiComponentRow0, EditorUiComponentRow1, EditorUiComponentRow2, EditorUiComponentRow3, EditorUiComponentRow4};
+  const int visibleComponentCount = std::min<int>(static_cast<int>(m_components.size()), 5);
+  const int componentListStart = m_components.empty() ? 0 : std::clamp(m_selectedComponent - 2, 0, std::max(0, static_cast<int>(m_components.size()) - visibleComponentCount));
+  for (int i = 0; i < 5; ++i) {
+    const bool visible = i < visibleComponentCount;
+    m_editorUi.setVisible(componentRowIds[i], componentMode && visible);
+    if (!visible) continue;
+    const int componentIndex = componentListStart + i;
+    m_editorUi.setText(componentRowIds[i], TextFormat("%d  %s  %s", componentIndex, componentName(m_components[componentIndex].type), m_components[componentIndex].enabled ? "on" : "off"));
+    m_editorUi.setStyle(componentRowIds[i], editorListRowStyle(componentIndex == m_selectedComponent));
+  }
+
+  const ui::Id componentDropdownIds[] = {EditorUiComponentDropdown0, EditorUiComponentDropdown1, EditorUiComponentDropdown2, EditorUiComponentDropdown3, EditorUiComponentDropdown4, EditorUiComponentDropdown5};
+  for (int i = 0; i < 6; ++i) m_editorUi.setVisible(componentDropdownIds[i], componentMode && m_componentDropdownOpen);
+
+  const ui::Id renderRowIds[] = {EditorUiRenderRow0, EditorUiRenderRow1, EditorUiRenderRow2, EditorUiRenderRow3, EditorUiRenderRow4};
+  const int visibleRenderCount = std::min<int>(static_cast<int>(m_renderShapes.size()), 5);
+  const int renderListStart = m_renderShapes.empty() ? 0 : std::clamp(m_selectedRenderShape - 2, 0, std::max(0, static_cast<int>(m_renderShapes.size()) - visibleRenderCount));
+  for (int i = 0; i < 5; ++i) {
+    const bool visible = i < visibleRenderCount;
+    m_editorUi.setVisible(renderRowIds[i], renderMode && visible);
+    if (!visible) continue;
+    const int renderIndex = renderListStart + i;
+    m_editorUi.setText(renderRowIds[i], TextFormat("%d  %s  %s", renderIndex, renderName(m_renderShapes[renderIndex].type), m_renderShapes[renderIndex].enabled ? "on" : "off"));
+    m_editorUi.setStyle(renderRowIds[i], editorListRowStyle(renderIndex == m_selectedRenderShape));
+  }
+
+  const ui::Id renderDropdownIds[] = {EditorUiRenderDropdown0, EditorUiRenderDropdown1, EditorUiRenderDropdown2};
+  for (int i = 0; i < 3; ++i) m_editorUi.setVisible(renderDropdownIds[i], renderMode && m_renderDropdownOpen);
+
+  const ui::Id paramRowIds[] = {EditorUiParamRow0, EditorUiParamRow1, EditorUiParamRow2, EditorUiParamRow3, EditorUiParamRow4, EditorUiParamRow5, EditorUiParamRow6, EditorUiParamRow7, EditorUiParamRow8, EditorUiParamRow9, EditorUiParamRow10, EditorUiParamRow11};
+  const ui::Id paramLabelIds[] = {EditorUiParamLabel0, EditorUiParamLabel1, EditorUiParamLabel2, EditorUiParamLabel3, EditorUiParamLabel4, EditorUiParamLabel5, EditorUiParamLabel6, EditorUiParamLabel7, EditorUiParamLabel8, EditorUiParamLabel9, EditorUiParamLabel10, EditorUiParamLabel11};
+  const ui::Id paramFieldIds[] = {EditorUiParamField0, EditorUiParamField1, EditorUiParamField2, EditorUiParamField3, EditorUiParamField4, EditorUiParamField5, EditorUiParamField6, EditorUiParamField7, EditorUiParamField8, EditorUiParamField9, EditorUiParamField10, EditorUiParamField11};
+  for (int i = 0; i < 12; ++i) {
+    const bool visible = i < static_cast<int>(m_paramInputs.size()) && m_panelMode != PanelMode::Export;
+    m_editorUi.setVisible(paramRowIds[i], visible);
+    m_editorUi.setVisible(paramLabelIds[i], visible);
+    m_editorUi.setVisible(paramFieldIds[i], visible);
+    if (!visible) continue;
+    m_editorUi.setText(paramLabelIds[i], m_paramInputs[i].label);
+    m_editorUi.setText(paramFieldIds[i], m_paramInputs[i].text.c_str());
+    m_editorUi.setStyle(paramFieldIds[i], editorFieldStyle(i == m_activeParamInput));
+  }
+}
+
+bool AnimationEditorScreen::handleEditorUi()
+{
+  const ui::Id paramFieldIds[] = {EditorUiParamField0, EditorUiParamField1, EditorUiParamField2, EditorUiParamField3, EditorUiParamField4, EditorUiParamField5, EditorUiParamField6, EditorUiParamField7, EditorUiParamField8, EditorUiParamField9, EditorUiParamField10, EditorUiParamField11};
+  for (int i = 0; i < static_cast<int>(m_paramInputs.size()) && i < 12; ++i) {
+    if (!m_editorUi.clicked(paramFieldIds[i])) continue;
+    if (m_activeParamInput >= 0 && m_activeParamInput < static_cast<int>(m_paramInputs.size()) && m_activeParamInput != i) {
+      applyParamInput(m_paramInputs[m_activeParamInput]);
+    }
+    m_activeParamInput = i;
+    return true;
+  }
+
+  if (m_editorUi.interaction().clicked != ui::kNoId && m_activeParamInput >= 0 && m_activeParamInput < static_cast<int>(m_paramInputs.size())) {
+    bool clickedParam = false;
+    for (int i = 0; i < static_cast<int>(m_paramInputs.size()) && i < 12; ++i) {
+      if (m_editorUi.interaction().clicked == paramFieldIds[i]) clickedParam = true;
+    }
+    if (!clickedParam) {
+      applyParamInput(m_paramInputs[m_activeParamInput]);
+      m_activeParamInput = -1;
+    }
+  }
+
+  const ui::Id tabIds[] = {EditorUiTabBones, EditorUiTabComponents, EditorUiTabRender, EditorUiTabExport};
+  const PanelMode modes[] = {PanelMode::Bone, PanelMode::Component, PanelMode::Render, PanelMode::Export};
+  for (size_t i = 0; i < 4; ++i) {
+    if (m_editorUi.clicked(tabIds[i])) {
+      m_panelMode = modes[i];
+      m_activeParamInput = -1;
+      m_componentDropdownOpen = false;
+      m_renderDropdownOpen = false;
+      return true;
+    }
+  }
+
+  if (m_panelMode == PanelMode::Component) {
+    if (m_editorUi.clicked(EditorUiComponentAdd)) {
+      m_componentDropdownOpen = !m_componentDropdownOpen;
+      return true;
+    }
+    if (m_editorUi.clicked(EditorUiComponentPrev)) {
+      if (!m_components.empty()) {
+        m_selectedComponent = (m_selectedComponent + static_cast<int>(m_components.size()) - 1) % static_cast<int>(m_components.size());
+        m_activeParamInput = -1;
+      }
+      m_componentDropdownOpen = false;
+      return true;
+    }
+    if (m_editorUi.clicked(EditorUiComponentNext)) {
+      if (!m_components.empty()) {
+        m_selectedComponent = (m_selectedComponent + 1) % static_cast<int>(m_components.size());
+        m_activeParamInput = -1;
+      }
+      m_componentDropdownOpen = false;
+      return true;
+    }
+    if (m_editorUi.clicked(EditorUiComponentDuplicate)) {
+      duplicateSelectedComponent();
+      m_componentDropdownOpen = false;
+      return true;
+    }
+    if (m_editorUi.clicked(EditorUiComponentUp)) {
+      moveSelectedComponent(-1);
+      m_componentDropdownOpen = false;
+      return true;
+    }
+    if (m_editorUi.clicked(EditorUiComponentDown)) {
+      moveSelectedComponent(1);
+      m_componentDropdownOpen = false;
+      return true;
+    }
+
+    const ui::Id componentDropdownIds[] = {EditorUiComponentDropdown0, EditorUiComponentDropdown1, EditorUiComponentDropdown2, EditorUiComponentDropdown3, EditorUiComponentDropdown4, EditorUiComponentDropdown5};
+    for (int i = 0; i < 6; ++i) {
+      if (!m_editorUi.clicked(componentDropdownIds[i])) continue;
+      addComponent(componentTypeByIndex(i));
+      m_componentDropdownOpen = false;
+      return true;
+    }
+
+    const ui::Id componentRowIds[] = {EditorUiComponentRow0, EditorUiComponentRow1, EditorUiComponentRow2, EditorUiComponentRow3, EditorUiComponentRow4};
+    const int visibleCount = std::min<int>(static_cast<int>(m_components.size()), 5);
+    const int listStart = m_components.empty() ? 0 : std::clamp(m_selectedComponent - 2, 0, std::max(0, static_cast<int>(m_components.size()) - visibleCount));
+    for (int i = 0; i < visibleCount; ++i) {
+      if (!m_editorUi.clicked(componentRowIds[i])) continue;
+      m_selectedComponent = listStart + i;
+      m_activeParamInput = -1;
+      m_componentDropdownOpen = false;
+      return true;
+    }
+  }
+
+  if (m_panelMode == PanelMode::Render) {
+    if (m_editorUi.clicked(EditorUiRenderAdd)) {
+      m_renderDropdownOpen = !m_renderDropdownOpen;
+      return true;
+    }
+    if (m_editorUi.clicked(EditorUiRenderPrev)) {
+      if (!m_renderShapes.empty()) {
+        m_selectedRenderShape = (m_selectedRenderShape + static_cast<int>(m_renderShapes.size()) - 1) % static_cast<int>(m_renderShapes.size());
+        m_activeParamInput = -1;
+      }
+      m_renderDropdownOpen = false;
+      return true;
+    }
+    if (m_editorUi.clicked(EditorUiRenderNext)) {
+      if (!m_renderShapes.empty()) {
+        m_selectedRenderShape = (m_selectedRenderShape + 1) % static_cast<int>(m_renderShapes.size());
+        m_activeParamInput = -1;
+      }
+      m_renderDropdownOpen = false;
+      return true;
+    }
+
+    const ui::Id renderDropdownIds[] = {EditorUiRenderDropdown0, EditorUiRenderDropdown1, EditorUiRenderDropdown2};
+    for (int i = 0; i < 3; ++i) {
+      if (!m_editorUi.clicked(renderDropdownIds[i])) continue;
+      addRenderShape(renderTypeByIndex(i));
+      m_renderDropdownOpen = false;
+      return true;
+    }
+
+    const ui::Id renderRowIds[] = {EditorUiRenderRow0, EditorUiRenderRow1, EditorUiRenderRow2, EditorUiRenderRow3, EditorUiRenderRow4};
+    const int visibleCount = std::min<int>(static_cast<int>(m_renderShapes.size()), 5);
+    const int listStart = m_renderShapes.empty() ? 0 : std::clamp(m_selectedRenderShape - 2, 0, std::max(0, static_cast<int>(m_renderShapes.size()) - visibleCount));
+    for (int i = 0; i < visibleCount; ++i) {
+      if (!m_editorUi.clicked(renderRowIds[i])) continue;
+      m_selectedRenderShape = listStart + i;
+      m_activeParamInput = -1;
+      m_renderDropdownOpen = false;
+      return true;
+    }
+  }
+
+  return false;
 }
 
 Skeleton AnimationEditorScreen::buildSkeleton() const
@@ -756,36 +1344,7 @@ void AnimationEditorScreen::rebuildParamInputs()
 
 void AnimationEditorScreen::layoutParamInputs(Rectangle panel)
 {
-  const bool hadActive = m_activeParamInput >= 0 && m_activeParamInput < static_cast<int>(m_paramInputs.size());
-  ParamTarget activeTarget = ParamTarget::Component;
-  ParamId activeId = ParamId::Weight;
-  std::string activeText;
-  if (hadActive) {
-    activeTarget = m_paramInputs[m_activeParamInput].target;
-    activeId = m_paramInputs[m_activeParamInput].id;
-    activeText = m_paramInputs[m_activeParamInput].text;
-  }
-
-  m_activeParamInput = -1;
-  rebuildParamInputs();
-  if (hadActive) {
-    for (size_t i = 0; i < m_paramInputs.size(); ++i) {
-      if (m_paramInputs[i].target == activeTarget && m_paramInputs[i].id == activeId) {
-        m_activeParamInput = static_cast<int>(i);
-        m_paramInputs[i].text = activeText;
-        break;
-      }
-    }
-  }
-
-  float y = panel.y + 208.f;
-  if (m_panelMode == PanelMode::Component) y = panel.y + 352.f;
-  if (m_panelMode == PanelMode::Render) y = panel.y + 324.f;
-  if (m_panelMode == PanelMode::Export) y = panel.y + 128.f;
-  for (ParamInput& input : m_paramInputs) {
-    input.bounds = {panel.x + 156.f, y, 190.f, 26.f};
-    y += 34.f;
-  }
+  (void)panel;
 }
 
 void AnimationEditorScreen::syncParamInputs()
@@ -935,19 +1494,7 @@ void AnimationEditorScreen::applyParamInput(ParamInput& input)
 
 void AnimationEditorScreen::updateParamInputs(Vector2 mouse)
 {
-  if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-    const int previousActive = m_activeParamInput;
-    m_activeParamInput = -1;
-    for (size_t i = 0; i < m_paramInputs.size(); ++i) {
-      if (CheckCollisionPointRec(mouse, m_paramInputs[i].bounds)) {
-        m_activeParamInput = static_cast<int>(i);
-        break;
-      }
-    }
-    if (previousActive >= 0 && previousActive < static_cast<int>(m_paramInputs.size()) && previousActive != m_activeParamInput) {
-      applyParamInput(m_paramInputs[previousActive]);
-    }
-  }
+  (void)mouse;
 
   if (!isEditingText()) {
     syncParamInputs();
@@ -973,14 +1520,6 @@ void AnimationEditorScreen::updateParamInputs(Vector2 mouse)
 
 void AnimationEditorScreen::drawParamInputs() const
 {
-  for (size_t i = 0; i < m_paramInputs.size(); ++i) {
-    const ParamInput& input = m_paramInputs[i];
-    const bool active = static_cast<int>(i) == m_activeParamInput;
-    drawUiText(input.label, input.bounds.x - 140.f, input.bounds.y + 5.f, LIGHTGRAY);
-    DrawRectangleRec(input.bounds, active ? Color{42, 66, 84, 255} : Color{20, 28, 38, 255});
-    DrawRectangleLinesEx(input.bounds, 1.f, active ? SKYBLUE : Color{118, 146, 166, 255});
-    drawUiText(input.text.c_str(), input.bounds.x + 8.f, input.bounds.y + 5.f, RAYWHITE);
-  }
 }
 
 bool AnimationEditorScreen::handleComponentUi(Vector2 mouse, Rectangle panel)
@@ -1440,11 +1979,42 @@ void AnimationEditorScreen::Update()
   const Vector2 mouse = GetMousePosition();
   const Rectangle leftPanel{16.f, 16.f, kLeftPanelWidth, static_cast<float>(GetScreenHeight() - 32)};
   const Rectangle rightPanel{static_cast<float>(GetScreenWidth() - (kRightPanelWidth + 16.f)), 16.f, kRightPanelWidth, static_cast<float>(GetScreenHeight() - 32)};
+
+  const bool hadActiveParam = m_activeParamInput >= 0 && m_activeParamInput < static_cast<int>(m_paramInputs.size());
+  ParamTarget activeTarget = ParamTarget::Component;
+  ParamId activeId = ParamId::Weight;
+  std::string activeText;
+  if (hadActiveParam) {
+    activeTarget = m_paramInputs[m_activeParamInput].target;
+    activeId = m_paramInputs[m_activeParamInput].id;
+    activeText = m_paramInputs[m_activeParamInput].text;
+  }
+  rebuildParamInputs();
+  m_activeParamInput = -1;
+  if (hadActiveParam) {
+    for (size_t i = 0; i < m_paramInputs.size(); ++i) {
+      if (m_paramInputs[i].target == activeTarget && m_paramInputs[i].id == activeId) {
+        m_activeParamInput = static_cast<int>(i);
+        m_paramInputs[i].text = activeText;
+        break;
+      }
+    }
+  }
+
+  m_leftUi.beginFrame(leftPanel, mouse, IsMouseButtonPressed(MOUSE_BUTTON_LEFT), IsMouseButtonDown(MOUSE_BUTTON_LEFT), IsMouseButtonReleased(MOUSE_BUTTON_LEFT));
+  buildLeftUi();
+  updateLeftUi();
+  m_leftUi.compute();
+
+  m_editorUi.beginFrame(rightPanel, mouse, IsMouseButtonPressed(MOUSE_BUTTON_LEFT), IsMouseButtonDown(MOUSE_BUTTON_LEFT), IsMouseButtonReleased(MOUSE_BUTTON_LEFT));
+  buildEditorUi();
+  updateEditorUi(rightPanel);
+  m_editorUi.compute();
   const bool uiCaptured = CheckCollisionPointRec(mouse, leftPanel) || CheckCollisionPointRec(mouse, rightPanel);
-  layoutParamInputs(rightPanel);
+  const bool clickedEditorUi = handleEditorUi();
   updateParamInputs(mouse);
-  const bool clickedComponentUi = handleComponentUi(mouse, rightPanel);
-  const bool clickedRenderUi = handleRenderUi(mouse, rightPanel);
+  updateEditorUi(rightPanel);
+  m_editorUi.compute();
 
   if (IsKeyPressed(KEY_ESCAPE) && !isEditingText()) {
     m_finishScreen = Screen::GameScreen::ANIMATION_TEST;
@@ -1502,8 +2072,7 @@ void AnimationEditorScreen::Update()
   ensurePreviewPose();
   m_hoveredBone = uiCaptured ? -1 : pickBone(mouse);
 
-  bool clickedInput = uiCaptured || clickedComponentUi || clickedRenderUi;
-  for (const ParamInput& input : m_paramInputs) clickedInput = clickedInput || CheckCollisionPointRec(mouse, input.bounds);
+  bool clickedInput = uiCaptured || clickedEditorUi;
   if (!clickedInput && IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) createBone(mouse);
   if (!clickedInput && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
     m_selectedBone = m_hoveredBone;
@@ -1526,10 +2095,8 @@ void AnimationEditorScreen::Paint()
 {
   ClearBackground(Color{8, 12, 18, 255});
   const Rectangle leftPanel{16.f, 16.f, kLeftPanelWidth, static_cast<float>(GetScreenHeight() - 32)};
-  const Rectangle rightPanel{static_cast<float>(GetScreenWidth() - (kRightPanelWidth + 16.f)), 16.f, kRightPanelWidth, static_cast<float>(GetScreenHeight() - 32)};
-  layoutParamInputs(rightPanel);
   drawPanel(leftPanel, "Animation Rig Editor");
-  drawPanel(rightPanel, panelModeName(m_panelMode));
+  drawPanel(Rectangle{static_cast<float>(GetScreenWidth() - (kRightPanelWidth + 16.f)), 16.f, kRightPanelWidth, static_cast<float>(GetScreenHeight() - 32)}, panelModeName(m_panelMode));
 
   for (int x = 360; x < GetScreenWidth() - 360; x += 40) DrawLine(x, 0, x, GetScreenHeight(), Color{28, 36, 46, 255});
   for (int y = 0; y < GetScreenHeight(); y += 40) DrawLine(340, y, GetScreenWidth() - 350, y, Color{28, 36, 46, 255});
@@ -1549,60 +2116,8 @@ void AnimationEditorScreen::Paint()
     }
   }
 
-  float y = 54.f;
-  drawUiText("Dev editor", 32.f, y, RAYWHITE, kUiFont); y += 30.f;
-  drawUiText("F2 opens | Esc returns", 32.f, y, GRAY); y += 26.f;
-  y = drawWrappedUiText("Mouse: select or drag bones on the canvas. Right-click creates a child bone from the current selection.", 32.f, y, leftPanel.width - 32.f, LIGHTGRAY);
-  y = drawWrappedUiText("Shift+Delete removes the selected bone subtree. Y duplicates the selected bone.", 32.f, y, leftPanel.width - 32.f, LIGHTGRAY);
-  y = drawWrappedUiText("M cycles panels. G toggles snap. P pauses preview. I imports the sample rig.", 32.f, y, leftPanel.width - 32.f, LIGHTGRAY);
-  y = drawWrappedUiText("1-6 add procedures. 7-9 add render shapes. Tab and V cycle current component or render selections.", 32.f, y, leftPanel.width - 32.f, LIGHTGRAY);
-  y = drawWrappedUiText("C/B toggle enabled state. Delete or X is context-sensitive. Ctrl+Z/Y undo redo. Ctrl+S save. Ctrl+L load. Ctrl+E export.", 32.f, y, leftPanel.width - 32.f, LIGHTGRAY);
-  y += 8.f;
-  drawUiText(TextFormat("Bones: %zu  Selected: %d", m_bones.size(), m_selectedBone), 32.f, y, RAYWHITE, kUiFont); y += 24.f;
-  drawUiText(TextFormat("Components: %zu  Renders: %zu", m_components.size(), m_renderShapes.size()), 32.f, y, RAYWHITE, kUiFont); y += 24.f;
-  drawUiText(TextFormat("Preview: %s  Snap: %s", m_previewPaused ? "paused" : "running", m_snapToGrid ? "on" : "off"), 32.f, y, RAYWHITE, kUiFont); y += 30.f;
-  if (!m_statusText.empty()) {
-    drawWrappedUiText(m_statusText.c_str(), 32.f, y, leftPanel.width - 32.f, GOLD);
-  }
-
-  y = static_cast<int>(rightPanel.y + 74.f);
-  drawComponentUi(rightPanel);
-  drawRenderUi(rightPanel);
-  if (m_panelMode == PanelMode::Bone) {
-    DrawText("Selected bone", static_cast<int>(rightPanel.x + 16), y, 16, RAYWHITE); y += 24;
-    if (m_selectedBone >= 0 && m_selectedBone < static_cast<int>(m_bones.size())) {
-      const EditableBone& bone = m_bones[m_selectedBone];
-      DrawText(TextFormat("%d: %s", m_selectedBone, bone.name.c_str()), static_cast<int>(rightPanel.x + 16), y, 15, LIGHTGRAY); y += 20;
-      DrawText(TextFormat("Parent: %d", bone.parent), static_cast<int>(rightPanel.x + 16), y, 14, GRAY);
-    } else {
-      DrawText("No bone selected", static_cast<int>(rightPanel.x + 16), y, 15, LIGHTGRAY);
-    }
-  } else if (m_panelMode == PanelMode::Component) {
-    DrawText("Selected procedure", static_cast<int>(rightPanel.x + 16), y, 16, RAYWHITE); y += 24;
-    if (m_selectedComponent >= 0 && m_selectedComponent < static_cast<int>(m_components.size())) {
-      const EditableComponent& c = m_components[m_selectedComponent];
-      DrawText(TextFormat("%d: %s %s", m_selectedComponent, componentName(c.type), c.enabled ? "on" : "off"), static_cast<int>(rightPanel.x + 16), y, 15, LIGHTGRAY);
-    } else {
-      DrawText("No component selected", static_cast<int>(rightPanel.x + 16), y, 15, LIGHTGRAY);
-    }
-  } else if (m_panelMode == PanelMode::Render) {
-    DrawText("Selected render shape", static_cast<int>(rightPanel.x + 16), y, 16, RAYWHITE); y += 24;
-    if (m_selectedRenderShape >= 0 && m_selectedRenderShape < static_cast<int>(m_renderShapes.size())) {
-      const EditableRenderShape& r = m_renderShapes[m_selectedRenderShape];
-      DrawText(TextFormat("%d: %s %s", m_selectedRenderShape, renderName(r.type), r.enabled ? "on" : "off"), static_cast<int>(rightPanel.x + 16), y, 15, LIGHTGRAY);
-    } else {
-      DrawText("No render selected", static_cast<int>(rightPanel.x + 16), y, 15, LIGHTGRAY);
-    }
-  } else {
-    DrawText("Save/load/export", static_cast<int>(rightPanel.x + 16), y, 16, RAYWHITE); y += 28;
-    DrawText(kRigPath, static_cast<int>(rightPanel.x + 16), y, 14, LIGHTGRAY); y += 22;
-    DrawText(kExportPath, static_cast<int>(rightPanel.x + 16), y, 14, LIGHTGRAY);
-  }
-  if (m_panelMode != PanelMode::Export) {
-    const float hintY = rightPanel.y + ((m_panelMode == PanelMode::Component || m_panelMode == PanelMode::Render) ? 286.f : 166.f);
-    drawUiText("Click field, type, Enter applies", rightPanel.x + 16.f, hintY, GRAY);
-  }
-  drawParamInputs();
+  m_leftUi.draw();
+  m_editorUi.draw();
 }
 
 Screen::GameScreen AnimationEditorScreen::Finish()

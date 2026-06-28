@@ -103,6 +103,7 @@ class Context {
   void setLayout(Id id, const Layout& layout);
   void setStyle(Id id, const Style& style);
   void setText(Id id, const char* text);
+  void setVisible(Id id, bool visible);
   void compute();
   void draw() const;
 
@@ -123,11 +124,13 @@ class Context {
     int lastChild = -1;
     int nextSibling = -1;
     Rectangle bounds{};
+    bool visible = true;
     bool layoutDirty = true;
     bool subtreeDirty = true;
   };
 
   Rectangle contentRect(const Node& node) const;
+  Vector2 measureNode(int nodeIndex, float availableWidth) const;
   Vector2 measureLeaf(const Node& node, float availableWidth) const;
   float measureWrappedTextHeight(const std::string& text, float maxWidth, int fontSize) const;
   float resolveSize(const Size& size, float available, float fitSize) const;
@@ -135,6 +138,7 @@ class Context {
   void detachChild(int parentIndex, int childIndex);
   int ensureRoot();
   int findNodeIndex(Id id) const;
+  bool isNodeVisibleInTree(int nodeIndex) const;
   void markLayoutDirty(int nodeIndex);
   void clearDirtySubtree(int nodeIndex);
   bool textAffectsLayout(const Node& node) const;
