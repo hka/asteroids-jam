@@ -210,6 +210,16 @@ void Context::setText(Id id, const char* text)
   if (textAffectsLayout(node)) markLayoutDirty(nodeIndex);
 }
 
+void Context::setVisible(Id id, bool visible)
+{
+  const int nodeIndex = findNodeIndex(id);
+  if (nodeIndex < 0) return;
+  Node& node = m_nodes[nodeIndex];
+  if (node.visible == visible) return;
+  node.visible = visible;
+  markLayoutDirty(node.parent >= 0 ? node.parent : nodeIndex);
+}
+
 void Context::compute()
 {
   if (m_nodes.empty()) return;
@@ -275,6 +285,53 @@ bool Context::clicked(Id id) const
 Rectangle Context::contentRect(const Node& node) const
 {
   return shrink(node.bounds, node.layout.padding);
+}
+
+Vector2 Context::measureNode(int nodeIndex, float availableWidth) const
+{
+  const Node& node = m_nodes[nodeIndex];
+  if (!node.visible) return {0.f, 0.f};
+  if (node.firstChild < 0) return measureLeaf(node, availableWidth);
+
+  const float innerAvailableWidth = std::max(0.f, availableWidth - node.layout.padding.left - node.layout.padding.right);
+  const bool horizontal = node.layout.axis == Axis::Horizontal;
+  float mainTotal = 0.f;
+  float crossMax = 0.f;
+  int visibleChildCount = 0;
+
+  for (int child = node.firstChild; child >= 0; child = m_nodes[child].nextSibling) {
+    const Node& childNode = m_nodes[child];
+    if (!childNode.visible) continue;
+    ++visibleChildCount;
+
+    const Vector2 childFit = measureNode(child, innerAvailableWidth);
+    const float childMain = horizontal ? childFit.x : childFit.y;
+    const float childCross = horizontal ? childFit.y : childFit.x;
+
+    float resolvedMain = childMain;
+    const Size& mainSizeDef = horizontal ? childNode.layout.width : childNode.layout.height;
+    if (mainSizeDef.mode == SizeMode::Pixels) resolvedMain = mainSizeDef.value;
+    if (mainSizeDef.mode == SizeMode::Percent) resolvedMain = innerAvailableWidth * mainSizeDef.value;
+    if (mainSizeDef.mode == SizeMode::Grow) resolvedMain = 0.f;
+
+    float resolvedCross = childCross;
+    const Size& crossSizeDef = horizontal ? childNode.layout.height : childNode.layout.width;
+    if (crossSizeDef.mode == SizeMode::Pixels) resolvedCross = crossSizeDef.value;
+    if (crossSizeDef.mode == SizeMode::Percent) resolvedCross = innerAvailableWidth * crossSizeDef.value;
+    if (crossSizeDef.mode == SizeMode::Grow) resolvedCross = childCross;
+
+    mainTotal += resolvedMain;
+    crossMax = std::max(crossMax, resolvedCross);
+  }
+
+  if (visibleChildCount > 1) mainTotal += node.layout.gap * static_cast<float>(visibleChildCount - 1);
+
+  const float measuredWidth = horizontal ? mainTotal : crossMax;
+  const float measuredHeight = horizontal ? crossMax : mainTotal;
+  return {
+    measuredWidth + node.layout.padding.left + node.layout.padding.right,
+    measuredHeight + node.layout.padding.top + node.layout.padding.bottom,
+  };
 }
 
 Vector2 Context::measureLeaf(const Node& node, float availableWidth) const
@@ -380,25 +437,20 @@ int Context::findNodeIndex(Id id) const
   return it->second;
 }
 
+bool Context::isNodeVisibleInTree(int nodeIndex) const
+{
+  for (int current = nodeIndex; current >= 0; current = m_nodes[current].parent) {
+    if (!m_nodes[current].visible) return false;
+  }
+  return true;
+}
+
 void Context::markLayoutDirty(int nodeIndex)
 {
   if (nodeIndex < 0 || nodeIndex >= static_cast<int>(m_nodes.size())) return;
-  m_nodes[nodeIndex].layoutDirty = true;
-  m_nodes[nodeIndex].subtreeDirty = true;
-
-  int ancestor = nodeIndex;
-  while (ancestor >= 0) {
+  for (int ancestor = nodeIndex; ancestor >= 0; ancestor = m_nodes[ancestor].parent) {
+    m_nodes[ancestor].layoutDirty = true;
     m_nodes[ancestor].subtreeDirty = true;
-    const int parent = m_nodes[ancestor].parent;
-    if (parent < 0) break;
-
-    const bool parentSizeDependsOnChildren =
-      m_nodes[parent].layout.width.mode == SizeMode::Fit ||
-      m_nodes[parent].layout.height.mode == SizeMode::Fit;
-    if (!parentSizeDependsOnChildren) break;
-
-    m_nodes[parent].layoutDirty = true;
-    ancestor = parent;
   }
 }
 
@@ -436,6 +488,11 @@ void Context::layoutNode(int nodeIndex, Rectangle bounds, bool force)
     return;
   }
 
+  if (!node.visible) {
+    clearDirtySubtree(nodeIndex);
+    return;
+  }
+
   if (!relayoutSelf) {
     for (int child = node.firstChild; child >= 0; child = m_nodes[child].nextSibling) {
       if (m_nodes[child].layoutDirty || m_nodes[child].subtreeDirty) layoutNode(child, m_nodes[child].bounds, false);
@@ -456,20 +513,24 @@ void Context::layoutNode(int nodeIndex, Rectangle bounds, bool force)
   const float innerCross = crossAxisSize(inner, axis);
 
   int childCount = 0;
-  for (int child = node.firstChild; child >= 0; child = m_nodes[child].nextSibling) ++childCount;
+  for (int child = node.firstChild; child >= 0; child = m_nodes[child].nextSibling) {
+    if (!m_nodes[child].visible) continue;
+    ++childCount;
+  }
   const float totalGap = node.layout.gap * std::max(0, childCount - 1);
   float remainingMain = std::max(0.f, innerMain - totalGap);
   float growWeight = 0.f;
 
   for (int child = node.firstChild; child >= 0; child = m_nodes[child].nextSibling) {
     const Node& childNode = m_nodes[child];
+    if (!childNode.visible) continue;
     const Size& mainSizeDef = axis == Axis::Horizontal ? childNode.layout.width : childNode.layout.height;
     if (mainSizeDef.mode == SizeMode::Grow) {
       growWeight += std::max(0.001f, mainSizeDef.value);
       continue;
     }
 
-    const Vector2 fit = childNode.firstChild >= 0 ? Vector2{0.f, 0.f} : measureLeaf(childNode, inner.width);
+    const Vector2 fit = measureNode(child, inner.width);
     const float fitMain = axis == Axis::Horizontal ? fit.x : fit.y;
     remainingMain -= std::max(0.f, resolveSize(mainSizeDef, innerMain, fitMain));
   }
@@ -478,7 +539,8 @@ void Context::layoutNode(int nodeIndex, Rectangle bounds, bool force)
   float cursor = axis == Axis::Horizontal ? inner.x : inner.y;
   for (int child = node.firstChild; child >= 0; child = m_nodes[child].nextSibling) {
     Node& childNode = m_nodes[child];
-    const Vector2 fit = childNode.firstChild >= 0 ? Vector2{0.f, 0.f} : measureLeaf(childNode, inner.width);
+    if (!childNode.visible) continue;
+    const Vector2 fit = measureNode(child, inner.width);
 
     const Size& mainSizeDef = axis == Axis::Horizontal ? childNode.layout.width : childNode.layout.height;
     const Size& crossSizeDef = axis == Axis::Horizontal ? childNode.layout.height : childNode.layout.width;
@@ -525,6 +587,7 @@ void Context::collectItems()
   m_items.reserve(m_nodes.size() > 0 ? m_nodes.size() - 1 : 0);
   for (size_t i = 1; i < m_nodes.size(); ++i) {
     const Node& node = m_nodes[i];
+    if (!isNodeVisibleInTree(static_cast<int>(i))) continue;
     m_items.push_back(Item{node.id, node.kind, node.bounds, node.layout.padding, node.style, node.text});
   }
 }

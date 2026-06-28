@@ -54,7 +54,6 @@ target_sources(${PROJECT_NAME}
   PRIVATE ${PROJECT_SOURCES}
   ${rlimgui_SOURCE_DIR}/rlImGui.cpp
   ${IMGUI_SOURCES}
-  ${PROJECT_DATA}
 )
 target_include_directories(${PROJECT_NAME}
   PRIVATE ${PROJECT_INCLUDE}
