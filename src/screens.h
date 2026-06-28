@@ -63,6 +63,7 @@ class Screen
                           OPTIONS,
                           ASTEROIDS,
                           ANIMATION_TEST,
+                          ANIMATION_EDITOR,
                           NOSCREEN };
   virtual ~Screen() {};
   virtual void Update() = 0;
@@ -175,6 +176,7 @@ class AnimationTestScreen : public Screen {
     bool isVisible(size_t instanceIndex) const;
     const char* visibleFilterLabel() const;
 
+    GameScreen m_finishScreen = GameScreen::ANIMATION_TEST;
     AnimationWorld m_animationWorld;
     std::vector<std::string> m_instanceNames;
     std::vector<Vector2> m_randomTargets;
@@ -185,6 +187,197 @@ class AnimationTestScreen : public Screen {
     bool m_drawBodies = true;
     bool m_drawAppendages = true;
     bool m_drawTargets = true;
+};
+
+class AnimationEditorScreen : public Screen {
+  public:
+   AnimationEditorScreen();
+  ~AnimationEditorScreen();
+  void Update();
+  void Paint();
+  GameScreen Finish();
+  GameScreen GetEnum(){return Screen::GameScreen::ANIMATION_EDITOR;}
+
+  enum class ComponentType {
+    RotateToVelocity,
+    LookAt,
+    BendChain,
+    WaveChain,
+    Pulse,
+    SpringChain,
+  };
+
+  enum class RenderType {
+    SpineBody,
+    Appendage,
+    CircleBody,
+  };
+
+  enum class PanelMode {
+    Bone,
+    Component,
+    Render,
+    Export,
+  };
+
+   private:
+    struct EditableBone {
+      int parent = -1;
+      Transform2D bindLocal;
+      std::string name;
+    };
+
+    enum class ParamTarget {
+      Bone,
+      Component,
+      Render,
+    };
+
+    enum class ParamId {
+      BoneName,
+      BoneParent,
+      BoneX,
+      BoneY,
+      BoneRotation,
+      RangeStart,
+      RangeCount,
+      BoneIndex,
+      Weight,
+      TurnSpeed,
+      LookWeight,
+      BendMaxAngle,
+      BendDistribution,
+      WaveIdleAmplitude,
+      WaveIdleFrequency,
+      WaveMoveAmplitude,
+      WaveMoveFrequency,
+      WavePhaseOffset,
+      PulseAmplitude,
+      PulseFrequency,
+      PulsePhaseOffset,
+      SpringStiffness,
+      SpringDamping,
+      RenderWidth,
+      RenderRadius,
+      ColorR,
+      ColorG,
+      ColorB,
+      ColorA,
+    };
+
+    struct EditableComponent {
+      ComponentType type = ComponentType::WaveChain;
+      bool enabled = true;
+      BoneRange bones{0, 0};
+      uint16_t bone = 0;
+      float idleAmplitude = 0.05f;
+      float idleFrequency = 1.0f;
+      float moveAmplitude = 0.25f;
+      float moveFrequency = 4.0f;
+      float phaseOffset = 0.5f;
+      float maxAngle = 0.25f;
+      float distribution = 1.f;
+      float stiffness = 80.f;
+      float damping = 14.f;
+      float amplitude = 0.05f;
+      float frequency = 2.f;
+      float turnSpeed = 2.f;
+      float lookWeight = 1.f;
+      float weight = 1.f;
+    };
+
+    struct EditableRenderShape {
+      RenderType type = RenderType::SpineBody;
+      bool enabled = true;
+      BoneRange bones{0, 0};
+      uint16_t bone = 0;
+      float width = 12.f;
+      float radius = 24.f;
+      Color color{80, 220, 210, 190};
+      Color outlineColor{210, 255, 245, 255};
+    };
+
+    struct EditorSnapshot {
+      std::vector<EditableBone> bones;
+      std::vector<EditableComponent> components;
+      std::vector<EditableRenderShape> renderShapes;
+      int selectedBone = -1;
+      int selectedComponent = -1;
+      int selectedRenderShape = -1;
+      PanelMode panelMode = PanelMode::Component;
+      bool snapToGrid = false;
+    };
+
+    struct ParamInput {
+      ParamTarget target = ParamTarget::Component;
+      ParamId id;
+      const char* label = "";
+      Rectangle bounds{};
+      std::string text;
+    };
+
+    Skeleton buildSkeleton() const;
+    void rebuildPreview();
+    void ensurePreviewPose();
+    int pickBone(Vector2 point) const;
+    Vector2 parentLocalPosition(int parent, Vector2 worldPosition) const;
+    bool isDescendant(int possibleDescendant, int ancestor) const;
+    bool canReparentBone(int boneIndex, int newParent) const;
+    void createBone(Vector2 worldPosition);
+    void deleteSelectedBone();
+    void duplicateSelectedBone();
+    void importSpineSample(bool undoable = true);
+    EditorSnapshot captureSnapshot() const;
+    void restoreSnapshot(const EditorSnapshot& snapshot);
+    void pushUndoSnapshot();
+    void undo();
+    void redo();
+    void syncEditableRanges();
+    void addComponent(ComponentType type);
+    void addRenderShape(RenderType type);
+    void deleteSelectedComponent();
+    void duplicateSelectedComponent();
+    void moveSelectedComponent(int direction);
+    void deleteSelectedRenderShape();
+    void cycleColorPreset();
+    void layoutParamInputs(Rectangle panel);
+    void syncParamInputs();
+    void applyParamInput(ParamInput& input);
+    void updateParamInputs(Vector2 mouse);
+    void drawParamInputs() const;
+    void rebuildParamInputs();
+    bool handleComponentUi(Vector2 mouse, Rectangle panel);
+    void drawComponentUi(Rectangle panel) const;
+    bool handleRenderUi(Vector2 mouse, Rectangle panel);
+    void drawRenderUi(Rectangle panel) const;
+    void saveRig();
+    void loadRig();
+    void exportFactory() const;
+    bool isEditingText() const;
+
+    GameScreen m_finishScreen = GameScreen::ANIMATION_EDITOR;
+    std::vector<EditableBone> m_bones;
+    std::vector<EditableComponent> m_components;
+    std::vector<EditableRenderShape> m_renderShapes;
+    std::vector<ParamInput> m_paramInputs;
+    std::vector<EditorSnapshot> m_undoStack;
+    std::vector<EditorSnapshot> m_redoStack;
+    AnimationWorld m_previewWorld;
+    Transform2D m_previewTransform;
+    PanelMode m_panelMode = PanelMode::Component;
+    int m_selectedBone = -1;
+    int m_hoveredBone = -1;
+    int m_selectedComponent = 0;
+    int m_selectedRenderShape = 0;
+    int m_activeParamInput = -1;
+    bool m_componentDropdownOpen = false;
+    bool m_renderDropdownOpen = false;
+    bool m_draggingBone = false;
+    bool m_previewPaused = false;
+    bool m_dirtyPreview = true;
+    bool m_snapToGrid = false;
+    bool m_suppressUndo = false;
+    std::string m_statusText;
 };
 
 class OptionsScreen : public Screen

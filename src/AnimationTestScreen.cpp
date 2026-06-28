@@ -115,6 +115,11 @@ void AnimationTestScreen::Update()
     m_targetMode = m_targetMode == TargetMode::Mouse ? TargetMode::Random : TargetMode::Mouse;
   }
 
+  if (IsKeyPressed(KEY_F2)) {
+    m_finishScreen = Screen::GameScreen::ANIMATION_EDITOR;
+    return;
+  }
+
   if (IsKeyPressed(KEY_P)) {
     m_paused = !m_paused;
   }
@@ -228,7 +233,7 @@ void AnimationTestScreen::Paint()
     : "Mode: random targets (Space: mouse follow)";
   DrawText(modeText, 20, 20, 20, RAYWHITE);
   DrawText(TextFormat("Filter: %s | %s", visibleFilterLabel(), m_paused ? "Paused" : "Running"), 20, 45, 18, RAYWHITE);
-  DrawText(TextFormat("Tab filter | R react | P pause | S skeleton:%s | B body:%s | A appendages:%s | T targets:%s",
+  DrawText(TextFormat("F2 editor | Tab filter | R react | P pause | S skeleton:%s | B body:%s | A appendages:%s | T targets:%s",
     m_drawSkeleton ? "on" : "off",
     m_drawBodies ? "on" : "off",
     m_drawAppendages ? "on" : "off",
@@ -242,5 +247,5 @@ void AnimationTestScreen::Paint()
 
 Screen::GameScreen AnimationTestScreen::Finish()
 {
-  return Screen::GameScreen::ANIMATION_TEST;
+  return m_finishScreen;
 }
