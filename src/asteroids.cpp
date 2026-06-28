@@ -127,18 +127,30 @@ int main(void)
 
   //TNR = LoadFont("data/times_new_roman.ttf");
   TNR = LoadFont("data/FreeSerifItalic.ttf");
+  UI_FONT = LoadFontEx("data/UbuntuMono-B.ttf", 32, nullptr, 0);
 
   //Maybe can window size stuff just with raylib functions...TODO
   //SetWindowState(FLAG_WINDOW_RESIZABLE|FLAG_WINDOW_HIGHDPI);
   //printf("size: %d x %d\n",GetScreenWidth(), GetScreenHeight());
   //printf("size: %d x %d\n",GetRenderWidth(), GetRenderHeight());
-  currentScreen = std::make_unique<AnimationTestScreen>();
+#if !defined(NDEBUG)
+  currentScreen = std::make_unique<DevLandingScreen>();
+#else
+  if(options.skipLogo || !options.first_launch)
+  {
+    currentScreen = std::make_unique<MainMenuScreen>();
+  }
+  else
+  {
+    currentScreen = std::make_unique<LogoScreen>();
+  }
+#endif
+#if !defined(NDEBUG)
+  SetExitKey(KEY_NULL);
+#else
   SetExitKey(KEY_ESCAPE);
+#endif
 
-  // if(options.skipLogo || !options.first_launch)
-  // {
-  //   currentScreen = std::make_unique<MainMenuScreen>();
-  // }
   options.first_launch = false;
 
   if(options.keys.empty())
@@ -194,6 +206,7 @@ int main(void)
   UnloadMusicStream(game_track);
   //UnloadMusicStream(main_menu_track);
   UnloadSound(shoot_fx);
+  if (UI_FONT.texture.id != 0) UnloadFont(UI_FONT);
   CloseAudioDevice();
   CloseWindow();
   return 0;
@@ -212,6 +225,9 @@ void ChangeToScreen(Screen::GameScreen screen)
   {
    case Screen::GameScreen::LOGO:
     currentScreen = std::make_unique<LogoScreen>();
+    break;
+   case Screen::GameScreen::DEV_LANDING:
+    currentScreen = std::make_unique<DevLandingScreen>();
     break;
    case Screen::GameScreen::MAINMENU:
     currentScreen = std::make_unique<MainMenuScreen>();
@@ -238,10 +254,18 @@ void ChangeToScreen(Screen::GameScreen screen)
 
 void UpdatePaintFrame(void)
 {
+  const Screen::GameScreen previousScreen = currentScreen->GetEnum();
   currentScreen->Update();
+#if !defined(NDEBUG)
+  if (currentScreen != nullptr && currentScreen->GetEnum() != Screen::GameScreen::DEV_LANDING && IsKeyPressed(KEY_ESCAPE)) {
+    ChangeToScreen(Screen::GameScreen::DEV_LANDING);
+    return;
+  }
+#endif
   ChangeToScreen(currentScreen->Finish());
 
   if(currentScreen == nullptr){ return; }
+  if(currentScreen->GetEnum() != previousScreen){ return; }
 
   BeginDrawing();
 

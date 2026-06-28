@@ -18,6 +18,7 @@
 #include "Munition.h"
 
 #include "animation/animation.h"
+#include "ui/ui_layout.h"
 
 struct GameOptions
 {
@@ -59,6 +60,7 @@ class Screen
 {
  public:
   enum class GameScreen { LOGO,
+                          DEV_LANDING,
                           MAINMENU,
                           OPTIONS,
                           ASTEROIDS,
@@ -186,7 +188,24 @@ class AnimationTestScreen : public Screen {
     bool m_drawSkeleton = true;
     bool m_drawBodies = true;
     bool m_drawAppendages = true;
-    bool m_drawTargets = true;
+     bool m_drawTargets = true;
+};
+
+class DevLandingScreen : public Screen {
+ public:
+  DevLandingScreen();
+  ~DevLandingScreen();
+  void Update();
+  void Paint();
+  GameScreen Finish();
+  GameScreen GetEnum(){return Screen::GameScreen::DEV_LANDING;}
+
+ private:
+  void buildUi();
+
+  GameScreen m_finishScreen = GameScreen::DEV_LANDING;
+  ui::Context m_ui;
+  bool m_uiBuilt = false;
 };
 
 class AnimationEditorScreen : public Screen {
