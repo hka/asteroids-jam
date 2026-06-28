@@ -225,6 +225,9 @@ void ChangeToScreen(Screen::GameScreen screen)
    case Screen::GameScreen::ANIMATION_TEST:
     currentScreen = std::make_unique<AnimationTestScreen>();
     break;
+   case Screen::GameScreen::ANIMATION_EDITOR:
+    currentScreen = std::make_unique<AnimationEditorScreen>();
+    break;
    case Screen::GameScreen::NOSCREEN:
     currentScreen = nullptr;
     break;
