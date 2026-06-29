@@ -45,6 +45,9 @@ enum EditorUiId : ui::Id {
   EditorUiComponentMoveRow,
   EditorUiComponentUp,
   EditorUiComponentDown,
+  EditorUiComponentActionRow,
+  EditorUiComponentToggle,
+  EditorUiComponentDelete,
   EditorUiComponentListTitle,
   EditorUiComponentRow0,
   EditorUiComponentRow1,
@@ -62,6 +65,10 @@ enum EditorUiId : ui::Id {
   EditorUiRenderAdd,
   EditorUiRenderPrev,
   EditorUiRenderNext,
+  EditorUiRenderActionRow,
+  EditorUiRenderToggle,
+  EditorUiRenderDelete,
+  EditorUiRenderColor,
   EditorUiRenderDropdownGroup,
   EditorUiRenderListTitle,
   EditorUiRenderRow0,
@@ -73,6 +80,10 @@ enum EditorUiId : ui::Id {
   EditorUiRenderDropdown1,
   EditorUiRenderDropdown2,
   EditorUiExportGroup,
+  EditorUiExportActionRow,
+  EditorUiExportSave,
+  EditorUiExportLoad,
+  EditorUiExportFactory,
   EditorUiExportPathRig,
   EditorUiExportPathFactory,
   EditorUiHintLabel,
@@ -313,21 +324,6 @@ void drawPanel(Rectangle rect, const char* title) {
   DrawTextEx(editorFont(), title, {rect.x + 12.f, rect.y + 10.f}, static_cast<float>(kUiTitleFont), kUiSpacing, RAYWHITE);
 }
 
-float textWidth(const char* text, int fontSize = kUiSmallFont) {
-  return MeasureTextEx(editorFont(), text, static_cast<float>(fontSize), kUiSpacing).x;
-}
-
-Rectangle buttonRect(float x, float y, const char* text, int fontSize = kUiSmallFont, float paddingX = 10.f, float minWidth = 0.f) {
-  const float width = std::max(minWidth, textWidth(text, fontSize) + paddingX * 2.f);
-  return {x, y, width, static_cast<float>(fontSize) + 12.f};
-}
-
-void drawButton(Rectangle rect, const char* text, bool active = false, int fontSize = kUiSmallFont) {
-  DrawRectangleRec(rect, active ? Color{58, 86, 108, 255} : Color{34, 48, 64, 255});
-  DrawRectangleLinesEx(rect, 1.f, active ? SKYBLUE : Color{118, 146, 166, 255});
-  DrawTextEx(editorFont(), text, {rect.x + 9.f, rect.y + 6.f}, static_cast<float>(fontSize), kUiSpacing, RAYWHITE);
-}
-
 void drawUiText(const char* text, float x, float y, Color color = LIGHTGRAY, int fontSize = kUiSmallFont) {
   DrawTextEx(editorFont(), text, {x, y}, static_cast<float>(fontSize), kUiSpacing, color);
 }
@@ -348,6 +344,8 @@ bool parseFloat(const std::string& text, float& value) {
   char* end = nullptr;
   const float parsed = std::strtof(text.c_str(), &end);
   if (end == text.c_str()) return false;
+  while (*end == ' ') ++end;
+  if (*end != '\0') return false;
   value = parsed;
   return true;
 }
@@ -356,6 +354,8 @@ bool parseInt(const std::string& text, int& value) {
   char* end = nullptr;
   const long parsed = std::strtol(text.c_str(), &end, 10);
   if (end == text.c_str()) return false;
+  while (*end == ' ') ++end;
+  if (*end != '\0') return false;
   value = static_cast<int>(parsed);
   return true;
 }
@@ -519,6 +519,9 @@ void AnimationEditorScreen::buildEditorUi()
   m_editorUi.upsertNode(EditorUiComponentMoveRow, EditorUiComponentGroup, ui::NodeKind::Box, editorRowLayout());
   m_editorUi.upsertNode(EditorUiComponentUp, EditorUiComponentMoveRow, ui::NodeKind::Button, editorFillButtonLayout(), editorPanelButtonStyle(), "Up");
   m_editorUi.upsertNode(EditorUiComponentDown, EditorUiComponentMoveRow, ui::NodeKind::Button, editorFillButtonLayout(), editorPanelButtonStyle(), "Down");
+  m_editorUi.upsertNode(EditorUiComponentActionRow, EditorUiComponentGroup, ui::NodeKind::Box, editorRowLayout());
+  m_editorUi.upsertNode(EditorUiComponentToggle, EditorUiComponentActionRow, ui::NodeKind::Button, editorFillButtonLayout(), editorPanelButtonStyle(), "Disable");
+  m_editorUi.upsertNode(EditorUiComponentDelete, EditorUiComponentActionRow, ui::NodeKind::Button, editorFillButtonLayout(), editorPanelButtonStyle(), "Delete");
   m_editorUi.upsertNode(EditorUiComponentListTitle, EditorUiComponentGroup, ui::NodeKind::Label, editorWrappedLabelLayout(), editorLabelStyle(GRAY, 16), "Added components");
   m_editorUi.upsertNode(EditorUiComponentRow0, EditorUiComponentGroup, ui::NodeKind::Button, editorListRowLayout(), editorListRowStyle(false), "");
   m_editorUi.upsertNode(EditorUiComponentRow1, EditorUiComponentGroup, ui::NodeKind::Button, editorListRowLayout(), editorListRowStyle(false), "");
@@ -537,6 +540,10 @@ void AnimationEditorScreen::buildEditorUi()
   m_editorUi.upsertNode(EditorUiRenderAdd, EditorUiRenderToolsRow, ui::NodeKind::Button, editorFillButtonLayout(), editorPanelButtonStyle(), "Add Render Shape");
   m_editorUi.upsertNode(EditorUiRenderPrev, EditorUiRenderToolsRow, ui::NodeKind::Button, editorFitButtonLayout(), editorPanelButtonStyle(), "<");
   m_editorUi.upsertNode(EditorUiRenderNext, EditorUiRenderToolsRow, ui::NodeKind::Button, editorFitButtonLayout(), editorPanelButtonStyle(), ">");
+  m_editorUi.upsertNode(EditorUiRenderActionRow, EditorUiRenderGroup, ui::NodeKind::Box, editorRowLayout());
+  m_editorUi.upsertNode(EditorUiRenderToggle, EditorUiRenderActionRow, ui::NodeKind::Button, editorFillButtonLayout(), editorPanelButtonStyle(), "Disable");
+  m_editorUi.upsertNode(EditorUiRenderDelete, EditorUiRenderActionRow, ui::NodeKind::Button, editorFillButtonLayout(), editorPanelButtonStyle(), "Delete");
+  m_editorUi.upsertNode(EditorUiRenderColor, EditorUiRenderActionRow, ui::NodeKind::Button, editorFillButtonLayout(), editorPanelButtonStyle(), "Color");
   m_editorUi.upsertNode(EditorUiRenderDropdownGroup, EditorUiRenderGroup, ui::NodeKind::Box, editorSectionLayout(4.f), editorDropdownStyle());
   m_editorUi.upsertNode(EditorUiRenderListTitle, EditorUiRenderGroup, ui::NodeKind::Label, editorWrappedLabelLayout(), editorLabelStyle(GRAY, 16), "Added render shapes");
   m_editorUi.upsertNode(EditorUiRenderRow0, EditorUiRenderGroup, ui::NodeKind::Button, editorListRowLayout(), editorListRowStyle(false), "");
@@ -549,6 +556,10 @@ void AnimationEditorScreen::buildEditorUi()
   m_editorUi.upsertNode(EditorUiRenderDropdown2, EditorUiRenderDropdownGroup, ui::NodeKind::Button, editorListRowLayout(), editorPanelButtonStyle(), "CircleBody");
 
   m_editorUi.upsertNode(EditorUiExportGroup, ui::kNoId, ui::NodeKind::Box, editorSectionLayout(8.f), editorSectionStyle());
+  m_editorUi.upsertNode(EditorUiExportActionRow, EditorUiExportGroup, ui::NodeKind::Box, editorRowLayout());
+  m_editorUi.upsertNode(EditorUiExportSave, EditorUiExportActionRow, ui::NodeKind::Button, editorFillButtonLayout(), editorPanelButtonStyle(), "Save");
+  m_editorUi.upsertNode(EditorUiExportLoad, EditorUiExportActionRow, ui::NodeKind::Button, editorFillButtonLayout(), editorPanelButtonStyle(), "Load");
+  m_editorUi.upsertNode(EditorUiExportFactory, EditorUiExportActionRow, ui::NodeKind::Button, editorFillButtonLayout(), editorPanelButtonStyle(), "Export");
   m_editorUi.upsertNode(EditorUiExportPathRig, EditorUiExportGroup, ui::NodeKind::WrappedLabel, editorWrappedLabelLayout(), editorLabelStyle(LIGHTGRAY, 14), kRigPath);
   m_editorUi.upsertNode(EditorUiExportPathFactory, EditorUiExportGroup, ui::NodeKind::WrappedLabel, editorWrappedLabelLayout(), editorLabelStyle(LIGHTGRAY, 14), kExportPath);
   m_editorUi.upsertNode(EditorUiParamGroup, ui::kNoId, ui::NodeKind::Box, editorSectionLayout(6.f), editorSectionStyle());
@@ -560,7 +571,7 @@ void AnimationEditorScreen::buildEditorUi()
     m_editorUi.upsertNode(paramLabelIds[i], paramRowIds[i], ui::NodeKind::Label, editorParamLabelLayout(), editorLabelStyle(LIGHTGRAY, 16), "");
     m_editorUi.upsertNode(paramFieldIds[i], paramRowIds[i], ui::NodeKind::Field, editorParamFieldLayout(), editorFieldStyle(false), "");
   }
-  m_editorUi.upsertNode(EditorUiHintLabel, ui::kNoId, ui::NodeKind::Label, editorWrappedLabelLayout(), editorLabelStyle(GRAY, 16), "Click field, type, Enter applies");
+  m_editorUi.upsertNode(EditorUiHintLabel, ui::kNoId, ui::NodeKind::Label, editorWrappedLabelLayout(), editorLabelStyle(GRAY, 16), "Enter applies. Esc cancels. Tab moves fields.");
 
   m_editorUiBuilt = true;
 }
@@ -649,6 +660,8 @@ void AnimationEditorScreen::updateEditorUi(Rectangle)
 
   m_editorUi.setStyle(EditorUiComponentAdd, editorPanelButtonStyle(m_componentDropdownOpen));
   m_editorUi.setStyle(EditorUiRenderAdd, editorPanelButtonStyle(m_renderDropdownOpen));
+  m_editorUi.setText(EditorUiComponentToggle, (m_selectedComponent >= 0 && m_selectedComponent < static_cast<int>(m_components.size()) && m_components[m_selectedComponent].enabled) ? "Disable" : "Enable");
+  m_editorUi.setText(EditorUiRenderToggle, (m_selectedRenderShape >= 0 && m_selectedRenderShape < static_cast<int>(m_renderShapes.size()) && m_renderShapes[m_selectedRenderShape].enabled) ? "Disable" : "Enable");
 
   const ui::Id componentRowIds[] = {EditorUiComponentRow0, EditorUiComponentRow1, EditorUiComponentRow2, EditorUiComponentRow3, EditorUiComponentRow4};
   const int visibleComponentCount = std::min<int>(static_cast<int>(m_components.size()), 5);
@@ -701,20 +714,20 @@ bool AnimationEditorScreen::handleEditorUi()
   for (int i = 0; i < static_cast<int>(m_paramInputs.size()) && i < 12; ++i) {
     if (!m_editorUi.clicked(paramFieldIds[i])) continue;
     if (m_activeParamInput >= 0 && m_activeParamInput < static_cast<int>(m_paramInputs.size()) && m_activeParamInput != i) {
-      applyParamInput(m_paramInputs[m_activeParamInput]);
+      if (!applyParamInput(m_paramInputs[m_activeParamInput])) return true;
     }
     m_activeParamInput = i;
     return true;
   }
 
-  if (m_editorUi.interaction().clicked != ui::kNoId && m_activeParamInput >= 0 && m_activeParamInput < static_cast<int>(m_paramInputs.size())) {
+  if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && m_activeParamInput >= 0 && m_activeParamInput < static_cast<int>(m_paramInputs.size())) {
     bool clickedParam = false;
     for (int i = 0; i < static_cast<int>(m_paramInputs.size()) && i < 12; ++i) {
       if (m_editorUi.interaction().clicked == paramFieldIds[i]) clickedParam = true;
     }
     if (!clickedParam) {
-      applyParamInput(m_paramInputs[m_activeParamInput]);
-      m_activeParamInput = -1;
+      if (applyParamInput(m_paramInputs[m_activeParamInput])) m_activeParamInput = -1;
+      return true;
     }
   }
 
@@ -766,6 +779,21 @@ bool AnimationEditorScreen::handleEditorUi()
       m_componentDropdownOpen = false;
       return true;
     }
+    if (m_editorUi.clicked(EditorUiComponentToggle)) {
+      if (m_selectedComponent >= 0 && m_selectedComponent < static_cast<int>(m_components.size())) {
+        pushUndoSnapshot();
+        m_components[m_selectedComponent].enabled = !m_components[m_selectedComponent].enabled;
+        m_dirtyPreview = true;
+        m_statusText = m_components[m_selectedComponent].enabled ? "Enabled component" : "Disabled component";
+      }
+      m_componentDropdownOpen = false;
+      return true;
+    }
+    if (m_editorUi.clicked(EditorUiComponentDelete)) {
+      deleteSelectedComponent();
+      m_componentDropdownOpen = false;
+      return true;
+    }
 
     const ui::Id componentDropdownIds[] = {EditorUiComponentDropdown0, EditorUiComponentDropdown1, EditorUiComponentDropdown2, EditorUiComponentDropdown3, EditorUiComponentDropdown4, EditorUiComponentDropdown5};
     for (int i = 0; i < 6; ++i) {
@@ -808,6 +836,26 @@ bool AnimationEditorScreen::handleEditorUi()
       m_renderDropdownOpen = false;
       return true;
     }
+    if (m_editorUi.clicked(EditorUiRenderToggle)) {
+      if (m_selectedRenderShape >= 0 && m_selectedRenderShape < static_cast<int>(m_renderShapes.size())) {
+        pushUndoSnapshot();
+        m_renderShapes[m_selectedRenderShape].enabled = !m_renderShapes[m_selectedRenderShape].enabled;
+        m_dirtyPreview = true;
+        m_statusText = m_renderShapes[m_selectedRenderShape].enabled ? "Enabled render shape" : "Disabled render shape";
+      }
+      m_renderDropdownOpen = false;
+      return true;
+    }
+    if (m_editorUi.clicked(EditorUiRenderDelete)) {
+      deleteSelectedRenderShape();
+      m_renderDropdownOpen = false;
+      return true;
+    }
+    if (m_editorUi.clicked(EditorUiRenderColor)) {
+      cycleColorPreset();
+      m_renderDropdownOpen = false;
+      return true;
+    }
 
     const ui::Id renderDropdownIds[] = {EditorUiRenderDropdown0, EditorUiRenderDropdown1, EditorUiRenderDropdown2};
     for (int i = 0; i < 3; ++i) {
@@ -825,6 +873,22 @@ bool AnimationEditorScreen::handleEditorUi()
       m_selectedRenderShape = listStart + i;
       m_activeParamInput = -1;
       m_renderDropdownOpen = false;
+      return true;
+    }
+  }
+
+  if (m_panelMode == PanelMode::Export) {
+    if (m_editorUi.clicked(EditorUiExportSave)) {
+      saveRig();
+      return true;
+    }
+    if (m_editorUi.clicked(EditorUiExportLoad)) {
+      loadRig();
+      return true;
+    }
+    if (m_editorUi.clicked(EditorUiExportFactory)) {
+      exportFactory();
+      m_statusText = std::string("Exported ") + kExportPath;
       return true;
     }
   }
@@ -1284,7 +1348,7 @@ void AnimationEditorScreen::rebuildParamInputs()
   m_paramInputs.clear();
 
   auto add = [&](ParamTarget target, ParamId id, const char* label) {
-    m_paramInputs.push_back({target, id, label, {}, ""});
+    m_paramInputs.push_back({target, id, label, ""});
   };
 
   if (m_panelMode == PanelMode::Component && m_selectedComponent >= 0 && m_selectedComponent < static_cast<int>(m_components.size())) {
@@ -1342,11 +1406,6 @@ void AnimationEditorScreen::rebuildParamInputs()
   syncParamInputs();
 }
 
-void AnimationEditorScreen::layoutParamInputs(Rectangle panel)
-{
-  (void)panel;
-}
-
 void AnimationEditorScreen::syncParamInputs()
 {
   for (size_t i = 0; i < m_paramInputs.size(); ++i) {
@@ -1395,11 +1454,25 @@ void AnimationEditorScreen::syncParamInputs()
   }
 }
 
-void AnimationEditorScreen::applyParamInput(ParamInput& input)
+bool AnimationEditorScreen::applyParamInput(ParamInput& input)
 {
   int intValue = 0;
   float floatValue = 0.f;
   const int maxBone = static_cast<int>(std::max<size_t>(1, m_bones.size()) - 1);
+  auto invalid = [&](const char* message) {
+    m_statusText = message;
+    return false;
+  };
+  auto requireInt = [&]() {
+    if (parseInt(input.text, intValue)) return true;
+    m_statusText = std::string("Invalid ") + input.label + ": expected integer";
+    return false;
+  };
+  auto requireFloat = [&]() {
+    if (parseFloat(input.text, floatValue)) return true;
+    m_statusText = std::string("Invalid ") + input.label + ": expected number";
+    return false;
+  };
   bool pushed = false;
   auto pushBeforeChange = [&]() {
     if (!pushed) {
@@ -1430,66 +1503,78 @@ void AnimationEditorScreen::applyParamInput(ParamInput& input)
 
   if (input.target == ParamTarget::Bone && m_selectedBone >= 0 && m_selectedBone < static_cast<int>(m_bones.size())) {
     EditableBone& bone = m_bones[m_selectedBone];
-    if (input.id == ParamId::BoneName && !input.text.empty() && bone.name != input.text) {
-      pushBeforeChange();
-      bone.name = input.text;
-    }
-    if (input.id == ParamId::BoneParent && parseInt(input.text, intValue)) {
-      if (canReparentBone(m_selectedBone, intValue)) {
-        if (bone.parent != intValue) {
-          pushBeforeChange();
-          bone.parent = intValue;
-        }
-      } else {
-        if (intValue < -1 || intValue >= static_cast<int>(m_bones.size())) {
-          m_statusText = "Invalid parent: index must be -1 or an existing bone";
-        } else if (intValue == m_selectedBone) {
-          m_statusText = "Invalid parent: a bone cannot parent itself";
-        } else {
-          m_statusText = "Invalid parent: would create a parent cycle";
-        }
+    if (input.id == ParamId::BoneName) {
+      if (input.text.empty()) return invalid("Invalid bone name: name cannot be empty");
+      if (bone.name != input.text) {
+        pushBeforeChange();
+        bone.name = input.text;
       }
     }
-    if (input.id == ParamId::BoneX && parseFloat(input.text, floatValue)) setFloat(bone.bindLocal.position.x, floatValue);
-    if (input.id == ParamId::BoneY && parseFloat(input.text, floatValue)) setFloat(bone.bindLocal.position.y, floatValue);
-    if (input.id == ParamId::BoneRotation && parseFloat(input.text, floatValue)) setFloat(bone.bindLocal.rotation, floatValue);
+    if (input.id == ParamId::BoneParent) {
+      if (!requireInt()) return false;
+      if (!canReparentBone(m_selectedBone, intValue)) {
+        if (intValue < -1 || intValue >= static_cast<int>(m_bones.size())) return invalid("Invalid parent: index must be -1 or an existing bone");
+        if (intValue == m_selectedBone) return invalid("Invalid parent: a bone cannot parent itself");
+        return invalid("Invalid parent: would create a parent cycle");
+      }
+      if (bone.parent != intValue) {
+        pushBeforeChange();
+        bone.parent = intValue;
+      }
+    }
+    if (input.id == ParamId::BoneX) {
+      if (!requireFloat()) return false;
+      setFloat(bone.bindLocal.position.x, floatValue);
+    }
+    if (input.id == ParamId::BoneY) {
+      if (!requireFloat()) return false;
+      setFloat(bone.bindLocal.position.y, floatValue);
+    }
+    if (input.id == ParamId::BoneRotation) {
+      if (!requireFloat()) return false;
+      setFloat(bone.bindLocal.rotation, floatValue);
+    }
   } else if (input.target == ParamTarget::Component && m_selectedComponent >= 0 && m_selectedComponent < static_cast<int>(m_components.size())) {
     EditableComponent& c = m_components[m_selectedComponent];
-    if (input.id == ParamId::RangeStart && parseInt(input.text, intValue)) setUInt16(c.bones.start, std::clamp(intValue, 0, maxBone));
-    if (input.id == ParamId::RangeCount && parseInt(input.text, intValue)) setUInt16(c.bones.count, std::max(1, intValue));
-    if (input.id == ParamId::BoneIndex && parseInt(input.text, intValue)) setUInt16(c.bone, std::clamp(intValue, 0, maxBone));
-    if (input.id == ParamId::Weight && parseFloat(input.text, floatValue)) setFloat(c.weight, floatValue);
-    if (input.id == ParamId::TurnSpeed && parseFloat(input.text, floatValue)) setFloat(c.turnSpeed, std::max(0.f, floatValue));
-    if (input.id == ParamId::LookWeight && parseFloat(input.text, floatValue)) setFloat(c.lookWeight, floatValue);
-    if (input.id == ParamId::BendMaxAngle && parseFloat(input.text, floatValue)) setFloat(c.maxAngle, floatValue);
-    if (input.id == ParamId::BendDistribution && parseFloat(input.text, floatValue)) setFloat(c.distribution, std::max(0.01f, floatValue));
-    if (input.id == ParamId::WaveIdleAmplitude && parseFloat(input.text, floatValue)) setFloat(c.idleAmplitude, std::max(0.f, floatValue));
-    if (input.id == ParamId::WaveIdleFrequency && parseFloat(input.text, floatValue)) setFloat(c.idleFrequency, std::max(0.f, floatValue));
-    if (input.id == ParamId::WaveMoveAmplitude && parseFloat(input.text, floatValue)) setFloat(c.moveAmplitude, std::max(0.f, floatValue));
-    if (input.id == ParamId::WaveMoveFrequency && parseFloat(input.text, floatValue)) setFloat(c.moveFrequency, std::max(0.f, floatValue));
-    if (input.id == ParamId::WavePhaseOffset && parseFloat(input.text, floatValue)) setFloat(c.phaseOffset, floatValue);
-    if (input.id == ParamId::PulseAmplitude && parseFloat(input.text, floatValue)) setFloat(c.amplitude, std::max(0.f, floatValue));
-    if (input.id == ParamId::PulseFrequency && parseFloat(input.text, floatValue)) setFloat(c.frequency, std::max(0.f, floatValue));
-    if (input.id == ParamId::PulsePhaseOffset && parseFloat(input.text, floatValue)) setFloat(c.phaseOffset, floatValue);
-    if (input.id == ParamId::SpringStiffness && parseFloat(input.text, floatValue)) setFloat(c.stiffness, std::max(0.f, floatValue));
-    if (input.id == ParamId::SpringDamping && parseFloat(input.text, floatValue)) setFloat(c.damping, std::max(0.f, floatValue));
+    if (input.id == ParamId::RangeStart) { if (!requireInt()) return false; setUInt16(c.bones.start, std::clamp(intValue, 0, maxBone)); }
+    if (input.id == ParamId::RangeCount) { if (!requireInt()) return false; setUInt16(c.bones.count, std::max(1, intValue)); }
+    if (input.id == ParamId::BoneIndex) { if (!requireInt()) return false; setUInt16(c.bone, std::clamp(intValue, 0, maxBone)); }
+    if (input.id == ParamId::Weight) { if (!requireFloat()) return false; setFloat(c.weight, floatValue); }
+    if (input.id == ParamId::TurnSpeed) { if (!requireFloat()) return false; setFloat(c.turnSpeed, std::max(0.f, floatValue)); }
+    if (input.id == ParamId::LookWeight) { if (!requireFloat()) return false; setFloat(c.lookWeight, floatValue); }
+    if (input.id == ParamId::BendMaxAngle) { if (!requireFloat()) return false; setFloat(c.maxAngle, floatValue); }
+    if (input.id == ParamId::BendDistribution) { if (!requireFloat()) return false; setFloat(c.distribution, std::max(0.01f, floatValue)); }
+    if (input.id == ParamId::WaveIdleAmplitude) { if (!requireFloat()) return false; setFloat(c.idleAmplitude, std::max(0.f, floatValue)); }
+    if (input.id == ParamId::WaveIdleFrequency) { if (!requireFloat()) return false; setFloat(c.idleFrequency, std::max(0.f, floatValue)); }
+    if (input.id == ParamId::WaveMoveAmplitude) { if (!requireFloat()) return false; setFloat(c.moveAmplitude, std::max(0.f, floatValue)); }
+    if (input.id == ParamId::WaveMoveFrequency) { if (!requireFloat()) return false; setFloat(c.moveFrequency, std::max(0.f, floatValue)); }
+    if (input.id == ParamId::WavePhaseOffset) { if (!requireFloat()) return false; setFloat(c.phaseOffset, floatValue); }
+    if (input.id == ParamId::PulseAmplitude) { if (!requireFloat()) return false; setFloat(c.amplitude, std::max(0.f, floatValue)); }
+    if (input.id == ParamId::PulseFrequency) { if (!requireFloat()) return false; setFloat(c.frequency, std::max(0.f, floatValue)); }
+    if (input.id == ParamId::PulsePhaseOffset) { if (!requireFloat()) return false; setFloat(c.phaseOffset, floatValue); }
+    if (input.id == ParamId::SpringStiffness) { if (!requireFloat()) return false; setFloat(c.stiffness, std::max(0.f, floatValue)); }
+    if (input.id == ParamId::SpringDamping) { if (!requireFloat()) return false; setFloat(c.damping, std::max(0.f, floatValue)); }
   } else if (input.target == ParamTarget::Render && m_selectedRenderShape >= 0 && m_selectedRenderShape < static_cast<int>(m_renderShapes.size())) {
     EditableRenderShape& r = m_renderShapes[m_selectedRenderShape];
-    if (input.id == ParamId::RangeStart && parseInt(input.text, intValue)) setUInt16(r.bones.start, std::clamp(intValue, 0, maxBone));
-    if (input.id == ParamId::RangeCount && parseInt(input.text, intValue)) setUInt16(r.bones.count, std::max(1, intValue));
-    if (input.id == ParamId::BoneIndex && parseInt(input.text, intValue)) setUInt16(r.bone, std::clamp(intValue, 0, maxBone));
-    if (input.id == ParamId::RenderWidth && parseFloat(input.text, floatValue)) setFloat(r.width, std::max(0.f, floatValue));
-    if (input.id == ParamId::RenderRadius && parseFloat(input.text, floatValue)) setFloat(r.radius, std::max(0.f, floatValue));
-    if (input.id == ParamId::ColorR && parseInt(input.text, intValue)) setByte(r.color.r, clampByte(intValue));
-    if (input.id == ParamId::ColorG && parseInt(input.text, intValue)) setByte(r.color.g, clampByte(intValue));
-    if (input.id == ParamId::ColorB && parseInt(input.text, intValue)) setByte(r.color.b, clampByte(intValue));
-    if (input.id == ParamId::ColorA && parseInt(input.text, intValue)) setByte(r.color.a, clampByte(intValue));
+    if (input.id == ParamId::RangeStart) { if (!requireInt()) return false; setUInt16(r.bones.start, std::clamp(intValue, 0, maxBone)); }
+    if (input.id == ParamId::RangeCount) { if (!requireInt()) return false; setUInt16(r.bones.count, std::max(1, intValue)); }
+    if (input.id == ParamId::BoneIndex) { if (!requireInt()) return false; setUInt16(r.bone, std::clamp(intValue, 0, maxBone)); }
+    if (input.id == ParamId::RenderWidth) { if (!requireFloat()) return false; setFloat(r.width, std::max(0.f, floatValue)); }
+    if (input.id == ParamId::RenderRadius) { if (!requireFloat()) return false; setFloat(r.radius, std::max(0.f, floatValue)); }
+    if (input.id == ParamId::ColorR) { if (!requireInt()) return false; setByte(r.color.r, clampByte(intValue)); }
+    if (input.id == ParamId::ColorG) { if (!requireInt()) return false; setByte(r.color.g, clampByte(intValue)); }
+    if (input.id == ParamId::ColorB) { if (!requireInt()) return false; setByte(r.color.b, clampByte(intValue)); }
+    if (input.id == ParamId::ColorA) { if (!requireInt()) return false; setByte(r.color.a, clampByte(intValue)); }
+  } else {
+    return false;
   }
 
   if (pushed) {
     syncEditableRanges();
     m_dirtyPreview = true;
+    m_statusText = std::string("Applied ") + input.label;
   }
+  return true;
 }
 
 void AnimationEditorScreen::updateParamInputs(Vector2 mouse)
@@ -1512,283 +1597,24 @@ void AnimationEditorScreen::updateParamInputs(Vector2 mouse)
     key = GetCharPressed();
   }
   if (IsKeyPressed(KEY_BACKSPACE) && !input.text.empty()) input.text.pop_back();
-  if (IsKeyPressed(KEY_ENTER)) {
-    applyParamInput(input);
+  if (IsKeyPressed(KEY_ESCAPE)) {
     m_activeParamInput = -1;
+    syncParamInputs();
+    m_statusText = "Cancelled field edit";
+    return;
   }
-}
-
-void AnimationEditorScreen::drawParamInputs() const
-{
-}
-
-bool AnimationEditorScreen::handleComponentUi(Vector2 mouse, Rectangle panel)
-{
-  if (!IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) return false;
-
-  const Rectangle tabs[] = {
-    Rectangle{panel.x + 12.f, panel.y + 42.f, 70.f, 24.f},
-    Rectangle{panel.x + 88.f, panel.y + 42.f, 92.f, 24.f},
-    Rectangle{panel.x + 186.f, panel.y + 42.f, 62.f, 24.f},
-    Rectangle{panel.x + 254.f, panel.y + 42.f, 64.f, 24.f},
-  };
-  const PanelMode modes[] = {PanelMode::Bone, PanelMode::Component, PanelMode::Render, PanelMode::Export};
-  for (size_t i = 0; i < sizeof(tabs) / sizeof(tabs[0]); ++i) {
-    if (CheckCollisionPointRec(mouse, tabs[i])) {
-      m_panelMode = modes[i];
+  if (IsKeyPressed(KEY_ENTER)) {
+    if (applyParamInput(input)) m_activeParamInput = -1;
+    return;
+  }
+  if (IsKeyPressed(KEY_TAB)) {
+    if (!applyParamInput(input)) return;
+    if (m_paramInputs.empty()) {
       m_activeParamInput = -1;
-      m_componentDropdownOpen = false;
-      m_renderDropdownOpen = false;
-      return true;
+      return;
     }
-  }
-
-  if (m_panelMode != PanelMode::Component) return false;
-
-  const Rectangle addButton = buttonRect(panel.x + 16.f, panel.y + 110.f, "Add Component", kUiSmallFont, 10.f, 136.f);
-  const Rectangle prevButton = buttonRect(addButton.x + addButton.width + 10.f, panel.y + 110.f, "<", kUiSmallFont, 10.f, 34.f);
-  const Rectangle nextButton = buttonRect(prevButton.x + prevButton.width + 6.f, panel.y + 110.f, ">", kUiSmallFont, 10.f, 34.f);
-  const Rectangle duplicateButton = buttonRect(nextButton.x + nextButton.width + 8.f, panel.y + 110.f, "Duplicate", kUiSmallFont, 10.f, 92.f);
-  const Rectangle upButton = buttonRect(panel.x + 16.f, panel.y + 148.f, "Up", kUiSmallFont, 10.f, 50.f);
-  const Rectangle downButton = buttonRect(upButton.x + upButton.width + 8.f, panel.y + 148.f, "Down", kUiSmallFont, 10.f, 62.f);
-  const Rectangle listBase{panel.x + 16.f, panel.y + 182.f, panel.width - 32.f, 26.f};
-  const float dropdownWidth = std::max({textWidth("RotateToVelocity"), textWidth("SpringChain"), textWidth("Add Component")}) + 24.f;
-
-  if (CheckCollisionPointRec(mouse, addButton)) {
-    m_componentDropdownOpen = !m_componentDropdownOpen;
-    return true;
-  }
-
-  if (m_componentDropdownOpen) {
-    for (int i = 0; i < 6; ++i) {
-        Rectangle row{addButton.x, addButton.y + addButton.height + static_cast<float>(i) * 28.f, dropdownWidth, 26.f};
-      if (CheckCollisionPointRec(mouse, row)) {
-        addComponent(componentTypeByIndex(i));
-        m_componentDropdownOpen = false;
-        return true;
-      }
-    }
-  }
-
-  if (CheckCollisionPointRec(mouse, prevButton)) {
-    if (!m_components.empty()) {
-      m_selectedComponent = (m_selectedComponent + static_cast<int>(m_components.size()) - 1) % static_cast<int>(m_components.size());
-      m_activeParamInput = -1;
-    }
-    m_componentDropdownOpen = false;
-    return true;
-  }
-
-  if (CheckCollisionPointRec(mouse, nextButton)) {
-    if (!m_components.empty()) {
-      m_selectedComponent = (m_selectedComponent + 1) % static_cast<int>(m_components.size());
-      m_activeParamInput = -1;
-    }
-    m_componentDropdownOpen = false;
-    return true;
-  }
-
-  if (CheckCollisionPointRec(mouse, duplicateButton)) {
-    duplicateSelectedComponent();
-    m_componentDropdownOpen = false;
-    return true;
-  }
-
-  if (CheckCollisionPointRec(mouse, upButton)) {
-    moveSelectedComponent(-1);
-    m_componentDropdownOpen = false;
-    return true;
-  }
-
-  if (CheckCollisionPointRec(mouse, downButton)) {
-    moveSelectedComponent(1);
-    m_componentDropdownOpen = false;
-    return true;
-  }
-
-  const int visibleCount = std::min<int>(static_cast<int>(m_components.size()), 5);
-  const int listStart = m_components.empty() ? 0 : std::clamp(m_selectedComponent - 2, 0, std::max(0, static_cast<int>(m_components.size()) - visibleCount));
-  for (int i = 0; i < visibleCount; ++i) {
-    Rectangle row = listBase;
-    row.y += 20.f + static_cast<float>(i) * 28.f;
-    if (CheckCollisionPointRec(mouse, row)) {
-      m_selectedComponent = listStart + i;
-      m_activeParamInput = -1;
-      m_componentDropdownOpen = false;
-      return true;
-    }
-  }
-
-  if (m_componentDropdownOpen) {
-    m_componentDropdownOpen = false;
-    return true;
-  }
-
-  return false;
-}
-
-void AnimationEditorScreen::drawComponentUi(Rectangle panel) const
-{
-  const Rectangle tabs[] = {
-    Rectangle{panel.x + 12.f, panel.y + 42.f, 70.f, 24.f},
-    Rectangle{panel.x + 88.f, panel.y + 42.f, 92.f, 24.f},
-    Rectangle{panel.x + 186.f, panel.y + 42.f, 62.f, 24.f},
-    Rectangle{panel.x + 254.f, panel.y + 42.f, 64.f, 24.f},
-  };
-  const PanelMode modes[] = {PanelMode::Bone, PanelMode::Component, PanelMode::Render, PanelMode::Export};
-  for (size_t i = 0; i < sizeof(tabs) / sizeof(tabs[0]); ++i) {
-    const bool selected = m_panelMode == modes[i];
-    DrawRectangleRec(tabs[i], selected ? Color{54, 70, 38, 255} : Color{32, 44, 58, 255});
-    DrawRectangleLinesEx(tabs[i], 1.f, selected ? GOLD : Color{100, 130, 150, 255});
-    DrawText(panelModeName(modes[i]), static_cast<int>(tabs[i].x + 7), static_cast<int>(tabs[i].y + 5), 13, RAYWHITE);
-  }
-
-  if (m_panelMode != PanelMode::Component) return;
-
-  const Rectangle addButton = buttonRect(panel.x + 16.f, panel.y + 110.f, "Add Component", kUiSmallFont, 10.f, 136.f);
-  const Rectangle prevButton = buttonRect(addButton.x + addButton.width + 10.f, panel.y + 110.f, "<", kUiSmallFont, 10.f, 34.f);
-  const Rectangle nextButton = buttonRect(prevButton.x + prevButton.width + 6.f, panel.y + 110.f, ">", kUiSmallFont, 10.f, 34.f);
-  const Rectangle duplicateButton = buttonRect(nextButton.x + nextButton.width + 8.f, panel.y + 110.f, "Duplicate", kUiSmallFont, 10.f, 92.f);
-  const Rectangle upButton = buttonRect(panel.x + 16.f, panel.y + 148.f, "Up", kUiSmallFont, 10.f, 50.f);
-  const Rectangle downButton = buttonRect(upButton.x + upButton.width + 8.f, panel.y + 148.f, "Down", kUiSmallFont, 10.f, 62.f);
-  const Rectangle listBase{panel.x + 16.f, panel.y + 182.f, panel.width - 32.f, 26.f};
-  const float dropdownWidth = std::max({textWidth("RotateToVelocity"), textWidth("SpringChain"), textWidth("Add Component")}) + 24.f;
-
-  drawButton(addButton, "Add Component", m_componentDropdownOpen);
-  drawButton(prevButton, "<");
-  drawButton(nextButton, ">");
-  drawButton(duplicateButton, "Duplicate");
-  drawButton(upButton, "Up");
-  drawButton(downButton, "Down");
-
-  if (m_componentDropdownOpen) {
-    Rectangle dropdownPanel{addButton.x - 2.f, addButton.y + addButton.height - 1.f, dropdownWidth + 4.f, 6.f * 28.f + 4.f};
-    DrawRectangleRec(dropdownPanel, Color{8, 12, 18, 255});
-    DrawRectangleLinesEx(dropdownPanel, 1.f, Color{118, 146, 166, 255});
-    for (int i = 0; i < 6; ++i) {
-      Rectangle row{addButton.x, addButton.y + addButton.height + static_cast<float>(i) * 28.f, dropdownWidth, 26.f};
-      DrawRectangleRec(row, Color{10, 14, 20, 255});
-      DrawRectangleLinesEx(row, 1.f, Color{118, 146, 166, 255});
-      drawUiText(componentName(componentTypeByIndex(i)), row.x + 8.f, row.y + 5.f, RAYWHITE);
-    }
-  }
-
-  drawUiText("Added components", listBase.x, listBase.y + 2.f, GRAY);
-  const int visibleCount = std::min<int>(static_cast<int>(m_components.size()), 5);
-  const int listStart = m_components.empty() ? 0 : std::clamp(m_selectedComponent - 2, 0, std::max(0, static_cast<int>(m_components.size()) - visibleCount));
-  for (int i = 0; i < visibleCount; ++i) {
-    const int componentIndex = listStart + i;
-    Rectangle row = listBase;
-    row.y += 22.f + static_cast<float>(i) * 28.f;
-    const bool selected = componentIndex == m_selectedComponent;
-    DrawRectangleRec(row, selected ? Color{58, 72, 40, 255} : Color{18, 24, 32, 255});
-    DrawRectangleLinesEx(row, 1.f, selected ? GOLD : Color{92, 122, 144, 255});
-    drawUiText(TextFormat("%d  %s  %s", componentIndex, componentName(m_components[componentIndex].type), m_components[componentIndex].enabled ? "on" : "off"), row.x + 8.f, row.y + 5.f, RAYWHITE);
-  }
-}
-
-bool AnimationEditorScreen::handleRenderUi(Vector2 mouse, Rectangle panel)
-{
-  if (!IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || m_panelMode != PanelMode::Render) return false;
-
-  const Rectangle addButton = buttonRect(panel.x + 16.f, panel.y + 110.f, "Add Render Shape", kUiSmallFont, 10.f, 158.f);
-  const Rectangle prevButton = buttonRect(addButton.x + addButton.width + 10.f, panel.y + 110.f, "<", kUiSmallFont, 10.f, 34.f);
-  const Rectangle nextButton = buttonRect(prevButton.x + prevButton.width + 6.f, panel.y + 110.f, ">", kUiSmallFont, 10.f, 34.f);
-  const Rectangle listBase{panel.x + 16.f, panel.y + 148.f, panel.width - 32.f, 26.f};
-  const float dropdownWidth = std::max({textWidth("Add Render Shape"), textWidth("CircleBody"), textWidth("SpineBody")}) + 24.f;
-
-  if (CheckCollisionPointRec(mouse, addButton)) {
-    m_renderDropdownOpen = !m_renderDropdownOpen;
-    return true;
-  }
-
-  if (CheckCollisionPointRec(mouse, prevButton)) {
-    if (!m_renderShapes.empty()) {
-      m_selectedRenderShape = (m_selectedRenderShape + static_cast<int>(m_renderShapes.size()) - 1) % static_cast<int>(m_renderShapes.size());
-      m_activeParamInput = -1;
-    }
-    m_renderDropdownOpen = false;
-    return true;
-  }
-
-  if (CheckCollisionPointRec(mouse, nextButton)) {
-    if (!m_renderShapes.empty()) {
-      m_selectedRenderShape = (m_selectedRenderShape + 1) % static_cast<int>(m_renderShapes.size());
-      m_activeParamInput = -1;
-    }
-    m_renderDropdownOpen = false;
-    return true;
-  }
-
-  if (m_renderDropdownOpen) {
-    for (int i = 0; i < 3; ++i) {
-        Rectangle row{addButton.x, addButton.y + addButton.height + static_cast<float>(i) * 28.f, dropdownWidth, 26.f};
-      if (CheckCollisionPointRec(mouse, row)) {
-        addRenderShape(renderTypeByIndex(i));
-        m_renderDropdownOpen = false;
-        return true;
-      }
-    }
-  }
-
-  const int visibleCount = std::min<int>(static_cast<int>(m_renderShapes.size()), 5);
-  const int listStart = m_renderShapes.empty() ? 0 : std::clamp(m_selectedRenderShape - 2, 0, std::max(0, static_cast<int>(m_renderShapes.size()) - visibleCount));
-  for (int i = 0; i < visibleCount; ++i) {
-    Rectangle row = listBase;
-    row.y += 22.f + static_cast<float>(i) * 28.f;
-    if (CheckCollisionPointRec(mouse, row)) {
-      m_selectedRenderShape = listStart + i;
-      m_activeParamInput = -1;
-      m_renderDropdownOpen = false;
-      return true;
-    }
-  }
-
-  if (m_renderDropdownOpen) {
-    m_renderDropdownOpen = false;
-    return true;
-  }
-
-  return false;
-}
-
-void AnimationEditorScreen::drawRenderUi(Rectangle panel) const
-{
-  if (m_panelMode != PanelMode::Render) return;
-
-  const Rectangle addButton = buttonRect(panel.x + 16.f, panel.y + 110.f, "Add Render Shape", kUiSmallFont, 10.f, 158.f);
-  const Rectangle prevButton = buttonRect(addButton.x + addButton.width + 10.f, panel.y + 110.f, "<", kUiSmallFont, 10.f, 34.f);
-  const Rectangle nextButton = buttonRect(prevButton.x + prevButton.width + 6.f, panel.y + 110.f, ">", kUiSmallFont, 10.f, 34.f);
-  const Rectangle listBase{panel.x + 16.f, panel.y + 148.f, panel.width - 32.f, 26.f};
-  const float dropdownWidth = std::max({textWidth("Add Render Shape"), textWidth("CircleBody"), textWidth("SpineBody")}) + 24.f;
-
-  drawButton(addButton, "Add Render Shape", m_renderDropdownOpen);
-  drawButton(prevButton, "<");
-  drawButton(nextButton, ">");
-
-  if (m_renderDropdownOpen) {
-    Rectangle dropdownPanel{addButton.x - 2.f, addButton.y + addButton.height - 1.f, dropdownWidth + 4.f, 3.f * 28.f + 4.f};
-    DrawRectangleRec(dropdownPanel, Color{8, 12, 18, 255});
-    DrawRectangleLinesEx(dropdownPanel, 1.f, Color{118, 146, 166, 255});
-    for (int i = 0; i < 3; ++i) {
-      Rectangle row{addButton.x, addButton.y + addButton.height + static_cast<float>(i) * 28.f, dropdownWidth, 26.f};
-      DrawRectangleRec(row, Color{10, 14, 20, 255});
-      DrawRectangleLinesEx(row, 1.f, Color{118, 146, 166, 255});
-      drawUiText(renderName(renderTypeByIndex(i)), row.x + 8.f, row.y + 5.f, RAYWHITE);
-    }
-  }
-
-  drawUiText("Added render shapes", listBase.x, listBase.y + 2.f, GRAY);
-  const int visibleCount = std::min<int>(static_cast<int>(m_renderShapes.size()), 5);
-  const int listStart = m_renderShapes.empty() ? 0 : std::clamp(m_selectedRenderShape - 2, 0, std::max(0, static_cast<int>(m_renderShapes.size()) - visibleCount));
-  for (int i = 0; i < visibleCount; ++i) {
-    const int renderIndex = listStart + i;
-    Rectangle row = listBase;
-    row.y += 22.f + static_cast<float>(i) * 28.f;
-    const bool selected = renderIndex == m_selectedRenderShape;
-    DrawRectangleRec(row, selected ? Color{58, 72, 40, 255} : Color{18, 24, 32, 255});
-    DrawRectangleLinesEx(row, 1.f, selected ? GOLD : Color{92, 122, 144, 255});
-    drawUiText(TextFormat("%d  %s  %s", renderIndex, renderName(m_renderShapes[renderIndex].type), m_renderShapes[renderIndex].enabled ? "on" : "off"), row.x + 8.f, row.y + 5.f, RAYWHITE);
+    const int direction = (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) ? -1 : 1;
+    m_activeParamInput = (m_activeParamInput + direction + static_cast<int>(m_paramInputs.size())) % static_cast<int>(m_paramInputs.size());
   }
 }
 
@@ -2016,6 +1842,7 @@ void AnimationEditorScreen::Update()
   updateEditorUi(rightPanel);
   m_editorUi.compute();
 
+  if (hadActiveParam && IsKeyPressed(KEY_ESCAPE)) return;
   if (IsKeyPressed(KEY_ESCAPE) && !isEditingText()) {
     m_finishScreen = Screen::GameScreen::ANIMATION_TEST;
     return;
