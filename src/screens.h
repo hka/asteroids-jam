@@ -331,7 +331,6 @@ class AnimationEditorScreen : public Screen {
       ParamTarget target = ParamTarget::Component;
       ParamId id;
       const char* label = "";
-      Rectangle bounds{};
       std::string text;
     };
 
@@ -359,21 +358,15 @@ class AnimationEditorScreen : public Screen {
     void moveSelectedComponent(int direction);
     void deleteSelectedRenderShape();
     void cycleColorPreset();
-    void layoutParamInputs(Rectangle panel);
     void syncParamInputs();
-    void applyParamInput(ParamInput& input);
+    bool applyParamInput(ParamInput& input);
     void updateParamInputs(Vector2 mouse);
-     void drawParamInputs() const;
-     void rebuildParamInputs();
-     void buildEditorUi();
-     void updateEditorUi(Rectangle panel);
-     bool handleEditorUi();
-     void buildLeftUi();
-     void updateLeftUi();
-      bool handleComponentUi(Vector2 mouse, Rectangle panel);
-      void drawComponentUi(Rectangle panel) const;
-     bool handleRenderUi(Vector2 mouse, Rectangle panel);
-    void drawRenderUi(Rectangle panel) const;
+    void rebuildParamInputs();
+    void buildEditorUi();
+    void updateEditorUi(Rectangle panel);
+    bool handleEditorUi();
+    void buildLeftUi();
+    void updateLeftUi();
     void saveRig();
     void loadRig();
     void exportFactory() const;
@@ -394,18 +387,18 @@ class AnimationEditorScreen : public Screen {
     int m_selectedComponent = 0;
     int m_selectedRenderShape = 0;
     int m_activeParamInput = -1;
-     bool m_componentDropdownOpen = false;
-     bool m_renderDropdownOpen = false;
-     bool m_editorUiBuilt = false;
-     bool m_leftUiBuilt = false;
-     bool m_draggingBone = false;
-     bool m_previewPaused = false;
-     bool m_dirtyPreview = true;
-     bool m_snapToGrid = false;
-     bool m_suppressUndo = false;
-     std::string m_statusText;
-     ui::Context m_editorUi;
-     ui::Context m_leftUi;
+    bool m_componentDropdownOpen = false;
+    bool m_renderDropdownOpen = false;
+    bool m_editorUiBuilt = false;
+    bool m_leftUiBuilt = false;
+    bool m_draggingBone = false;
+    bool m_previewPaused = false;
+    bool m_dirtyPreview = true;
+    bool m_snapToGrid = false;
+    bool m_suppressUndo = false;
+    std::string m_statusText;
+    ui::Context m_editorUi;
+    ui::Context m_leftUi;
 };
 
 class OptionsScreen : public Screen
