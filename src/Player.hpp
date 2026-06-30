@@ -60,7 +60,7 @@ struct PlayerState
   float score = 0;
   bool alive = true;
 
-  MovementComponent movement;
+  PlayerMovementComponent movement;
   SuckAttack suckAttack;
   GunAttack gun;
   Laser laser;

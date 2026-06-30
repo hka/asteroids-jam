@@ -5,6 +5,16 @@
 #include "raylib_operators.h"
 #include "helpers.h"
 
+#include <algorithm>
+
+void ClampVel(PlayerMovementComponent& m)
+{
+  m.down_vel = std::clamp(m.down_vel, 0.f, m.max_vel);
+  m.up_vel = std::clamp(m.up_vel, 0.f, m.max_vel);
+  m.left_vel = std::clamp(m.left_vel, 0.f, m.max_vel);
+  m.right_vel = std::clamp(m.right_vel, 0.f, m.max_vel);
+}
+
 void ApplyThrustDrag(PhysicsComponent& data)
 {
   //when ft and fd balance, we get steady state
@@ -13,6 +23,13 @@ void ApplyThrustDrag(PhysicsComponent& data)
   Vector2 velocity_dir = Vector2Normalize(data.velocity);
   Vector2 fd = velocity_dir*data.drag*speed_squared;
   data.force += ft - fd;
+}
+
+void UpdatePosition(PhysicsComponent& data, PlayerMovementComponent& move, const Vector2& bound, float dt)
+{
+  data.position.x += (move.right_vel-move.left_vel)*dt;
+  data.position.y += (move.up_vel-move.down_vel)*dt;
+  data.position = mod(data.position + bound, bound);
 }
 
 void UpdatePosition(PhysicsComponent& data, const Vector2& bound, float dt, bool no_limit)
@@ -36,7 +53,6 @@ void UpdatePosition(PhysicsComponent& data, const Vector2& bound, float dt, bool
   data.position += data.velocity*dt;
   data.position = mod(data.position + bound, bound);
 }
-
 
 void UpdateMovement(Vector2 &position, MovementComponent &movement, const Vector2 &bound)
 {

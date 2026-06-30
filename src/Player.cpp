@@ -17,14 +17,8 @@ PlayerState createPlayer(Vector2 startPos){
   player.data.drag = 5;
   player.data.orientation = {0.f, -1.f};
 
-  player.movement.maxAcceleration = 250.f;
-  player.movement.direction = {0.f, -1.f};
-  player.movement.force = {0.f, 0.f};
-  player.movement.velocity = {0.f, 0.f};
-  player.movement.currentAcceleration = 0.f;
-  player.movement.accelerationDecrease = 10.f;
-  player.movement.rotation = PI / 2.f;
-  player.movement.rotationSpeed = 5.f;
+  player.movement.max_vel = 400;
+  player.movement.acc = 800;
 
   player.suckAttack.isOngoing = false;
   player.suckAttack.lineLength = 50.f;
@@ -52,9 +46,8 @@ PlayerState createPlayer(Vector2 startPos){
 void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &shoots, float dt)
 {
   UpdatePlayerInput(player, dt);
-  player.data.force *= 0;
-  ApplyThrustDrag(player.data);
-  UpdatePosition(player.data, worldBound, dt);
+  UpdatePosition(player.data, player.movement, worldBound, dt);
+
 
   if(IsMatchingKeyPressed(options.keys[(size_t)GameOptions::ControlKeyCodes::ABSORB]))
   {
@@ -126,38 +119,41 @@ void RegainEnergyShield(EnergyShield &shield)
 ///////////////////////////////////////////////
 void UpdatePlayerInput(PlayerState& player, float dt)
 {
-  PhysicsComponent& data = player.data;
+  PlayerMovementComponent& data = player.movement;
   //rotate velocity vector and update orientation to match
   //TODO handle rotation when moving in reverse?
   if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::TURN_LEFT]))
   {
-    data.velocity = Vector2Rotate(data.velocity, -(M_PI/0.8f)*dt);
-    if(Vector2LengthSqr(data.velocity)>0)
-    {
-      data.orientation = Vector2Normalize(data.velocity);
-    }
+    data.left_vel += data.acc*dt;
+    data.right_vel -= data.acc*dt;
   }
   else if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::TURN_RIGHT]))
   {
-    data.velocity = Vector2Rotate(data.velocity, (M_PI/0.8f)*dt);
-    if(Vector2LengthSqr(data.velocity)>0)
-    {
-      data.orientation = Vector2Normalize(data.velocity);
-    }
+    data.left_vel -= data.acc*dt;
+    data.right_vel += data.acc*dt;
+  }
+  else
+  {
+    data.left_vel -= data.acc*dt;
+    data.right_vel -= data.acc*dt;
   }
 
   if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::BREAK]))
   {
-    data.thrust = -500000;
+    data.up_vel += data.acc*dt;
+    data.down_vel -= data.acc*dt;
   }
   else if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::THRUST]))
   {
-    data.thrust = 500000;
+    data.up_vel -= data.acc*dt;
+    data.down_vel += data.acc*dt;
   }
   else
   {
-    data.thrust = 0;
+    data.up_vel -= data.acc*dt;
+    data.down_vel -= data.acc*dt;
   }
+  ClampVel(data);
 
   if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::DASH]) && !player.dash_in_progress)
   {
@@ -166,7 +162,7 @@ void UpdatePlayerInput(PlayerState& player, float dt)
   else if(player.dash_in_progress && !IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::DASH]))
   {
     player.dash_in_progress = false;
-    data.position = data.position + data.orientation*options.screenWidth*DASH_DISTANCE;
+    //data.position = data.position + data.orientation*options.screenWidth*DASH_DISTANCE;
   }
 }
 
