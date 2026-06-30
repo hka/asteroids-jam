@@ -29,14 +29,17 @@ struct GameOptions
   bool godMode = false;
   bool game_music = true;
   bool sound_fx = true;
-  float master_volume = 1.0f;
+  float master_volume = 0.5f;
   bool control_tip = true;
   bool first_launch = true;
+
+  float player_max_velocity = 400;
+  float player_max_acceleration = 1000000;
 
   enum class ControlKeyCodes {THRUST = 0, BREAK, TURN_LEFT, TURN_RIGHT, DASH, FIRE, ABSORB, ULTRA, ALT_AIM_LEFT, ALT_AIM_RIGHT, ALT_AIM_UP, ALT_AIM_DOWN, SIZE, NONE};
   std::vector<Key> keys;
 };
-VISITABLE_STRUCT(GameOptions, screenWidth, screenHeight, fps, skipLogo, godMode, game_music, sound_fx, master_volume, control_tip, first_launch, keys);
+VISITABLE_STRUCT(GameOptions, screenWidth, screenHeight, fps, skipLogo, godMode, game_music, sound_fx, master_volume, control_tip, first_launch, player_max_velocity, player_max_acceleration, keys);
 
 struct KeyMap
 {
