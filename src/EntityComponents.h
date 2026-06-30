@@ -3,6 +3,16 @@
 
 #include "raylib.h"
 
+struct PlayerMovementComponent
+{
+  float up_vel = 0;
+  float down_vel = 0;
+  float left_vel = 0;
+  float right_vel = 0;
+  float max_vel;
+  float acc;
+};
+
 struct MovementComponent
 {
   Vector2 velocity;
@@ -33,7 +43,10 @@ struct PhysicsComponent
 };
 
 void UpdatePosition(PhysicsComponent& data, const Vector2& bound, float dt, bool no_limit = false);
+void UpdatePosition(PhysicsComponent& data, PlayerMovementComponent& move, const Vector2& bound, float dt);
 void ApplyThrustDrag(PhysicsComponent& data);
+
+void ClampVel(PlayerMovementComponent& m);
 
 
 
