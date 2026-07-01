@@ -17,8 +17,8 @@ PlayerState createPlayer(Vector2 startPos){
   player.data.drag = 5;
   player.data.orientation = {0.f, -1.f};
 
-  player.movement.max_vel = 400;
-  player.movement.acc = 800;
+  player.movement.max_vel = options.player_max_velocity;
+  player.movement.acc = options.player_max_acceleration;
 
   player.suckAttack.isOngoing = false;
   player.suckAttack.lineLength = 50.f;

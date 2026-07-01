@@ -13,6 +13,17 @@ void ClampVel(PlayerMovementComponent& m)
   m.up_vel = std::clamp(m.up_vel, 0.f, m.max_vel);
   m.left_vel = std::clamp(m.left_vel, 0.f, m.max_vel);
   m.right_vel = std::clamp(m.right_vel, 0.f, m.max_vel);
+  //clamp so diagonal isnt above max vel
+  float y_vel = m.up_vel-m.down_vel;
+  float x_vel = m.right_vel-m.left_vel;
+  float vel = std::sqrt(x_vel*x_vel + y_vel*y_vel);
+  if(vel > m.max_vel)
+  {
+    m.down_vel = (m.down_vel/vel)*m.max_vel;
+    m.up_vel = (m.up_vel/vel)*m.max_vel;
+    m.left_vel = (m.left_vel/vel)*m.max_vel;
+    m.right_vel = (m.right_vel/vel)*m.max_vel;
+  }
 }
 
 void ApplyThrustDrag(PhysicsComponent& data)
