@@ -160,6 +160,7 @@ void AsteroidsScreen::AsteroidEnemyInteraction(const Vector2& bound)
 void AsteroidsScreen::Update()
 {
   UpdateMusicStream(game_track);
+  UpdateMusicStream(special_track);
 
   if(!m_player.alive)
   {
@@ -276,6 +277,26 @@ void AsteroidsScreen::Update()
 
   //update player
   update(m_player, worldBound, m_playerBullets, dt);
+  if(m_player.erasure_triggered == PlayerState::ERASURE_STATE::ACTIVE)
+  {
+    PauseMusicStream(game_track);
+    PlayMusicStream(special_track);
+    m_player.erasure_triggered = PlayerState::ERASURE_STATE::COOLDOWN;
+    m_player.erasure_cooldown = options.erasure_cooldown;
+    m_playerBullets.clear();
+    m_enemyBullets.clear();
+    for (std::size_t i = 0; i < m_asteroids.size(); ++i)
+    {
+      if(m_asteroids[i].type == 1)
+      {
+        m_asteroids[i].state = KILLED;
+      }
+    }
+  }
+  else if(m_player.erasure_triggered == PlayerState::ERASURE_STATE::OFF)
+  {
+    StopMusicStream(special_track);
+  }
   UpdateShoots(m_playerBullets, dt);
   UpdateShoots(m_enemyBullets, dt);
 

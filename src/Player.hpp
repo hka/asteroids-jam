@@ -72,6 +72,11 @@ struct PlayerState
   bool dash_in_progress = false;
   float dash_time = 0;
 
+  int erasure_charges = 0;
+  enum class ERASURE_STATE {ACTIVE, COOLDOWN, OFF};
+  ERASURE_STATE erasure_triggered = ERASURE_STATE::OFF;
+  float erasure_cooldown = 0;
+
   PhysicsComponent data;
 
   void OnHit(int damage);

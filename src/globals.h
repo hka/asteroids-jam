@@ -21,6 +21,7 @@ extern std::vector<Texture2D> TEXTURES;
 
 extern Music main_menu_track;
 extern Music game_track;
+extern Music special_track;
 
 extern Sound shoot_fx;
 

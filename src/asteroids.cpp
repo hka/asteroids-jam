@@ -122,6 +122,7 @@ int main(void)
   SetMasterVolume(options.master_volume);
   //main_menu_track = LoadMusicStream("data/.mp3");
   game_track = LoadMusicStream("data/The_Ultimate_Game_in-play.mp3");
+  special_track = LoadMusicStream("data/special_0.mp3");
 
   shoot_fx = LoadSound("data/laser.wav");
 
@@ -204,6 +205,7 @@ int main(void)
 
 #endif
   UnloadMusicStream(game_track);
+  UnloadMusicStream(special_track);
   //UnloadMusicStream(main_menu_track);
   UnloadSound(shoot_fx);
   if (UI_FONT.texture.id != 0) UnloadFont(UI_FONT);

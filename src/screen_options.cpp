@@ -144,6 +144,13 @@ OptionsScreen::OptionsScreen()
   dash.key = options.keys[ix];
   m_keySelector[ix] = dash;
 
+  KeySelector special_0;
+  ix = (size_t)GameOptions::ControlKeyCodes::SPECIAL_0;
+  special_0.pos = {options.screenWidth/4.f-25, options.screenHeight/2.f + 50 + 80, 50.f, 50.f};
+  special_0.text = "ERASURE:";
+  special_0.key = options.keys[ix];
+  m_keySelector[ix] = special_0;
+
   Vector2 gunpos = {3.f*options.screenWidth/4.f, options.screenHeight/2.f -options.screenWidth/10.f};
 
   KeySelector fire;

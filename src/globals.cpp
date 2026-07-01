@@ -10,6 +10,7 @@ std::vector<Shoot> SHOOTS;
 
 Music main_menu_track;
 Music game_track;
+Music special_track;
 
 Sound shoot_fx;
 
