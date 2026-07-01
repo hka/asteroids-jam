@@ -17,8 +17,8 @@ PlayerState createPlayer(Vector2 startPos){
   player.data.drag = 5;
   player.data.orientation = {0.f, -1.f};
 
-  player.movement.max_vel = options.player_max_velocity;
-  player.movement.acc = options.player_max_acceleration;
+  player.movement.max_vel = options.player_max_velocity*options.screenWidth;
+  player.movement.acc = options.player_max_acceleration*options.screenWidth;
 
   player.suckAttack.isOngoing = false;
   player.suckAttack.lineLength = 50.f;
@@ -120,8 +120,8 @@ void RegainEnergyShield(EnergyShield &shield)
 void UpdatePlayerInput(PlayerState& player, float dt)
 {
   PlayerMovementComponent& data = player.movement;
-  //rotate velocity vector and update orientation to match
-  //TODO handle rotation when moving in reverse?
+  PhysicsComponent& pdata = player.data;
+
   if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::TURN_LEFT]))
   {
     data.left_vel += data.acc*dt;
@@ -154,15 +154,31 @@ void UpdatePlayerInput(PlayerState& player, float dt)
     data.down_vel -= data.acc*dt;
   }
   ClampVel(data);
+  float y_vel = data.up_vel-data.down_vel;
+  float x_vel = data.right_vel-data.left_vel;
+  if(x_vel*x_vel + y_vel*y_vel > 0)
+  {
+    pdata.orientation = Vector2Normalize(Vector2{x_vel,y_vel});
+  }
 
-  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::DASH]) && !player.dash_in_progress)
+  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::DASH]))
   {
     player.dash_in_progress = true;
+    player.dash_time += dt;
+    //if(player.dash_time > options.click_time)
+    {
+      player.movement.max_vel = options.player_max_velocity*options.screenWidth*options.speed_boost_multiplier;
+    }
   }
-  else if(player.dash_in_progress && !IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::DASH]))
+  if(player.dash_in_progress && !IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::DASH]))
   {
     player.dash_in_progress = false;
-    //data.position = data.position + data.orientation*options.screenWidth*DASH_DISTANCE;
+    if(player.dash_time < options.click_time)
+    {
+      pdata.position = pdata.position + pdata.orientation*options.screenWidth*options.dash_distance;
+    }
+    player.dash_time = 0;
+    player.movement.max_vel = options.player_max_velocity*options.screenWidth;
   }
 }
 
@@ -463,16 +479,10 @@ void DrawShip(const PlayerState &player)
  int rotation = atan2(player.data.orientation.y,player.data.orientation.x)*180/M_PI + 90;
  DrawTexturePro(te, sourceRec, destRec, origin, (float)rotation, WHITE);
 
- if(player.dash_in_progress)
- {
-   Vector2 dash_pos = player.data.position + player.data.orientation*options.screenWidth*DASH_DISTANCE;
-   dash_pos = mod(dash_pos, {(float)options.screenWidth,(float)options.screenHeight});
-   destRec.x = dash_pos.x;
-   destRec.y = dash_pos.y;
-   Color ghost = WHITE;
-   ghost.a = 127;
-   DrawTexturePro(te, sourceRec, destRec, origin, (float)rotation, ghost);
- }
+ //Draw blink radius
+ DrawCircleLinesEx(player.data.position, options.screenWidth*options.dash_distance, 2, SKYBLUE);
+ Vector2 blink_pos = player.data.position + player.data.orientation*options.screenWidth*options.dash_distance;
+ DrawCircleV(blink_pos, 4, SKYBLUE);
 }
 
 void DrawGun(const PlayerState& player)
