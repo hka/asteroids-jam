@@ -33,8 +33,14 @@ struct GameOptions
   bool control_tip = true;
   bool first_launch = true;
 
-  float player_max_velocity = 400;
+  //Normalized by screenwidth. A value of 1 means that
+  //traversing the screen takes 1 second, 0.5 means it takes 2 seconds
+  //dash_distance is also given as fraction of screen size
+  float player_max_velocity = 0.30;
   float player_max_acceleration = 1000000;
+  float dash_distance = 0.15;
+  float click_time = 0.2; //press-relase within 200ms  is click
+  float speed_boost_multiplier = 1.5;
 
   enum class ControlKeyCodes {THRUST = 0, BREAK, TURN_LEFT, TURN_RIGHT, DASH, FIRE, ABSORB, ULTRA, ALT_AIM_LEFT, ALT_AIM_RIGHT, ALT_AIM_UP, ALT_AIM_DOWN, SIZE, NONE};
   std::vector<Key> keys;

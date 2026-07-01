@@ -70,7 +70,8 @@ struct PlayerState
   Timer suckDelayTimer;
 
   bool dash_in_progress = false;
-  
+  float dash_time = 0;
+
   PhysicsComponent data;
 
   void OnHit(int damage);
