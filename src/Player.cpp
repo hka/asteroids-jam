@@ -20,6 +20,8 @@ PlayerState createPlayer(Vector2 startPos){
   player.movement.max_vel = options.player_max_velocity*options.screenWidth;
   player.movement.acc = options.player_max_acceleration*options.screenWidth;
 
+  player.erasure_charges = options.erasure_start_charges;
+
   player.suckAttack.isOngoing = false;
   player.suckAttack.lineLength = 50.f;
 
@@ -48,6 +50,21 @@ void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &
   UpdatePlayerInput(player, dt);
   UpdatePosition(player.data, player.movement, worldBound, dt);
 
+  if(IsMatchingKeyPressed(options.keys[(size_t)GameOptions::ControlKeyCodes::SPECIAL_0])
+     && player.erasure_charges > 0
+     && player.erasure_triggered == PlayerState::ERASURE_STATE::OFF) //ERASURE
+  {
+    --player.erasure_charges;
+    player.erasure_triggered = PlayerState::ERASURE_STATE::ACTIVE;
+  }
+  if(player.erasure_triggered == PlayerState::ERASURE_STATE::COOLDOWN)
+  {
+    player.erasure_cooldown -= dt;
+    if(player.erasure_cooldown <= 0)
+    {
+      player.erasure_triggered = PlayerState::ERASURE_STATE::OFF;
+    }
+  }
 
   if(IsMatchingKeyPressed(options.keys[(size_t)GameOptions::ControlKeyCodes::ABSORB]))
   {
@@ -480,9 +497,25 @@ void DrawShip(const PlayerState &player)
  DrawTexturePro(te, sourceRec, destRec, origin, (float)rotation, WHITE);
 
  //Draw blink radius
- DrawCircleLinesEx(player.data.position, options.screenWidth*options.dash_distance, 2, SKYBLUE);
- Vector2 blink_pos = player.data.position + player.data.orientation*options.screenWidth*options.dash_distance;
- DrawCircleV(blink_pos, 4, SKYBLUE);
+ if(player.erasure_triggered == PlayerState::ERASURE_STATE::COOLDOWN)
+ {
+   DrawCircleLinesEx(player.data.position, options.screenWidth*options.dash_distance+6, 2, RED);
+   DrawCircleLinesEx(player.data.position, options.screenWidth*options.dash_distance+4, 2, ORANGE);
+   DrawCircleLinesEx(player.data.position, options.screenWidth*options.dash_distance+2, 2, YELLOW);
+   DrawCircleLinesEx(player.data.position, options.screenWidth*options.dash_distance, 2, GREEN);
+   DrawCircleLinesEx(player.data.position, options.screenWidth*options.dash_distance-2, 2, BLUE);
+   DrawCircleLinesEx(player.data.position, options.screenWidth*options.dash_distance-4, 2, PURPLE);
+   DrawCircleLinesEx(player.data.position, options.screenWidth*options.dash_distance-6, 2, VIOLET);
+
+   Vector2 blink_pos = player.data.position + player.data.orientation*options.screenWidth*options.dash_distance;
+   DrawCircleV(blink_pos, 10, SKYBLUE);
+ }
+ else
+ {
+   DrawCircleLinesEx(player.data.position, options.screenWidth*options.dash_distance, 2, SKYBLUE);
+   Vector2 blink_pos = player.data.position + player.data.orientation*options.screenWidth*options.dash_distance;
+   DrawCircleV(blink_pos, 4, SKYBLUE);
+ }
 }
 
 void DrawGun(const PlayerState& player)

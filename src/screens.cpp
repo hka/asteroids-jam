@@ -24,6 +24,9 @@ void SetDefaultKeys(std::vector<Key>& keys)
   keys[(size_t)GameOptions::ControlKeyCodes::DASH].key = KEY_SPACE;
   keys[(size_t)GameOptions::ControlKeyCodes::DASH].is_keyboard = true;
 
+  keys[(size_t)GameOptions::ControlKeyCodes::SPECIAL_0].key = KEY_E;
+  keys[(size_t)GameOptions::ControlKeyCodes::SPECIAL_0].is_keyboard = true;
+
   // GUNNER
   keys[(size_t)GameOptions::ControlKeyCodes::FIRE].key = MOUSE_BUTTON_LEFT;
   keys[(size_t)GameOptions::ControlKeyCodes::FIRE].is_keyboard = false;
