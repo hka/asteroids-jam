@@ -29,7 +29,7 @@ void UpdateShoots(std::vector<Shoot>& shoots, float dt)
   std::vector<size_t> remove_ix;
   for(size_t ii = 0; ii < shoots.size(); ++ii)
   {
-    UpdatePosition(shoots[ii].data, worldBound, dt, true);
+    UpdatePosition(shoots[ii].data, worldBound, dt, true, options.wrapping_bullets);
     shoots[ii].time_alive += dt;
     if(!CheckCollisionPointRec(shoots[ii].data.position, bound))
     {

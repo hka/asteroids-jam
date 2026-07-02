@@ -42,8 +42,8 @@ struct PhysicsComponent
   Vector2 velocity = {0,0};
 };
 
-void UpdatePosition(PhysicsComponent& data, const Vector2& bound, float dt, bool no_limit = false);
-void UpdatePosition(PhysicsComponent& data, PlayerMovementComponent& move, const Vector2& bound, float dt);
+void UpdatePosition(PhysicsComponent& data, const Vector2& bound, float dt, bool no_limit = false, bool wrap = true);
+void UpdatePosition(PhysicsComponent& data, PlayerMovementComponent& move, const Vector2& bound, float dt, bool wrap = true);
 void ApplyThrustDrag(PhysicsComponent& data);
 
 void ClampVel(PlayerMovementComponent& m);

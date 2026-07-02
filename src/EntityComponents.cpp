@@ -36,14 +36,17 @@ void ApplyThrustDrag(PhysicsComponent& data)
   data.force += ft - fd;
 }
 
-void UpdatePosition(PhysicsComponent& data, PlayerMovementComponent& move, const Vector2& bound, float dt)
+void UpdatePosition(PhysicsComponent& data, PlayerMovementComponent& move, const Vector2& bound, float dt, bool wrap)
 {
   data.position.x += (move.right_vel-move.left_vel)*dt;
   data.position.y += (move.up_vel-move.down_vel)*dt;
-  data.position = mod(data.position + bound, bound);
+  if(wrap)
+  {
+    data.position = mod(data.position + bound, bound);
+  }
 }
 
-void UpdatePosition(PhysicsComponent& data, const Vector2& bound, float dt, bool no_limit)
+void UpdatePosition(PhysicsComponent& data, const Vector2& bound, float dt, bool no_limit, bool wrap)
 {
   //set acceleration
   data.acceleration = data.mass == 0 ? Vector2{0.f, 0.f} : data.force/data.mass;
@@ -62,7 +65,10 @@ void UpdatePosition(PhysicsComponent& data, const Vector2& bound, float dt, bool
 
   //and position
   data.position += data.velocity*dt;
-  data.position = mod(data.position + bound, bound);
+  if(wrap)
+  {
+    data.position = mod(data.position + bound, bound);
+  }
 }
 
 void UpdateMovement(Vector2 &position, MovementComponent &movement, const Vector2 &bound)
