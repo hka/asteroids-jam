@@ -27,7 +27,7 @@ PlayerState createPlayer(Vector2 startPos){
 
   player.gun.direction = {0.f,0.f};
   player.gun.cooldownTimer.start();
-  player.gun.cooldownDuration = 0.25f;
+  player.gun.cooldownDuration = options.default_gun_cooldown;
 
   player.shield.canRegain = false;
   player.shield.durationBeforeCanRegainAfterDamage = 2.f;
@@ -380,9 +380,18 @@ void gunUpdate(PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
   gun.direction = Vector2Normalize(mousePointer - player.data.position);
 
   //handle shooting
-  if( IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::FIRE]) && gun.cooldownTimer.getElapsed() >= gun.cooldownDuration && player.storedAsteroids == 0){
-    //FireShoot(player.data.position, gun.direction, player.movement.velocity, player.movement.maxAcceleration, shoots);
-    FireShoot(player.data, gun.direction,500, shoots);
+  if(IsMatchingKeyReleased(options.keys[(size_t)GameOptions::ControlKeyCodes::FIRE]))
+  {
+    FireShoot(player.data, gun.direction,
+              options.default_gun_bullet_speed, shoots);
+    if(options.sound_fx)
+    {
+      PlaySound(shoot_fx);
+    }
+  }
+  else if( IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::FIRE]) && gun.cooldownTimer.getElapsed() >= gun.cooldownDuration && player.storedAsteroids == 0){
+    FireShoot(player.data, gun.direction,
+              options.default_gun_bullet_speed, shoots);
     if(options.sound_fx)
     {
       PlaySound(shoot_fx);
@@ -525,6 +534,9 @@ void DrawGun(const PlayerState& player)
   DrawCircleV(player.data.position, 5,RED);
 
   DrawLineEx(player.data.position, player.data.position + 10*player.gun.direction ,3, GRAY);
+
+  DrawLineEx(player.data.position, player.data.position + options.screenWidth*2*player.gun.direction ,2, RED);
+  DrawCircleV(GetMousePosition(), 5,RED);
 
   float r = player.data.radius/2;
   float x = player.data.position.x;

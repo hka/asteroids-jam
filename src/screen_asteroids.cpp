@@ -15,7 +15,9 @@
 AsteroidsScreen::AsteroidsScreen():
   m_player(createPlayer({options.screenWidth / 2.f, options.screenHeight / 2.f}))
 {
-  m_finishScreen = Screen::GameScreen::ASTEROIDS; 
+  DisableCursor();
+
+  m_finishScreen = Screen::GameScreen::ASTEROIDS;
   m_spawnAsteroidTimer.start();
 
   m_spawnEnemyTimer.start();
@@ -60,6 +62,7 @@ AsteroidsScreen::AsteroidsScreen():
 
 AsteroidsScreen::~AsteroidsScreen()
 {
+  EnableCursor();
   DestroyLaserResources();
   Unload();
 }
@@ -405,6 +408,11 @@ void AsteroidsScreen::Paint()
   {
     const char* laserMode = m_player.laser.useShaderRendering ? "Laser: shader (F3)" : "Laser: texture (F3)";
     DrawText(laserMode, 10, 10, 12, GREEN);
+  }
+
+  {
+    std::string bullet_text = "Bullets: " + std::to_string(m_playerBullets.size());
+    DrawText(bullet_text.c_str(), 200, 10, 12, GREEN);
   }
 
   if(!m_player.alive)
