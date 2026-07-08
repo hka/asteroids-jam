@@ -74,7 +74,7 @@ void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &
   if(player.suckDelayTimer.getElapsed() > SUCK_DELAY){
     if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::ABSORB]) && player.storedAsteroids < MAX_STORED_ASTEROIDS)
     {
-      suckAttack(player.data.position, player.data.orientation, player.suckAttack);
+      suckAttack(player.data.position, player.gun.direction, player.suckAttack);
     }else{
       player.suckAttack.isOngoing = false;
       player.suckAttack.balls.clear();
@@ -83,6 +83,20 @@ void update(PlayerState &player, const Vector2 &worldBound, std::vector<Shoot> &
   else if(player.suckDelayTimer.getElapsed() < SUCK_DELAY  && IsMatchingKeyReleased(options.keys[(size_t)GameOptions::ControlKeyCodes::ABSORB]))
   {
     //if turn to energy by right click
+  }
+  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::ABSORB]))
+  {
+    player.suck_time += dt;
+  }
+  else if(player.suck_time > 0)
+  {
+    printf("suck time: %f\n", player.suck_time);
+    if(player.suck_time < options.click_time
+       && player.storedAsteroids > 0)
+    {
+      player.trigger_shootgun = true;
+    }
+    player.suck_time = 0;
   }
 
   gunUpdate(player, player.gun, shoots);
@@ -206,7 +220,7 @@ void AttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids)
   {
     if(asteroids[ii].target == 1)
     {
-      Vector2 attract_point = asteroids[ii].attract_point + player.data.orientation*50;
+      Vector2 attract_point = asteroids[ii].attract_point + player.gun.direction*50;
       Vector2 dir = attract_point - asteroids[ii].data.position;
       asteroids[ii].data.force += 500000*Vector2Normalize(dir);
       if(Vector2Length(dir) < 20)
@@ -215,12 +229,24 @@ void AttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids)
         asteroids[ii].data.force *= 0;
 
         asteroids[ii].state = ABSORBED;
-        player.storedAsteroids = std::min(MAX_STORED_ASTEROIDS, player.storedAsteroids + 1);
+        if(asteroids[ii].type == 1)
+        {
+          player.storedAsteroids = std::min(MAX_STORED_ASTEROIDS, player.storedAsteroids + 1);
+        }
+        if(asteroids[ii].type == 2)
+        {
+          player.storedAsteroids = std::min(MAX_STORED_ASTEROIDS, player.storedAsteroids + 2);
+        }
+        if(asteroids[ii].type == 3)
+        {
+          player.storedAsteroids = std::min(MAX_STORED_ASTEROIDS, player.storedAsteroids + 6);
+        }
+        ++player.absorb_count;
       }
     }
     else if(asteroids[ii].target == 2)
     {
-      Vector2 attract_point = asteroids[ii].attract_point + player.data.orientation*50;
+      Vector2 attract_point = asteroids[ii].attract_point + player.gun.direction*50;
       Vector2 dir = attract_point - asteroids[ii].data.position;
       asteroids[ii].data.force += 500000*Vector2Normalize(dir);
     }
@@ -230,13 +256,13 @@ void AttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids)
 //here also targeting is done...
 void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids, std::vector<float>& player_asteroid_distance)
 {
-  Vector2 attract_point = player.data.position + player.data.orientation*player.data.radius;
+  Vector2 attract_point = player.data.position + player.gun.direction*player.data.radius;
 
   //visualize cone
   float cone_angle = 15*M_PI/180; //should be part of player state and controllable
   float line_len = 400;
-  Vector2 p1 = attract_point + Vector2Rotate(player.data.orientation,-cone_angle)*line_len;
-  Vector2 p2 = attract_point + Vector2Rotate(player.data.orientation,cone_angle)*line_len;
+  Vector2 p1 = attract_point + Vector2Rotate(player.gun.direction,-cone_angle)*line_len;
+  Vector2 p2 = attract_point + Vector2Rotate(player.gun.direction,cone_angle)*line_len;
 
   DrawLineEx(attract_point, p1, 1, RED);
   DrawLineEx(attract_point, p2, 1, RED);
@@ -249,9 +275,27 @@ void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids
   for(size_t ii = 0; ii < asteroids.size(); ++ii)
   {
     asteroids[ii].target = 0;
-    if(asteroids[ii].type != 1)
+    if(player.absorb_count < options.data_mining_level1_threshold )
     {
-      continue;
+      if(asteroids[ii].type != 1)
+      {
+        continue;
+      }
+    }
+    else if(player.absorb_count >= options.data_mining_level1_threshold
+            && player.absorb_count < options.data_mining_level2_threshold)
+    {
+      if(asteroids[ii].type > 2)
+      {
+        continue;
+      }
+    }
+    else if(player.absorb_count >= options.data_mining_level2_threshold)
+    {
+      if(asteroids[ii].type > 3)
+      {
+        continue;
+      }
     }
     if(player_asteroid_distance[ii] <= attract_distance)
     {
@@ -267,7 +311,7 @@ void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids
       Rectangle bound = {0,0,(float)options.screenWidth, (float)options.screenHeight};
       Ray2d r;
       r.Origin = attract_point;
-      r.Direction = player.data.orientation;
+      r.Direction = player.gun.direction;
       r.Direction = -r.Direction;
       if(CheckCollisionRay2dRect(r, bound, &collision_point))
       {
@@ -301,10 +345,10 @@ void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids
         collision_point_back = collision_point_back-off;
 
         {
-          Vector2 alt_attract = collision_point_back - collision_dist*player.data.orientation;
+          Vector2 alt_attract = collision_point_back - collision_dist*player.gun.direction;
 
-          p1 = alt_attract + Vector2Rotate(player.data.orientation,-cone_angle)*line_len;
-          p2 = alt_attract + Vector2Rotate(player.data.orientation,cone_angle)*line_len;
+          p1 = alt_attract + Vector2Rotate(player.gun.direction,-cone_angle)*line_len;
+          p2 = alt_attract + Vector2Rotate(player.gun.direction,cone_angle)*line_len;
 
           DrawLineEx(alt_attract, p1, 1, RED);
           DrawLineEx(alt_attract, p2, 1, RED);
@@ -389,7 +433,7 @@ void gunUpdate(PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
       PlaySound(shoot_fx);
     }
   }
-  else if( IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::FIRE]) && gun.cooldownTimer.getElapsed() >= gun.cooldownDuration && player.storedAsteroids == 0){
+  else if( IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::FIRE]) && gun.cooldownTimer.getElapsed() >= gun.cooldownDuration){
     FireShoot(player.data, gun.direction,
               options.default_gun_bullet_speed, shoots);
     if(options.sound_fx)
@@ -398,9 +442,11 @@ void gunUpdate(PlayerState& player, GunAttack &gun, std::vector<Shoot> &shoots)
     }
     gun.cooldownTimer.start();
   }
-  if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::FIRE]) && player.storedAsteroids > 0)
+  //if(IsMatchingKeyDown(options.keys[(size_t)GameOptions::ControlKeyCodes::FIRE]) && player.storedAsteroids > 0)
+  if(player.trigger_shootgun)
   {
-    FireShootgun(player.data, player.storedAsteroids, gun.direction,500, shoots);
+    FireShootgun(player.data, player.storedAsteroids, gun.direction,options.default_gun_bullet_speed, shoots);
+    player.trigger_shootgun = false;
     gun.cooldownTimer.start();
   }
 }

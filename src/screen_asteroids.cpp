@@ -349,7 +349,7 @@ void AsteroidsScreen::Paint()
   DrawShoots(m_enemyBullets);
   if(m_player.suckAttack.isOngoing) //TODO consider showing targeting always
   {
-    PaintAttractAsteroids(m_player, m_asteroids, m_player_asteroid_distance);
+    PaintAttractAsteroids(m_player, m_asteroids, m_player_asteroid_distance); //this function also controls what types we can absorb
   }
 
 
@@ -413,6 +413,8 @@ void AsteroidsScreen::Paint()
   {
     std::string bullet_text = "Bullets: " + std::to_string(m_playerBullets.size());
     DrawText(bullet_text.c_str(), 200, 10, 12, GREEN);
+    std::string erase_text = "Erasure charges: " + std::to_string(m_player.erasure_charges);
+    DrawText(erase_text.c_str(), 200, 24, 12, GREEN);
   }
 
   if(!m_player.alive)
