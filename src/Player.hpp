@@ -10,7 +10,7 @@
 #include "Laser.h"
 #include "Asteroid.h"
 
-constexpr int MAX_STORED_ASTEROIDS = 5;
+constexpr int MAX_STORED_ASTEROIDS = 6;
 constexpr float SUCK_DELAY = 0.2f;
 
 struct Shoot;
@@ -27,7 +27,6 @@ struct SuckAttack{
   Vector2 linesEnd[2];
   std::vector<Ball> balls;
   Timer addBallTimer;
-
 };
 
 struct GunAttack{
@@ -67,7 +66,10 @@ struct PlayerState
   EnergyShield shield;
 
   int storedAsteroids = 0;
+  int absorb_count = 0;
   Timer suckDelayTimer;
+  bool trigger_shootgun = false;
+  float suck_time = 0;
 
   bool dash_in_progress = false;
   float dash_time = 0;

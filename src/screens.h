@@ -49,6 +49,9 @@ struct GameOptions
   float default_gun_bullet_speed = 1000.f;
   float default_gun_cooldown = 0.125f;
 
+  int data_mining_level1_threshold = 12;
+  int data_mining_level2_threshold = 24;
+
   enum class ControlKeyCodes {THRUST = 0, BREAK, TURN_LEFT, TURN_RIGHT, DASH, FIRE, ABSORB, ULTRA, ALT_AIM_LEFT, ALT_AIM_RIGHT, ALT_AIM_UP, ALT_AIM_DOWN, SPECIAL_0, SIZE, NONE};
   std::vector<Key> keys;
 };

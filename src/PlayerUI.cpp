@@ -167,4 +167,10 @@ void DrawStoredAsteroids(PlayerState &player, const int worldWidth, const int wo
   };
 
   DrawTextEx(GetFontDefault(), text.c_str(), pos, fontSize, spacing, WHITE);
+  text = "Absorb XP: " + std::to_string(player.absorb_count);
+  textSize = MeasureTextEx(GetFontDefault(), text.c_str(), fontSize, spacing);
+  pos.x = (float)worldWidth - textSize.x - offsetX;
+  pos.y -= textSize.y - 4;
+  DrawTextEx(GetFontDefault(), text.c_str(), pos, fontSize, spacing, WHITE);
+
 }
