@@ -225,10 +225,34 @@ void AttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids)
       asteroids[ii].data.force += 500000*Vector2Normalize(dir);
       if(Vector2Length(dir) < 20)
       {
+        //check so it fits...
+        if(asteroids[ii].type == 1)
+        {
+          if(player.storedAsteroids + 1 > MAX_STORED_ASTEROIDS)
+          {
+            continue;
+          }
+        }
+        else if(asteroids[ii].type == 2)
+        {
+          if(player.storedAsteroids + 2 > MAX_STORED_ASTEROIDS)
+          {
+            continue;
+          }
+        }
+        else if(asteroids[ii].type == 3)
+        {
+          if(player.storedAsteroids + 6 > MAX_STORED_ASTEROIDS)
+          {
+            continue;
+          }
+        }
+        // -------------------------------------------------------------
         asteroids[ii].data.velocity = player.data.velocity;
         asteroids[ii].data.force *= 0;
 
         asteroids[ii].state = ABSORBED;
+        player.stored_enemies.push_back(asteroids[ii]);
         if(asteroids[ii].type == 1)
         {
           player.storedAsteroids = std::min(MAX_STORED_ASTEROIDS, player.storedAsteroids + 1);
@@ -275,28 +299,47 @@ void PaintAttractAsteroids(PlayerState& player, std::vector<Asteroid>& asteroids
   for(size_t ii = 0; ii < asteroids.size(); ++ii)
   {
     asteroids[ii].target = 0;
-    if(player.absorb_count < options.data_mining_level1_threshold )
+    int max_valid_size = 0;
+    if(player.absorb_count >= options.data_mining_level2_threshold)
     {
-      if(asteroids[ii].type != 1)
+      max_valid_size = 3;
+    }
+    else if(player.absorb_count >= options.data_mining_level1_threshold)
+    {
+      max_valid_size = 2;
+    }
+    else
+    {
+      max_valid_size = 1;
+    }
+    if(asteroids[ii].type > max_valid_size)
+    {
+      continue;
+    }
+    //TODO +1 +2 and +6 should be property in asteroid, duplicate in
+    // AttractAsteroids function...
+    if(asteroids[ii].type == 1)
+    {
+      if(player.storedAsteroids + 1 > MAX_STORED_ASTEROIDS)
       {
         continue;
       }
     }
-    else if(player.absorb_count >= options.data_mining_level1_threshold
-            && player.absorb_count < options.data_mining_level2_threshold)
+    else if(asteroids[ii].type == 2)
     {
-      if(asteroids[ii].type > 2)
+      if(player.storedAsteroids + 2 > MAX_STORED_ASTEROIDS)
       {
         continue;
       }
     }
-    else if(player.absorb_count >= options.data_mining_level2_threshold)
+    else if(asteroids[ii].type == 3)
     {
-      if(asteroids[ii].type > 3)
+      if(player.storedAsteroids + 6 > MAX_STORED_ASTEROIDS)
       {
         continue;
       }
     }
+
     if(player_asteroid_distance[ii] <= attract_distance)
     {
       //check if inside cone
