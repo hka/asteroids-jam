@@ -66,6 +66,7 @@ struct PlayerState
   EnergyShield shield;
 
   int storedAsteroids = 0;
+  std::vector<Asteroid> stored_enemies;
   int absorb_count = 0;
   Timer suckDelayTimer;
   bool trigger_shootgun = false;

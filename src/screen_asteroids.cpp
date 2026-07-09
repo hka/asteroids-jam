@@ -167,6 +167,7 @@ void AsteroidsScreen::Update()
 
   if(!m_player.alive)
   {
+    EnableCursor();
     UpdateInputBox(GetMousePosition(), m_namebox, this);
   }
   //put stuff that should happen at end of game above this line
