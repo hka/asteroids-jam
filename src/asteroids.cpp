@@ -37,7 +37,7 @@ void success()
           assert(!err);
           //ccall('success', 'v');
         });
-      );
+      ,0);
   }
   isLoading = false;
 }
@@ -80,7 +80,7 @@ int main(void)
         assert(!err);
         ccall('success', 'v');
       });
-    );
+    ,0);
 
   while(isLoading)
   {
