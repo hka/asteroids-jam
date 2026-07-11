@@ -45,7 +45,7 @@ AsteroidsScreen::AsteroidsScreen():
       FS.syncfs(function (err) {
           assert(!err);
         });
-      );
+      ,0);
 #endif
   };
   m_namebox.confirm.action = confirmAction;
