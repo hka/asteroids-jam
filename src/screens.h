@@ -29,7 +29,7 @@ struct GameOptions
   bool godMode = false;
   bool game_music = true;
   bool sound_fx = true;
-  float master_volume = 0.5f;
+  float master_volume = 0.25f;
   bool control_tip = true;
   bool first_launch = true;
 
@@ -44,6 +44,8 @@ struct GameOptions
   int erasure_start_charges = 3;
   int erasure_max_charges = 3;
   float erasure_cooldown = 10; //seconds between uses
+
+  bool alternative_cannon_control = true;
 
   bool wrapping_bullets = false;
   float default_gun_bullet_speed = 1000.f;
@@ -440,6 +442,7 @@ private:
   size_t m_muteMusicIx;
   size_t m_muteFxIx;
   size_t m_toggleHelpIx;
+  size_t m_toggleCannonIx;
   std::vector<KeySelector> m_keySelector;
   Slider master_volume;
 };
