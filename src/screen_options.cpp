@@ -22,7 +22,7 @@ OptionsScreen::OptionsScreen()
       FS.syncfs(function (err) {
           assert(!err);
         });
-      );
+      ,0);
 #endif
   };
   b_back.action = backAction;
