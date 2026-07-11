@@ -107,6 +107,18 @@ OptionsScreen::OptionsScreen()
   m_toggleHelpIx = m_buttons.size();
   m_buttons.push_back(b_toggleHelp);
 
+  Button b_toggleCannon("Alternative cannon control", options.screenWidth-300, 170, 100, 20, AnchorPoint::TOP_RIGHT);
+  b_toggleCannon.toggle = options.alternative_cannon_control;
+  b_toggleCannon.type = Button::Type::CHECKBOX;
+  auto toggleCannonAction = [](void* ptr){
+    OptionsScreen* scr = (OptionsScreen*)ptr;
+    options.alternative_cannon_control = !options.alternative_cannon_control;
+    scr->m_buttons[scr->m_toggleCannonIx].toggle = options.alternative_cannon_control;
+  };
+  b_toggleCannon.action = toggleCannonAction;
+  m_toggleCannonIx = m_buttons.size();
+  m_buttons.push_back(b_toggleCannon);
+
   m_keySelector.resize((size_t)GameOptions::ControlKeyCodes::SIZE);
 
   KeySelector increase_thrust;
@@ -212,6 +224,8 @@ void OptionsScreen::Update()
   {
     options.control_tip = false;
     m_buttons[m_toggleHelpIx].toggle = options.control_tip;
+    options.alternative_cannon_control = true;
+    m_buttons[m_toggleCannonIx].toggle = options.alternative_cannon_control;
   }
 }
 

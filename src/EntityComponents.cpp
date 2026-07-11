@@ -4,6 +4,7 @@
 #include "raymath.h"
 #include "raylib_operators.h"
 #include "helpers.h"
+#include "globals.h"
 
 #include <algorithm>
 
@@ -38,8 +39,17 @@ void ApplyThrustDrag(PhysicsComponent& data)
 
 void UpdatePosition(PhysicsComponent& data, PlayerMovementComponent& move, const Vector2& bound, float dt, bool wrap)
 {
-  data.position.x += (move.right_vel-move.left_vel)*dt;
-  data.position.y += (move.up_vel-move.down_vel)*dt;
+  int off_x = (move.right_vel-move.left_vel)*dt;
+  int off_y = (move.up_vel-move.down_vel)*dt;
+  data.position.x += off_x;
+  data.position.y += off_y;
+
+  if(options.alternative_cannon_control)
+  {
+    Vector2 mp = GetMousePosition();
+    SetMousePosition(mp.x + off_x, mp.y + off_y);
+  }
+
   if(wrap)
   {
     data.position = mod(data.position + bound, bound);
